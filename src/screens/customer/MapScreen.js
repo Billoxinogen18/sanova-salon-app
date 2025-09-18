@@ -70,11 +70,14 @@ export default function MapScreen({ navigation }) {
   useEffect(() => {
     StatusBar.setBarStyle('light-content');
     
+    console.log('🗺️ MapScreen mounted, requesting location...');
+    
     // Request location permissions immediately
     requestLocationPermission();
 
     // Fallback: show map after 2 seconds even if not ready
     const fallbackTimer = setTimeout(() => {
+      console.log('🗺️ Fallback timer triggered, setting mapReady to true');
       setMapReady(true);
     }, 2000);
 
@@ -270,7 +273,7 @@ export default function MapScreen({ navigation }) {
       {/* Map Container - Always Visible */}
       <View style={styles.mapContainer}>
         <View style={styles.mapWrapper}>
-          {(mapReady || true) && <MapView
+          <MapView
             key="iceland-map"
             ref={mapRef}
             provider={PROVIDER_GOOGLE}
@@ -340,8 +343,16 @@ export default function MapScreen({ navigation }) {
                   </View>
                 </Marker>
           ))}
-        </MapView>}
+        </MapView>
         </View>
+        
+        {/* Fallback view in case map doesn't load */}
+        {!mapReady && (
+          <View style={styles.mapFallback}>
+            <Text style={styles.mapFallbackText}>Loading Map...</Text>
+            <Text style={styles.mapFallbackSubtext}>Finding nearby salons</Text>
+          </View>
+        )}
         
         {/* Filter Button */}
         <Animated.View
@@ -538,7 +549,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   mapContainer: {
-    height: 400, // Fixed height instead of flex: 1
+    height: 500, // Increased height to make map more visible
     position: 'relative',
     borderTopLeftRadius: borderRadius.lg,
     borderTopRightRadius: borderRadius.lg,
@@ -561,6 +572,27 @@ const styles = StyleSheet.create({
     flex: 1,
     borderTopLeftRadius: borderRadius.lg,
     borderTopRightRadius: borderRadius.lg,
+  },
+  mapFallback: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.background.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopLeftRadius: borderRadius.lg,
+    borderTopRightRadius: borderRadius.lg,
+  },
+  mapFallbackText: {
+    ...typography.title2,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+  },
+  mapFallbackSubtext: {
+    ...typography.body,
+    color: colors.text.secondary,
   },
   filterButtonContainer: {
     position: 'absolute',

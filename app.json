@@ -7,6 +7,24 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "ios": {
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ"
+      }
+    },
+    "android": {
+      "package": "com.sanova.salonapp",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#263428"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ"
+        }
+      }
+    },
     "web": {
       "favicon": "./assets/favicon.png"
     },
