@@ -67,6 +67,8 @@ export default function PaymentMethodScreen({ navigation, route }) {
     setLoading(true);
     
     try {
+      const { booking } = route.params || {};
+      
       if (selectedMethod === 'card') {
         // Initialize payment sheet for Stripe
         const { error: initError } = await initPaymentSheet({
@@ -77,6 +79,7 @@ export default function PaymentMethodScreen({ navigation, route }) {
 
         if (initError) {
           Alert.alert('Error', initError.message);
+          setLoading(false);
           return;
         }
 
@@ -85,20 +88,41 @@ export default function PaymentMethodScreen({ navigation, route }) {
 
         if (presentError) {
           Alert.alert('Payment Failed', presentError.message);
+          setLoading(false);
           return;
         }
 
-        // Payment successful
-        Alert.alert('Success', 'Payment completed successfully!', [
-          { text: 'OK', onPress: () => navigation.navigate('PaymentModel', { 
-            service, 
-            paymentMethod: selectedMethod 
-          })}
-        ]);
-      } else {
-        // For Apple Pay and MobilePay, navigate to payment model
-        navigation.navigate('PaymentModel', { 
+        // Payment successful - update booking status
+        if (booking?.id) {
+          await firestoreService.bookings.update(booking.id, {
+            status: 'confirmed',
+            paymentMethod: selectedMethod,
+            paymentCompleted: true,
+            paymentDate: new Date(),
+          });
+        }
+
+        // Navigate to success screen
+        navigation.navigate('PaymentSuccess', { 
           service, 
+          booking,
+          paymentMethod: selectedMethod 
+        });
+      } else {
+        // For Apple Pay and MobilePay, simulate payment and update booking
+        if (booking?.id) {
+          await firestoreService.bookings.update(booking.id, {
+            status: 'confirmed',
+            paymentMethod: selectedMethod,
+            paymentCompleted: true,
+            paymentDate: new Date(),
+          });
+        }
+
+        // Navigate to success screen
+        navigation.navigate('PaymentSuccess', { 
+          service, 
+          booking,
           paymentMethod: selectedMethod 
         });
       }

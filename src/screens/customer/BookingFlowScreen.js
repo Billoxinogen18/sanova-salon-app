@@ -1,11 +1,35 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ScrollView, 
+  Animated, 
+  StatusBar, 
+  Dimensions,
+  Alert 
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, globalStyles } from '../../theme/styles';
-import Header from '../../components/Header';
+import { colors } from '../../theme/colors';
+import { 
+  typography, 
+  spacing, 
+  shadows, 
+  borderRadius, 
+  premiumComponents 
+} from '../../theme/premiumStyles';
+import { 
+  animationSequences, 
+  AnimationController, 
+  microAnimations 
+} from '../../theme/animations';
+import { firestoreService, authService } from '../../services/firebaseService';
+
+const { width, height } = Dimensions.get('window');
 
 export default function BookingFlowScreen({ navigation, route }) {
-  const { service } = route.params || {
+  const { service, prefilledService } = route.params || {
     service: {
       name: 'Classic Manicure',
       price: '200 kr',
@@ -14,19 +38,74 @@ export default function BookingFlowScreen({ navigation, route }) {
     }
   };
 
+  // Use prefilled service if available (from "Book Again" functionality)
+  const bookingService = prefilledService || service;
+
   const [selectedDate, setSelectedDate] = useState('25. april');
   const [selectedTime, setSelectedTime] = useState('11:00');
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [buttonScale] = useState(new Animated.Value(1));
+  const [isLoading, setIsLoading] = useState(false);
 
-  React.useEffect(() => {
-    // Fade in animation when screen loads
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+  // Animation controller
+  const animationController = useRef(new AnimationController()).current;
+
+  // Animated values
+  const headerAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(-30),
+  }).current;
+
+  const serviceCardAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(30),
+    scale: new Animated.Value(0.95),
+  }).current;
+
+  const dateSelectionAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(30),
+  }).current;
+
+  const timeSelectionAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(30),
+  }).current;
+
+  const buttonAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(30),
+    scale: new Animated.Value(1),
+  }).current;
+
+  useEffect(() => {
+    StatusBar.setBarStyle('light-content');
+    
+    // Start entrance animations
+    startEntranceAnimations();
+
+    return () => {
+      animationController.stopAllAnimations();
+    };
   }, []);
+
+  const startEntranceAnimations = () => {
+    const headerAnimation = animationSequences.fadeInUp(headerAnimatedValues, 0);
+    const serviceAnimation = animationSequences.fadeInUp(serviceCardAnimatedValues, 200);
+    const dateAnimation = animationSequences.fadeInUp(dateSelectionAnimatedValues, 400);
+    const timeAnimation = animationSequences.fadeInUp(timeSelectionAnimatedValues, 600);
+    const buttonAnimation = animationSequences.fadeInUp(buttonAnimatedValues, 800);
+
+    animationController.registerAnimation('entrance', 
+      Animated.parallel([
+        headerAnimation,
+        serviceAnimation,
+        dateAnimation,
+        timeAnimation,
+        buttonAnimation,
+      ])
+    );
+
+    animationController.animations.get('entrance').start();
+  };
 
   // Available dates exactly as shown in design
   const availableDates = [
@@ -52,29 +131,82 @@ export default function BookingFlowScreen({ navigation, route }) {
     setSelectedDate(date);
   };
 
+  const handleDateSelect = (date) => {
+    // Animate date selection
+    const buttonScale = new Animated.Value(1);
+    Animated.sequence([
+      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+    
+    setSelectedDate(date);
+  };
+
   const handleTimeSelect = (time) => {
+    // Animate time selection
+    const buttonScale = new Animated.Value(1);
+    Animated.sequence([
+      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+    
     setSelectedTime(time);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+
     // Animate button press
     Animated.sequence([
-      Animated.timing(buttonScale, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonScale, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      navigation.navigate('PaymentMethod', { 
-        service, 
-        selectedDateTime: `${selectedDate} kl. ${selectedTime}` 
-      });
-    });
+      Animated.timing(buttonAnimatedValues.scale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonAnimatedValues.scale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+
+    try {
+      // Create booking in Firebase
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        Alert.alert('Error', 'Please log in to continue booking.');
+        setIsLoading(false);
+        return;
+      }
+
+      const bookingData = {
+        userId: currentUser.uid,
+        serviceId: bookingService.id || 'service-1',
+        serviceName: bookingService.name,
+        salonId: bookingService.salonId || 'salon-1',
+        salonName: bookingService.salon || bookingService.salonName,
+        date: selectedDate,
+        time: selectedTime,
+        duration: bookingService.duration || '45 min',
+        price: bookingService.price || '200 kr',
+        status: 'pending',
+        customerName: currentUser.displayName || currentUser.email?.split('@')[0],
+      };
+
+      const result = await firestoreService.bookings.create(bookingData);
+      
+      if (result.success) {
+        console.log('✅ Booking created successfully:', result.id);
+        
+        // Navigate to payment with booking data
+        navigation.navigate('PaymentMethod', { 
+          service: bookingService,
+          booking: { ...bookingData, id: result.id },
+          selectedDateTime: `${selectedDate} kl. ${selectedTime}` 
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('❌ Error creating booking:', error);
+      Alert.alert('Error', 'Failed to create booking. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
