@@ -72,10 +72,11 @@ export default function MapScreen({ navigation }) {
 
       {/* Map Container extending to top with only top corner radius */}
       <View style={styles.mapContainer}>
-        <MapView
-          ref={mapRef}
-          provider={PROVIDER_GOOGLE}
-          style={StyleSheet.absoluteFillObject}
+        <View style={styles.mapWrapper}>
+          <MapView
+            ref={mapRef}
+            provider={PROVIDER_GOOGLE}
+            style={styles.mapView}
           initialRegion={{
             latitude: 37.4220936,
             longitude: -122.083922,
@@ -121,6 +122,7 @@ export default function MapScreen({ navigation }) {
             </Marker>
           ))}
         </MapView>
+        </View>
         
         {/* Filter button positioned inside map at top left */}
         <TouchableOpacity style={styles.filterButton}>
@@ -223,11 +225,18 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     flex: 1,
+    position: 'relative',
+    // NO margins - extends to edges
+  },
+  mapWrapper: {
+    flex: 1,
     borderTopLeftRadius: 16, // 16dp corner radius curved inwards top-left
     borderTopRightRadius: 16, // 16dp corner radius curved inwards top-right
     overflow: 'hidden',
-    position: 'relative',
-    // NO margins - extends to edges
+    backgroundColor: colors.background.primary, // Add background color to show rounded corners
+  },
+  mapView: {
+    flex: 1,
   },
   filterButton: {
     position: 'absolute',

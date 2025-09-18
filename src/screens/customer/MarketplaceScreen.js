@@ -52,9 +52,9 @@ export default function MarketplaceScreen({ navigation }) {
         </View>
         <Text style={styles.headerTitle}>SANOVA</Text>
       </View>
-
-      {/* Search Bar - exactly as shown in design */}
-      <View style={styles.searchContainer}>
+      
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+        {/* Search Bar - exactly as shown in design - INSIDE content area */}
         <View style={styles.searchBar}>
           <Ionicons name="search" size={20} color={colors.text.secondary} />
           <TextInput
@@ -65,9 +65,7 @@ export default function MarketplaceScreen({ navigation }) {
             onChangeText={setSearchText}
           />
         </View>
-      </View>
-      
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+
         {/* Beauty Products Title */}
         <Text style={styles.sectionTitle}>Beauty Products</Text>
         
@@ -117,11 +115,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2, // +2 letter spacing as specified
     textTransform: 'uppercase',
   },
-  searchContainer: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -129,6 +122,8 @@ const styles = StyleSheet.create({
     borderRadius: 8, // 8dp radius as specified
     paddingHorizontal: 16,
     paddingVertical: 12,
+    marginTop: 20,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: colors.border.primary,
     shadowColor: colors.black,

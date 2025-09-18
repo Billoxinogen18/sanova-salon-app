@@ -46,11 +46,17 @@ export default function UrgentScreen({ navigation }) {
     <View style={styles.container}>
       {/* Header with dark green background exactly as in design */}
       <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Ionicons name="leaf" size={24} color={colors.text.white} />
+        </View>
         <Text style={styles.headerTitle}>SANOVA</Text>
       </View>
-
-      {/* Search Bar - exactly as shown in design */}
-      <View style={styles.searchContainer}>
+      
+      <Animated.ScrollView 
+        style={[styles.content, { opacity: fadeAnim }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Search Bar - exactly as shown in design - INSIDE content area */}
         <View style={styles.searchBar}>
           <Ionicons name="search" size={20} color={colors.text.secondary} />
           <TextInput
@@ -61,12 +67,7 @@ export default function UrgentScreen({ navigation }) {
             onChangeText={setSearchText}
           />
         </View>
-      </View>
-      
-      <Animated.ScrollView 
-        style={[styles.content, { opacity: fadeAnim }]}
-        showsVerticalScrollIndicator={false}
-      >
+
         {/* Available Times Title */}
         <Text style={styles.sectionTitle}>Available Times</Text>
         
@@ -104,25 +105,33 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
+    borderBottomLeftRadius: 16, // 16dp radius as specified
+    borderBottomRightRadius: 16, // 16dp radius as specified
+    overflow: 'hidden', // Make corner radius visible
+  },
+  logoContainer: {
+    marginBottom: 8,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: colors.text.white,
     textAlign: 'center',
-  },
-  searchContainer: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
+    fontFamily: 'serif',
+    letterSpacing: 2, // +2 letter spacing as specified
+    textTransform: 'uppercase',
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background.white,
-    borderRadius: 12,
+    backgroundColor: colors.background.primary, // Soft beige background
+    borderRadius: 8, // 8dp radius as specified
     paddingHorizontal: 16,
     paddingVertical: 12,
+    marginTop: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: colors.border.primary,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -138,6 +147,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
+    backgroundColor: colors.background.primary,
+    borderTopLeftRadius: 16, // 16dp radius as specified
+    borderTopRightRadius: 16, // 16dp radius as specified
+    marginTop: -16, // Overlap with header to create seamless curve
+    overflow: 'hidden', // Make corner radius visible
   },
   sectionTitle: {
     fontSize: 18,
