@@ -128,10 +128,6 @@ export default function BookingFlowScreen({ navigation, route }) {
   ];
 
   const handleDateSelect = (date) => {
-    setSelectedDate(date);
-  };
-
-  const handleDateSelect = (date) => {
     // Animate date selection
     const buttonScale = new Animated.Value(1);
     Animated.sequence([

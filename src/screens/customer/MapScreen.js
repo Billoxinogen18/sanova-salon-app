@@ -496,6 +496,12 @@ const styles = StyleSheet.create({
   mapContainer: {
     flex: 1,
     position: 'relative',
+    borderTopLeftRadius: borderRadius.lg,
+    borderTopRightRadius: borderRadius.lg,
+    overflow: 'hidden',
+    backgroundColor: colors.background.white,
+    marginTop: -2,
+    ...shadows.floating,
   },
   mapWrapper: {
     flex: 1,
@@ -503,10 +509,14 @@ const styles = StyleSheet.create({
     borderTopRightRadius: borderRadius.lg,
     overflow: 'hidden',
     backgroundColor: colors.background.primary,
-    ...shadows.elevated,
+    borderWidth: 1,
+    borderColor: 'rgba(38, 52, 40, 0.1)',
+    borderBottomWidth: 0,
   },
   mapView: {
     flex: 1,
+    borderTopLeftRadius: borderRadius.lg,
+    borderTopRightRadius: borderRadius.lg,
   },
   filterButtonContainer: {
     position: 'absolute',
@@ -522,7 +532,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     position: 'absolute',
-    bottom: spacing.lg,
+    bottom: spacing.xl + 20,
     left: spacing.lg,
     right: spacing.lg,
     zIndex: 10,
@@ -530,12 +540,12 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background.white,
-    borderRadius: borderRadius.round,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: borderRadius.lg,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderWidth: 2,
-    borderColor: colors.border.primary,
+    paddingVertical: spacing.md + 2,
+    borderWidth: 1,
+    borderColor: 'rgba(38, 52, 40, 0.1)',
     ...shadows.floating,
   },
   searchInput: {
