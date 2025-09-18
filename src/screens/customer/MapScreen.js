@@ -282,7 +282,9 @@ export default function MapScreen({ navigation }) {
           )}
           <MapView
             ref={mapRef}
+            provider={PROVIDER_GOOGLE}
             style={styles.mapView}
+            googleMapsApiKey="AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ"
             initialRegion={{
               latitude: 37.78825, // San Francisco coordinates for testing
               longitude: -122.4324,
