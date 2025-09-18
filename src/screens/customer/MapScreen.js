@@ -33,10 +33,10 @@ export default function MapScreen({ navigation }) {
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef(null);
   const [region, setRegion] = useState({
-    latitude: 65.972595, // Iceland coordinates
-    longitude: -18.530737, // Iceland coordinates
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
+    latitude: 37.78825, // San Francisco coordinates for testing
+    longitude: -122.4324,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
   });
 
   // Animation controller
@@ -274,60 +274,42 @@ export default function MapScreen({ navigation }) {
       <View style={styles.mapContainer}>
         <View style={styles.mapWrapper}>
           <MapView
-            key="iceland-map"
             ref={mapRef}
             provider={PROVIDER_GOOGLE}
             style={styles.mapView}
             initialRegion={{
-              latitude: 65.972595, // Iceland coordinates
-              longitude: -18.530737, // Iceland coordinates
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
+              latitude: 37.78825, // San Francisco coordinates for testing
+              longitude: -122.4324,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
             }}
             onMapReady={() => {
               console.log('🗺️ Map is ready!');
               setMapReady(true);
-              // Force map to stay on Iceland coordinates with smooth animation
-              if (mapRef.current) {
-                mapRef.current.animateToRegion({
-                  latitude: 65.972595,
-                  longitude: -18.530737,
-                  latitudeDelta: 0.05,
-                  longitudeDelta: 0.05,
-                }, 1500);
-              }
             }}
             onError={(error) => {
               console.error('🚨 Map error:', error);
             }}
             onMapLoaded={() => console.log('✅ Map loaded successfully!')}
-            showsUserLocation={true}
-            showsMyLocationButton={false} // We'll use our custom button
+            showsUserLocation={false}
+            showsMyLocationButton={false}
             mapType="standard"
-            loadingEnabled={false} // Disable loading indicator
+            loadingEnabled={true}
             onRegionChangeComplete={setRegion}
-            renderToHardwareTextureAndroid={true}
-            customMapStyle={[
-              {
-                featureType: 'poi',
-                elementType: 'labels',
-                stylers: [{ visibility: 'off' }]
-              }
-            ]}
             >
               {[
-                { lat: 65.975, lng: -18.535, title: "Nordic Beauty", description: "Hair & Spa" },
-                { lat: 65.970, lng: -18.525, title: "Icelandic Style", description: "Hair & Nails" },
-                { lat: 65.968, lng: -18.540, title: "Aurora Salon", description: "Premium Beauty" },
-                { lat: 65.978, lng: -18.520, title: "Viking Cuts", description: "Modern Salon" },
-                { lat: 65.965, lng: -18.545, title: "Fjord Beauty", description: "Full Service" },
-                { lat: 65.960, lng: -18.515, title: "Glacier Spa", description: "Wellness & Beauty" },
-                { lat: 65.985, lng: -18.530, title: "Northern Lights", description: "Luxury Salon" },
-                { lat: 65.955, lng: -18.550, title: "Elf Salon", description: "Creative Cuts" },
-                { lat: 65.980, lng: -18.510, title: "Geyser Beauty", description: "Natural Care" },
-                { lat: 65.950, lng: -18.520, title: "Volcano Style", description: "Trendy Cuts" },
-                { lat: 65.990, lng: -18.540, title: "Midnight Sun", description: "24/7 Beauty" },
-                { lat: 65.945, lng: -18.535, title: "Puffin Parlor", description: "Family Salon" }
+                { lat: 37.78825, lng: -122.4324, title: "Nordic Beauty", description: "Hair & Spa" },
+                { lat: 37.78925, lng: -122.4334, title: "Icelandic Style", description: "Hair & Nails" },
+                { lat: 37.78725, lng: -122.4314, title: "Aurora Salon", description: "Premium Beauty" },
+                { lat: 37.79025, lng: -122.4344, title: "Viking Cuts", description: "Modern Salon" },
+                { lat: 37.78625, lng: -122.4304, title: "Fjord Beauty", description: "Full Service" },
+                { lat: 37.78525, lng: -122.4294, title: "Glacier Spa", description: "Wellness & Beauty" },
+                { lat: 37.79125, lng: -122.4354, title: "Northern Lights", description: "Luxury Salon" },
+                { lat: 37.78425, lng: -122.4284, title: "Elf Salon", description: "Creative Cuts" },
+                { lat: 37.79225, lng: -122.4364, title: "Geyser Beauty", description: "Natural Care" },
+                { lat: 37.78325, lng: -122.4274, title: "Volcano Style", description: "Trendy Cuts" },
+                { lat: 37.79325, lng: -122.4374, title: "Midnight Sun", description: "24/7 Beauty" },
+                { lat: 37.78225, lng: -122.4264, title: "Puffin Parlor", description: "Family Salon" }
               ].map((salon, idx) => (
                 <Marker
                   key={idx}
@@ -345,14 +327,6 @@ export default function MapScreen({ navigation }) {
           ))}
         </MapView>
         </View>
-        
-        {/* Fallback view in case map doesn't load */}
-        {!mapReady && (
-          <View style={styles.mapFallback}>
-            <Text style={styles.mapFallbackText}>Loading Map...</Text>
-            <Text style={styles.mapFallbackSubtext}>Finding nearby salons</Text>
-          </View>
-        )}
         
         {/* Filter Button */}
         <Animated.View
