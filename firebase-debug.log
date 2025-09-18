@@ -1,0 +1,20 @@
+[debug] [2025-09-18T12:16:49.567Z] ----------------------------------------------------------------------
+[debug] [2025-09-18T12:16:49.606Z] Command:       /opt/homebrew/Cellar/node@22/22.19.0/bin/node /opt/homebrew/bin/firebase projects:addfirebase sanova-2ef88
+[debug] [2025-09-18T12:16:49.617Z] CLI Version:   13.7.5
+[debug] [2025-09-18T12:16:49.618Z] Platform:      darwin
+[debug] [2025-09-18T12:16:49.618Z] Node Version:  v22.19.0
+[debug] [2025-09-18T12:16:49.619Z] Time:          Thu Sep 18 2025 15:16:49 GMT+0300 (East Africa Time)
+[debug] [2025-09-18T12:16:49.620Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-09-18T12:16:50.059Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-09-18T12:16:50.068Z] > authorizing via signed-in user (u7372885332@gmail.com)
+[debug] [2025-09-18T12:16:50.123Z] >>> [apiv2][query] POST https://firebase.googleapis.com/v1beta1/projects/sanova-2ef88:addFirebase [none]
+[debug] [2025-09-18T12:16:53.644Z] <<< [apiv2][status] POST https://firebase.googleapis.com/v1beta1/projects/sanova-2ef88:addFirebase 409
+[debug] [2025-09-18T12:16:53.651Z] <<< [apiv2][body] POST https://firebase.googleapis.com/v1beta1/projects/sanova-2ef88:addFirebase {"error":{"code":409,"message":"Requested entity already exists","status":"ALREADY_EXISTS"}}
+[debug] [2025-09-18T12:16:53.664Z] HTTP Error: 409, Requested entity already exists
+[debug] [2025-09-18T12:16:54.936Z] FirebaseError: HTTP Error: 409, Requested entity already exists
+    at responseToError (/opt/homebrew/lib/node_modules/firebase-tools/lib/responseToError.js:49:12)
+    at RetryOperation._fn (/opt/homebrew/lib/node_modules/firebase-tools/lib/apiv2.js:299:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[error] 
+[error] Error: Failed to add Firebase to Google Cloud Platform project. See firebase-debug.log for more info.

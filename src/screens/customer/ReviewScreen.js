@@ -7,9 +7,12 @@ import {
   ScrollView, 
   TextInput,
   Animated,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { firestoreService, storageService } from '../../services/firebaseService';
 import { colors, globalStyles } from '../../theme/styles';
 import Header from '../../components/Header';
 
@@ -27,6 +30,8 @@ export default function ReviewScreen({ navigation, route }) {
   const [buttonScale] = useState(new Animated.Value(1));
   const [fadeAnim] = useState(new Animated.Value(0));
   const [starAnimations] = useState(Array.from({ length: 5 }, () => new Animated.Value(1)));
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   React.useEffect(() => {
     // Fade in animation when screen loads
@@ -55,33 +60,89 @@ export default function ReviewScreen({ navigation, route }) {
     setRating(starIndex + 1);
   };
 
-  const handleSendReview = () => {
+  const handleSendReview = async () => {
     if (reviewText.trim() === '') {
       Alert.alert('Error', 'Please write a review before sending.');
       return;
     }
 
-    // Animate button press
-    Animated.sequence([
-      Animated.timing(buttonScale, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonScale, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      // Show success message and navigate back
-      Alert.alert('Success', 'Your review has been sent!', [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack()
+    setUploading(true);
+
+    try {
+      let imageUrl = null;
+      
+      // Upload image if selected
+      if (selectedImage) {
+        const uploadResult = await storageService.uploadReviewPhoto(selectedImage, 'temp-review-id');
+        if (uploadResult.success) {
+          imageUrl = uploadResult.url;
         }
-      ]);
-    });
+      }
+
+      // Save review to Firestore
+      const reviewData = {
+        serviceId: service.id || 'default-service',
+        serviceName: service.name,
+        salonName: service.salon,
+        rating,
+        reviewText: reviewText.trim(),
+        imageUrl,
+        userId: 'current-user-id', // Would get from auth context
+        salonId: service.salonId || 'default-salon-id'
+      };
+
+      const result = await firestoreService.reviews.create(reviewData);
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      // Animate button press
+      Animated.sequence([
+        Animated.timing(buttonScale, {
+          toValue: 0.95,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonScale, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Show success message and navigate back
+        Alert.alert('Success', 'Your review has been sent!', [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack()
+          }
+        ]);
+      });
+    } catch (error) {
+      console.error('Error sending review:', error);
+      Alert.alert('Error', 'Failed to send review. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        setSelectedImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
+    }
   };
 
   const getRatingText = (rating) => {
@@ -161,9 +222,15 @@ export default function ReviewScreen({ navigation, route }) {
           </View>
 
           {/* Photo Upload Option - exactly as shown in design */}
-          <TouchableOpacity style={styles.photoUpload} activeOpacity={0.8}>
-            <Ionicons name="camera-outline" size={24} color={colors.text.secondary} />
-            <Text style={styles.photoUploadText}>Del et billede{'\n'}af resultatet</Text>
+          <TouchableOpacity style={styles.photoUpload} activeOpacity={0.8} onPress={pickImage}>
+            {selectedImage ? (
+              <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
+            ) : (
+              <>
+                <Ionicons name="camera-outline" size={24} color={colors.text.secondary} />
+                <Text style={styles.photoUploadText}>Del et billede{'\n'}af resultatet</Text>
+              </>
+            )}
           </TouchableOpacity>
         </View>
       </Animated.ScrollView>
@@ -356,5 +423,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text.secondary,
     textDecorationLine: 'underline',
+  },
+  selectedImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
   },
 });

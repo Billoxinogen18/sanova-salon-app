@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useStripe } from '@stripe/stripe-react-native';
 import { colors, globalStyles } from '../../theme/styles';
 import Header from '../../components/Header';
 
@@ -9,6 +10,8 @@ export default function PaymentMethodScreen({ navigation, route }) {
   const [selectedMethod, setSelectedMethod] = useState('card');
   const [buttonScale] = useState(new Animated.Value(1));
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [loading, setLoading] = useState(false);
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   React.useEffect(() => {
     // Fade in animation when screen loads
@@ -58,26 +61,75 @@ export default function PaymentMethodScreen({ navigation, route }) {
     setSelectedMethod(method);
   };
 
-  const handlePayNow = () => {
-    // Animate button press
-    Animated.sequence([
-      Animated.timing(buttonScale, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonScale, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      // Navigate after animation completes
-      navigation.navigate('PaymentModel', { 
-        service, 
-        paymentMethod: selectedMethod 
+  const handlePayNow = async () => {
+    if (loading) return;
+    
+    setLoading(true);
+    
+    try {
+      if (selectedMethod === 'card') {
+        // Initialize payment sheet for Stripe
+        const { error: initError } = await initPaymentSheet({
+          merchantDisplayName: 'Sanova Salon',
+          paymentIntentClientSecret: await createPaymentIntent(),
+          allowsDelayedPaymentMethods: true,
+        });
+
+        if (initError) {
+          Alert.alert('Error', initError.message);
+          return;
+        }
+
+        // Present payment sheet
+        const { error: presentError } = await presentPaymentSheet();
+
+        if (presentError) {
+          Alert.alert('Payment Failed', presentError.message);
+          return;
+        }
+
+        // Payment successful
+        Alert.alert('Success', 'Payment completed successfully!', [
+          { text: 'OK', onPress: () => navigation.navigate('PaymentModel', { 
+            service, 
+            paymentMethod: selectedMethod 
+          })}
+        ]);
+      } else {
+        // For Apple Pay and MobilePay, navigate to payment model
+        navigation.navigate('PaymentModel', { 
+          service, 
+          paymentMethod: selectedMethod 
+        });
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      Alert.alert('Error', 'Payment failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createPaymentIntent = async () => {
+    try {
+      const response = await fetch(`https://sanova-bzuwmolyd-billoxinogen18s-projects.vercel.app/api/stripe-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: service?.price || 500, // Default amount
+          currency: 'dkk',
+          bookingId: Date.now().toString(),
+        }),
       });
-    });
+
+      const data = await response.json();
+      return data.paymentIntent.client_secret;
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+      throw error;
+    }
   };
 
   return (

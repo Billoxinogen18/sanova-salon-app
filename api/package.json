@@ -1,0 +1,16 @@
+{
+  "name": "sanova-api",
+  "version": "1.0.0",
+  "description": "Backend API for Sanova Salon App",
+  "main": "index.js",
+  "dependencies": {
+    "stripe": "^14.0.0",
+    "exceljs": "^4.4.0",
+    "pdfkit": "^0.14.0",
+    "firebase-admin": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+

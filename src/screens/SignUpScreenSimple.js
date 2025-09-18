@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import { authService } from '../services/firebaseService';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 
@@ -17,13 +18,15 @@ export default function SignUpScreenSimple({ navigation }) {
     email: '',
     password: '',
     confirmPassword: '',
+    userType: 'customer',
+    phone: '',
   });
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     // Basic validation
     if (!formData.firstName.trim() || !formData.lastName.trim() || 
         !formData.email.trim() || !formData.password.trim()) {
@@ -41,17 +44,46 @@ export default function SignUpScreenSimple({ navigation }) {
       return;
     }
 
-    // Navigate to CustomerApp for now
-    Alert.alert(
-      'Success', 
-      'Account created successfully!',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('CustomerApp')
-        }
-      ]
-    );
+    try {
+      // Prepare user data
+      const userData = {
+        name: `${formData.firstName} ${formData.lastName}`,
+        displayName: `${formData.firstName} ${formData.lastName}`,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        role: formData.userType,
+      };
+
+      // Create user with Firebase Auth and Firestore
+      const signUpResult = await authService.signUp(formData.email, formData.password, userData);
+      
+      if (!signUpResult.success) {
+        Alert.alert('Sign Up Failed', signUpResult.error);
+        return;
+      }
+
+      Alert.alert(
+        'Success', 
+        'Account created successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Navigate to appropriate app based on user type
+              if (formData.userType === 'customer') {
+                navigation.navigate('CustomerApp');
+              } else {
+                navigation.navigate('SalonOwnerApp');
+              }
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Sign up error:', error);
+      Alert.alert('Sign Up Failed', error.message || 'An unexpected error occurred');
+    }
   };
 
   return (

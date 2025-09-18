@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import { authService, firestoreService } from '../services/firebaseService';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 
@@ -15,17 +16,68 @@ export default function LoginScreenSimple({ navigation }) {
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('customer');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
-    // Navigate to appropriate app based on user type
-    if (userType === 'customer') {
-      navigation.navigate('CustomerApp');
-    } else {
-      navigation.navigate('SalonOwnerApp');
+    try {
+      // Sign in with Firebase Auth
+      const signInResult = await authService.signIn(email, password);
+      
+      if (!signInResult.success) {
+        Alert.alert('Login Failed', signInResult.error);
+        return;
+      }
+
+      const user = signInResult.user;
+      
+      // Get user data from Firestore to check role
+      const userDataResult = await firestoreService.users.get(user.uid);
+      
+      if (userDataResult.success) {
+        const userData = userDataResult.data;
+        
+        // Check if user role matches selected type
+        if (userData.role !== userType) {
+          Alert.alert(
+            'Account Type Mismatch', 
+            `This account is registered as a ${userData.role}. Please select the correct account type.`
+          );
+          return;
+        }
+        
+        // Navigate to appropriate app
+        if (userType === 'customer') {
+          navigation.navigate('CustomerApp');
+        } else {
+          navigation.navigate('SalonOwnerApp');
+        }
+      } else {
+        // User doesn't exist in Firestore, create basic record
+        const newUserData = {
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || email.split('@')[0],
+          role: userType,
+          phone: '',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        
+        await firestoreService.users.create(user.uid, newUserData);
+        
+        // Navigate to appropriate app
+        if (userType === 'customer') {
+          navigation.navigate('CustomerApp');
+        } else {
+          navigation.navigate('SalonOwnerApp');
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Login Failed', error.message || 'An unexpected error occurred');
     }
   };
 
