@@ -277,6 +277,7 @@ export default function MapScreen({ navigation }) {
             ref={mapRef}
             provider={PROVIDER_GOOGLE}
             style={styles.mapView}
+            googleMapsApiKey="AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ"
             initialRegion={{
               latitude: 37.78825, // San Francisco coordinates for testing
               longitude: -122.4324,
@@ -294,8 +295,14 @@ export default function MapScreen({ navigation }) {
             showsUserLocation={false}
             showsMyLocationButton={false}
             mapType="standard"
-            loadingEnabled={true}
+            loadingEnabled={false}
             onRegionChangeComplete={setRegion}
+            moveOnMarkerPress={false}
+            showsCompass={false}
+            showsScale={false}
+            showsBuildings={true}
+            showsTraffic={false}
+            showsIndoors={true}
             >
               {[
                 { lat: 37.78825, lng: -122.4324, title: "Nordic Beauty", description: "Hair & Spa" },
