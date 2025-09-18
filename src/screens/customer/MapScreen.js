@@ -12,8 +12,8 @@ export default function MapScreen({ navigation }) {
   const [suggestions, setSuggestions] = useState([]);
   const mapRef = useRef(null);
   const [region, setRegion] = useState({
-    latitude: 37.4220936, // Google headquarters
-    longitude: -122.083922, // Google headquarters
+    latitude: 65.972595, // Iceland coordinates
+    longitude: -18.530737, // Iceland coordinates
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
@@ -38,6 +38,25 @@ export default function MapScreen({ navigation }) {
     })();
   }, []);
 
+  // Debug API key
+  React.useEffect(() => {
+    const testApiKey = async () => {
+      try {
+        const apiKey = "AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ";
+        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=Copenhagen&key=${apiKey}`);
+        const data = await response.json();
+        console.log('API Key test result:', data.status);
+        if (data.status !== 'OK') {
+          console.error('API Key issue:', data.error_message);
+        }
+      } catch (error) {
+        console.error('API Key test failed:', error);
+      }
+    };
+    
+    testApiKey();
+  }, []);
+
   const fetchPlaces = async (text) => {
     setSearchText(text);
     if (!text || text.length < 2) {
@@ -45,12 +64,22 @@ export default function MapScreen({ navigation }) {
       return;
     }
     try {
-      const key = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(text)}&location=${region.latitude},${region.longitude}&radius=20000&key=${"AIzaSyAWjP5QFRy8ijfaf-2KDN0ac9hZavOjPlQ"}`;
+      // Use the same API key that's in your Android manifest
+      const apiKey = "AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ";
+      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(text)}&location=${region.latitude},${region.longitude}&radius=20000&key=${apiKey}`;
       const res = await fetch(url);
       const json = await res.json();
+      
+      // Add error checking
+      if (json.status !== 'OK' && json.status !== 'ZERO_RESULTS') {
+        console.error('Places API Error:', json.status, json.error_message);
+        setSuggestions([]);
+        return;
+      }
+      
       setSuggestions(json?.predictions?.slice(0, 5) || []);
     } catch (e) {
+      console.error('Places API fetch error:', e);
       setSuggestions([]);
     }
   };
@@ -74,18 +103,28 @@ export default function MapScreen({ navigation }) {
       <View style={styles.mapContainer}>
         <View style={styles.mapWrapper}>
           <MapView
+            key="iceland-map"
             ref={mapRef}
             provider={PROVIDER_GOOGLE}
             style={styles.mapView}
           initialRegion={{
-            latitude: 37.4220936,
-            longitude: -122.083922,
+            latitude: 65.972595, // Iceland coordinates from your emulator
+            longitude: -18.530737, // Iceland coordinates from your emulator
             latitudeDelta: 0.05,
             longitudeDelta: 0.05,
           }}
           onMapReady={() => {
             console.log('Map is ready!');
             console.log('Region:', region);
+            // Force map to stay on Iceland coordinates
+            if (mapRef.current) {
+              mapRef.current.animateToRegion({
+                latitude: 65.972595,
+                longitude: -18.530737,
+                latitudeDelta: 0.05,
+                longitudeDelta: 0.05,
+              }, 1000);
+            }
           }}
           onError={(error) => {
             console.log('Map error:', error);
@@ -99,27 +138,34 @@ export default function MapScreen({ navigation }) {
           // Keep map uncontrolled; track region without forcing re-renders
           onRegionChangeComplete={setRegion}
           renderToHardwareTextureAndroid={true}
-        >
-          {[
-            { lat: 37.425, lng: -122.085, title: "Glamorous Salon", description: "Hair & Beauty" },
-            { lat: 37.420, lng: -122.080, title: "Style Studio", description: "Hair & Nails" },
-            { lat: 37.418, lng: -122.090, title: "Beauty Lounge", description: "Spa & Wellness" },
-            { lat: 37.430, lng: -122.075, title: "Hair Palace", description: "Premium Hair" },
-            { lat: 37.415, lng: -122.095, title: "Salon Central", description: "Full Service" },
-            { lat: 37.410, lng: -122.070, title: "Beauty Spot", description: "Quick Services" },
-            { lat: 37.435, lng: -122.085, title: "Style Hub", description: "Modern Salon" },
-            { lat: 37.428, lng: -122.100, title: "Glamour Zone", description: "Luxury Beauty" }
-          ].map((salon, idx) => (
-            <Marker
-              key={idx}
-              coordinate={{ latitude: salon.lat, longitude: salon.lng }}
-              title={salon.title}
-              description={salon.description}
             >
-              <View style={styles.customMarker}>
-                <Ionicons name="cut" size={20} color={colors.text.white} />
-              </View>
-            </Marker>
+              {[
+                { lat: 65.975, lng: -18.535, title: "Nordic Beauty", description: "Hair & Spa" },
+                { lat: 65.970, lng: -18.525, title: "Icelandic Style", description: "Hair & Nails" },
+                { lat: 65.968, lng: -18.540, title: "Aurora Salon", description: "Premium Beauty" },
+                { lat: 65.978, lng: -18.520, title: "Viking Cuts", description: "Modern Salon" },
+                { lat: 65.965, lng: -18.545, title: "Fjord Beauty", description: "Full Service" },
+                { lat: 65.960, lng: -18.515, title: "Glacier Spa", description: "Wellness & Beauty" },
+                { lat: 65.985, lng: -18.530, title: "Northern Lights", description: "Luxury Salon" },
+                { lat: 65.955, lng: -18.550, title: "Elf Salon", description: "Creative Cuts" },
+                { lat: 65.980, lng: -18.510, title: "Geyser Beauty", description: "Natural Care" },
+                { lat: 65.950, lng: -18.520, title: "Volcano Style", description: "Trendy Cuts" },
+                { lat: 65.990, lng: -18.540, title: "Midnight Sun", description: "24/7 Beauty" },
+                { lat: 65.945, lng: -18.535, title: "Puffin Parlor", description: "Family Salon" }
+              ].map((salon, idx) => (
+                <Marker
+                  key={idx}
+                  coordinate={{ latitude: salon.lat, longitude: salon.lng }}
+                  title={salon.title}
+                  description={salon.description}
+                >
+                  <View style={styles.customMarker}>
+                    <View style={styles.markerInner}>
+                      <Ionicons name="cut" size={18} color={colors.text.white} />
+                    </View>
+                    <View style={styles.markerShadow} />
+                  </View>
+                </Marker>
           ))}
         </MapView>
         </View>
@@ -151,18 +197,28 @@ export default function MapScreen({ navigation }) {
                     setSuggestions([]);
                     setSearchText(s.description);
                     try {
-                      const detailsRes = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${s.place_id}&key=${"AIzaSyAWjP5QFRy8ijfaf-2KDN0ac9hZavOjPlQ"}`);
+                      const apiKey = "AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ";
+                      const detailsRes = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${s.place_id}&key=${apiKey}`);
                       const details = await detailsRes.json();
-                      const loc = details?.result?.geometry?.location;
-                      if (loc) {
-                        setRegion({
-                          latitude: loc.lat,
-                          longitude: loc.lng,
-                          latitudeDelta: 0.02,
-                          longitudeDelta: 0.02,
-                        });
+                      
+                      if (details.status === 'OK') {
+                        const loc = details?.result?.geometry?.location;
+                        if (loc && mapRef.current) {
+                          const nextRegion = {
+                            latitude: loc.lat,
+                            longitude: loc.lng,
+                            latitudeDelta: 0.02,
+                            longitudeDelta: 0.02,
+                          };
+                          setRegion(nextRegion);
+                          mapRef.current.animateToRegion(nextRegion, 1000);
+                        }
+                      } else {
+                        console.error('Place details error:', details.status, details.error_message);
                       }
-                    } catch {}
+                    } catch (error) {
+                      console.error('Place details fetch error:', error);
+                    }
                   }}
                 >
                   <Text style={styles.suggestionText}>{s.description}</Text>
@@ -340,19 +396,35 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text.primary,
   },
-  customMarker: {
-    backgroundColor: colors.accent,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.text.white,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
+      customMarker: {
+        position: 'relative',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      markerInner: {
+        backgroundColor: colors.accent,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 3,
+        borderColor: colors.text.white,
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
+        elevation: 8,
+        zIndex: 2,
+      },
+      markerShadow: {
+        position: 'absolute',
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        width: 42,
+        height: 42,
+        borderRadius: 21,
+        top: 2,
+        left: -3,
+        zIndex: 1,
+      },
 });
