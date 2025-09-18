@@ -1,263 +1,752 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ScrollView, 
+  Animated, 
+  StatusBar, 
+  Dimensions,
+  Alert 
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, globalStyles } from '../../theme/styles';
-import Header from '../../components/Header';
+import { colors } from '../../theme/colors';
+import { 
+  typography, 
+  spacing, 
+  shadows, 
+  borderRadius, 
+  premiumComponents 
+} from '../../theme/premiumStyles';
+import { 
+  animationSequences, 
+  AnimationController, 
+  microAnimations 
+} from '../../theme/animations';
+import realtimeServiceInstance from '../../services/realtimeService';
+import notificationServiceInstance from '../../services/notificationService';
+
+const { width, height } = Dimensions.get('window');
 
 export default function DashboardScreen({ navigation }) {
+  const [realtimeBookings, setRealtimeBookings] = useState([]);
+  const [realtimeReviews, setRealtimeReviews] = useState([]);
+  const [todayRevenue, setTodayRevenue] = useState(250);
+  const [weekRevenue, setWeekRevenue] = useState(1100);
+  const [monthRevenue, setMonthRevenue] = useState(4200);
+
+  // Animation controller
+  const animationController = useRef(new AnimationController()).current;
+
+  // Animated values
+  const headerAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(-30),
+  }).current;
+
+  const welcomeAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(20),
+  }).current;
+
+  const bookingsAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(30),
+    scale: new Animated.Value(0.95),
+  }).current;
+
+  const revenueAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(30),
+    scale: new Animated.Value(0.95),
+  }).current;
+
+  const buttonsAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(40),
+  }).current;
+
   const upcomingBookings = [
     {
       id: 1,
-      customer: 'Klara',
-      service: "Women's Haircut",
-      time: '14.00',
+      customer: 'Klara Nielsen',
+      service: "Women's Haircut & Style",
+      time: '14:00',
       avatar: '👩',
+      status: 'confirmed',
+      duration: '1h 30min',
+    },
+    {
+      id: 2,
+      customer: 'Erik Andersen',
+      service: 'Men\'s Cut & Beard Trim',
+      time: '16:00',
+      avatar: '👨',
+      status: 'pending',
+      duration: '45min',
     },
   ];
 
+  useEffect(() => {
+    StatusBar.setBarStyle('dark-content');
+    
+    // Start entrance animations
+    startEntranceAnimations();
+    
+    // Initialize real-time monitoring
+    initializeRealtimeServices();
+
+    return () => {
+      animationController.stopAllAnimations();
+      // Stop real-time monitoring when component unmounts
+      realtimeServiceInstance.stopSalonMonitoring('salon_1');
+    };
+  }, []);
+
+  const startEntranceAnimations = () => {
+    const headerAnimation = animationSequences.fadeInUp(headerAnimatedValues, 0);
+    const welcomeAnimation = animationSequences.fadeInUp(welcomeAnimatedValues, 200);
+    const bookingsAnimation = animationSequences.fadeInUp(bookingsAnimatedValues, 400);
+    const revenueAnimation = animationSequences.fadeInUp(revenueAnimatedValues, 600);
+    const buttonsAnimation = animationSequences.fadeInUp(buttonsAnimatedValues, 800);
+
+    animationController.registerAnimation('entrance', 
+      Animated.parallel([
+        headerAnimation,
+        welcomeAnimation,
+        bookingsAnimation,
+        revenueAnimation,
+        buttonsAnimation,
+      ])
+    );
+
+    animationController.animations.get('entrance').start();
+  };
+
+  const initializeRealtimeServices = async () => {
+    try {
+      // Start monitoring real-time updates for this salon
+      const result = await realtimeServiceInstance.startSalonMonitoring('salon_1', {
+        onBookingsUpdate: (bookings) => {
+          console.log('📅 Real-time bookings update:', bookings.length);
+          setRealtimeBookings(bookings);
+          
+          // Show notification for new bookings
+          if (bookings.length > realtimeBookings.length) {
+            notificationServiceInstance.sendLocalNotification(
+              'New Booking!',
+              'You have a new booking request.',
+              { type: 'new_booking' }
+            );
+          }
+        },
+        onReviewsUpdate: (reviews) => {
+          console.log('⭐ Real-time reviews update:', reviews.length);
+          setRealtimeReviews(reviews);
+          
+          // Show notification for new reviews
+          if (reviews.length > realtimeReviews.length) {
+            const latestReview = reviews[0];
+            notificationServiceInstance.sendLocalNotification(
+              'New Review!',
+              `${latestReview.rating} stars: "${latestReview.reviewText?.substring(0, 50)}..."`,
+              { type: 'new_review' }
+            );
+          }
+        }
+      });
+
+      if (result.success) {
+        console.log('✅ Real-time monitoring started successfully');
+      }
+    } catch (error) {
+      console.error('❌ Error initializing real-time services:', error);
+    }
+  };
+
+  const handleActionPress = (action, screen) => {
+    // Button press animation
+    const buttonScale = new Animated.Value(1);
+    Animated.sequence([
+      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start(() => {
+      navigation.navigate(screen);
+    });
+  };
+
   return (
-    <View style={globalStyles.container}>
-      <Header 
-        rightIcon="person-circle-outline"
-        onRightPress={() => {}}
-      />
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background.primary} />
       
-      <ScrollView style={styles.content}>
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>Hello Glamorous Salon</Text>
-          <Text style={styles.dateText}>Tuesday, May 7</Text>
-        </View>
-
-        <View style={styles.upcomingBookings}>
-          <Text style={styles.sectionTitle}>Upcoming bookings</Text>
-          {upcomingBookings.map((booking) => (
-            <View key={booking.id} style={styles.bookingCard}>
-              <Text style={styles.avatar}>{booking.avatar}</Text>
-              <View style={styles.bookingInfo}>
-                <Text style={styles.customerName}>{booking.customer}</Text>
-                <Text style={styles.serviceName}>{booking.service}</Text>
-              </View>
-              <Text style={styles.bookingTime}>{booking.time} ></Text>
-            </View>
-          ))}
-          <View style={styles.bookingFooter}>
-            <Text style={styles.bookingFooterText}>1 day</Text>
-            <Text style={styles.bookingFooterText}>1 dag</Text>
+      {/* Premium Animated Header */}
+      <Animated.View 
+        style={[
+          styles.header,
+          {
+            opacity: headerAnimatedValues.opacity,
+            transform: [{ translateY: headerAnimatedValues.translateY }],
+          }
+        ]}
+      >
+        <View style={styles.headerContent}>
+          <View style={styles.logoContainer}>
+            <Ionicons name="leaf" size={24} color={colors.primary} />
           </View>
+          <Text style={styles.headerTitle}>SANOVA</Text>
+          <Text style={styles.headerSubtitle}>Salon Dashboard</Text>
         </View>
+        <TouchableOpacity style={styles.profileButton} activeOpacity={0.8}>
+          <Ionicons name="person-circle-outline" size={32} color={colors.primary} />
+        </TouchableOpacity>
+      </Animated.View>
+      
+      <ScrollView 
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Premium Animated Welcome Section */}
+        <Animated.View 
+          style={[
+            styles.welcomeSection,
+            {
+              opacity: welcomeAnimatedValues.opacity,
+              transform: [{ translateY: welcomeAnimatedValues.translateY }],
+            }
+          ]}
+        >
+          <Text style={styles.welcomeText}>Hello, Glamorous Salon</Text>
+          <Text style={styles.dateText}>Tuesday, May 7 • {new Date().getFullYear()}</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{realtimeBookings.length || upcomingBookings.length}</Text>
+              <Text style={styles.statLabel}>Today's Bookings</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{realtimeReviews.length || 12}</Text>
+              <Text style={styles.statLabel}>Total Reviews</Text>
+            </View>
+          </View>
+        </Animated.View>
 
-        <View style={styles.revenueSection}>
-          <Text style={styles.sectionTitle}>Revenue Overview</Text>
+        {/* Premium Animated Bookings Section */}
+        <Animated.View 
+          style={[
+            styles.upcomingBookings,
+            {
+              opacity: bookingsAnimatedValues.opacity,
+              transform: [
+                { translateY: bookingsAnimatedValues.translateY },
+                { scale: bookingsAnimatedValues.scale }
+              ],
+            }
+          ]}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Today's Appointments</Text>
+            <TouchableOpacity 
+              style={styles.viewAllButton}
+              onPress={() => navigation.navigate('Bookings')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.viewAllText}>View All</Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+          
+          {upcomingBookings.map((booking, index) => (
+            <TouchableOpacity 
+              key={booking.id} 
+              style={styles.bookingCard}
+              onPress={() => navigation.navigate('BookingDetail', { booking })}
+              activeOpacity={0.9}
+            >
+              <View style={styles.bookingLeft}>
+                <View style={styles.avatarContainer}>
+                  <Text style={styles.avatar}>{booking.avatar}</Text>
+                </View>
+                <View style={styles.bookingInfo}>
+                  <Text style={styles.customerName}>{booking.customer}</Text>
+                  <Text style={styles.serviceName}>{booking.service}</Text>
+                  <Text style={styles.bookingDuration}>{booking.duration}</Text>
+                </View>
+              </View>
+              <View style={styles.bookingRight}>
+                <Text style={styles.bookingTime}>{booking.time}</Text>
+                <View style={[
+                  styles.statusBadge, 
+                  booking.status === 'confirmed' ? styles.confirmedBadge : styles.pendingBadge
+                ]}>
+                  <Text style={[
+                    styles.statusText,
+                    booking.status === 'confirmed' ? styles.confirmedText : styles.pendingText
+                  ]}>
+                    {booking.status.toUpperCase()}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
+          
+          <View style={styles.bookingFooter}>
+            <Ionicons name="calendar-outline" size={16} color={colors.text.secondary} />
+            <Text style={styles.bookingFooterText}>
+              {upcomingBookings.length} appointments scheduled for today
+            </Text>
+          </View>
+        </Animated.View>
+
+        {/* Premium Animated Revenue Section */}
+        <Animated.View 
+          style={[
+            styles.revenueSection,
+            {
+              opacity: revenueAnimatedValues.opacity,
+              transform: [
+                { translateY: revenueAnimatedValues.translateY },
+                { scale: revenueAnimatedValues.scale }
+              ],
+            }
+          ]}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Revenue Analytics</Text>
+            <TouchableOpacity 
+              style={styles.viewAllButton}
+              onPress={() => navigation.navigate('Payments')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.viewAllText}>View Details</Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
           
           <View style={styles.revenueCard}>
-            <Text style={styles.revenueLabel}>Today's revenue</Text>
-            <Text style={styles.revenueAmount}>$250</Text>
+            <View style={styles.revenueHeader}>
+              <View>
+                <Text style={styles.revenueLabel}>Today's Revenue</Text>
+                <Text style={styles.revenueAmount}>${todayRevenue}</Text>
+              </View>
+              <View style={styles.revenueIcon}>
+                <Ionicons name="trending-up" size={24} color={colors.accent} />
+              </View>
+            </View>
+            <View style={styles.revenueProgress}>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: '65%' }]} />
+              </View>
+              <Text style={styles.progressText}>65% of weekly goal</Text>
+            </View>
           </View>
 
           <View style={styles.revenueStats}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>$1,100</Text>
-              <Text style={styles.statLabel}>This week</Text>
+            <View style={styles.revenueStatCard}>
+              <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+              <Text style={styles.statValue}>${weekRevenue}</Text>
+              <Text style={styles.statLabel}>This Week</Text>
+              <Text style={styles.statChange}>+12%</Text>
             </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>$4,200</Text>
-              <Text style={styles.statLabel}>This month</Text>
+            <View style={styles.revenueStatCard}>
+              <Ionicons name="calendar" size={20} color={colors.primary} />
+              <Text style={styles.statValue}>${monthRevenue}</Text>
+              <Text style={styles.statLabel}>This Month</Text>
+              <Text style={styles.statChange}>+8%</Text>
             </View>
           </View>
 
           <View style={styles.productsRevenue}>
-            <Text style={styles.productsLabel}>Products</Text>
+            <View style={styles.productsHeader}>
+              <Ionicons name="storefront-outline" size={20} color={colors.text.secondary} />
+              <Text style={styles.productsLabel}>Product Sales</Text>
+            </View>
             <Text style={styles.productsAmount}>$45</Text>
-            <Text style={styles.productsNote}>Click & collect fulfilled</Text>
+            <Text style={styles.productsNote}>Click & collect orders fulfilled</Text>
           </View>
-        </View>
+        </Animated.View>
 
-        <View style={styles.actionButtons}>
+        {/* Premium Animated Action Buttons */}
+        <Animated.View 
+          style={[
+            styles.actionButtons,
+            {
+              opacity: buttonsAnimatedValues.opacity,
+              transform: [{ translateY: buttonsAnimatedValues.translateY }],
+            }
+          ]}
+        >
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => navigation.navigate('NewBooking')}
+            onPress={() => handleActionPress('new_booking', 'NewBooking')}
+            activeOpacity={0.9}
           >
-            <Ionicons name="calendar" size={24} color={colors.text.white} />
-            <Text style={styles.actionButtonText}>Create New Booking</Text>
+            <View style={styles.actionButtonIcon}>
+              <Ionicons name="calendar-outline" size={24} color={colors.background.white} />
+            </View>
+            <Text style={styles.actionButtonText}>New Booking</Text>
+            <Text style={styles.actionButtonSubtext}>Schedule appointment</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => navigation.navigate('NewProduct')}
+            onPress={() => handleActionPress('new_product', 'NewProduct')}
+            activeOpacity={0.9}
           >
-            <Ionicons name="cart" size={24} color={colors.text.white} />
+            <View style={styles.actionButtonIcon}>
+              <Ionicons name="add-circle-outline" size={24} color={colors.background.white} />
+            </View>
             <Text style={styles.actionButtonText}>Add Product</Text>
+            <Text style={styles.actionButtonSubtext}>Manage inventory</Text>
           </TouchableOpacity>
-        </View>
+
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => handleActionPress('services', 'Services')}
+            activeOpacity={0.9}
+          >
+            <View style={styles.actionButtonIcon}>
+              <Ionicons name="cut-outline" size={24} color={colors.background.white} />
+            </View>
+            <Text style={styles.actionButtonText}>Services</Text>
+            <Text style={styles.actionButtonSubtext}>Manage offerings</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    ...premiumComponents.screenContainer,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.lg,
+    backgroundColor: colors.background.primary,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  headerContent: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  logoContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(38, 52, 40, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+    ...shadows.card,
+  },
+  headerTitle: {
+    ...typography.title2,
+    color: colors.primary,
+    fontFamily: 'serif',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    marginBottom: spacing.xs,
+  },
+  headerSubtitle: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  profileButton: {
+    padding: spacing.sm,
+  },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+  },
+  scrollContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxxl,
   },
   welcomeSection: {
-    marginBottom: 24,
+    marginBottom: spacing.xl,
+    paddingTop: spacing.lg,
   },
   welcomeText: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...typography.title1,
     color: colors.text.primary,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   dateText: {
-    fontSize: 16,
+    ...typography.body,
+    color: colors.text.secondary,
+    marginBottom: spacing.lg,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: colors.background.white,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    ...shadows.card,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    ...typography.title2,
+    color: colors.primary,
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+  },
+  statLabel: {
+    ...typography.caption,
     color: colors.text.secondary,
   },
   upcomingBookings: {
-    marginBottom: 24,
+    marginBottom: spacing.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.title3,
     color: colors.text.primary,
-    marginBottom: 16,
   },
-  bookingCard: {
-    backgroundColor: colors.background.white,
-    borderRadius: 12,
-    padding: 16,
+  viewAllButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    gap: spacing.xs,
+  },
+  viewAllText: {
+    ...typography.captionMedium,
+    color: colors.primary,
+  },
+  bookingCard: {
+    ...premiumComponents.elevatedCard,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+    backgroundColor: colors.background.white,
+  },
+  bookingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  bookingRight: {
+    alignItems: 'flex-end',
+  },
+  avatarContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: colors.background.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+    ...shadows.card,
   },
   avatar: {
-    fontSize: 32,
-    marginRight: 16,
+    fontSize: 24,
   },
   bookingInfo: {
     flex: 1,
   },
   customerName: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyMedium,
     color: colors.text.primary,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   serviceName: {
-    fontSize: 14,
+    ...typography.caption,
     color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  bookingDuration: {
+    ...typography.small,
+    color: colors.text.secondary,
+    fontStyle: 'italic',
   },
   bookingTime: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyMedium,
     color: colors.text.primary,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+  },
+  statusBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  confirmedBadge: {
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+  },
+  pendingBadge: {
+    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+  },
+  statusText: {
+    ...typography.small,
+    fontWeight: '600',
+  },
+  confirmedText: {
+    color: '#22c55e',
+  },
+  pendingText: {
+    color: '#fbbf24',
   },
   bookingFooter: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.md,
+    gap: spacing.sm,
   },
   bookingFooterText: {
-    fontSize: 14,
+    ...typography.caption,
     color: colors.text.secondary,
   },
   revenueSection: {
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
   revenueCard: {
+    ...premiumComponents.floatingCard,
     backgroundColor: colors.background.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: spacing.lg,
+  },
+  revenueHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.lg,
   },
   revenueLabel: {
-    fontSize: 14,
+    ...typography.captionMedium,
     color: colors.text.secondary,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   revenueAmount: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    ...typography.display,
     color: colors.text.primary,
+    fontWeight: '700',
+  },
+  revenueIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(212, 185, 143, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.card,
+  },
+  revenueProgress: {
+    marginTop: spacing.md,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: colors.background.secondary,
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: spacing.sm,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.accent,
+    borderRadius: 3,
+  },
+  progressText: {
+    ...typography.small,
+    color: colors.text.secondary,
   },
   revenueStats: {
     flexDirection: 'row',
-    marginBottom: 16,
-    gap: 12,
+    marginBottom: spacing.lg,
+    gap: spacing.md,
   },
-  statItem: {
+  revenueStatCard: {
     flex: 1,
+    ...premiumComponents.premiumCard,
     backgroundColor: colors.background.white,
-    borderRadius: 12,
-    padding: 16,
     alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    padding: spacing.lg,
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    ...typography.title3,
     color: colors.text.primary,
-    marginBottom: 4,
+    fontWeight: '700',
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
   },
   statLabel: {
-    fontSize: 12,
+    ...typography.small,
     color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  statChange: {
+    ...typography.small,
+    color: '#22c55e',
+    fontWeight: '600',
   },
   productsRevenue: {
+    ...premiumComponents.premiumCard,
     backgroundColor: colors.background.white,
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  productsLabel: {
-    fontSize: 14,
-    color: colors.text.secondary,
-    marginBottom: 4,
-  },
-  productsAmount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.text.primary,
-    marginBottom: 4,
-  },
-  productsNote: {
-    fontSize: 12,
-    color: colors.text.secondary,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    padding: 16,
+  productsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: spacing.sm,
+    gap: spacing.sm,
+  },
+  productsLabel: {
+    ...typography.captionMedium,
+    color: colors.text.secondary,
+  },
+  productsAmount: {
+    ...typography.title3,
+    color: colors.text.primary,
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+  },
+  productsNote: {
+    ...typography.small,
+    color: colors.text.secondary,
+    fontStyle: 'italic',
+  },
+  actionButtons: {
+    gap: spacing.md,
+    marginTop: spacing.lg,
+  },
+  actionButton: {
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    ...shadows.elevated,
+  },
+  actionButtonIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
     justifyContent: 'center',
+    marginRight: spacing.md,
   },
   actionButtonText: {
-    color: colors.text.white,
-    fontSize: 14,
+    ...typography.bodyMedium,
+    color: colors.background.white,
     fontWeight: '600',
-    marginLeft: 8,
+    marginBottom: spacing.xs,
+  },
+  actionButtonSubtext: {
+    ...typography.small,
+    color: colors.background.white,
+    opacity: 0.8,
   },
 });

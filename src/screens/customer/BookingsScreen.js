@@ -1,47 +1,228 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ScrollView, 
+  Animated, 
+  StatusBar, 
+  Dimensions,
+  RefreshControl 
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, globalStyles } from '../../theme/styles';
-import Header from '../../components/Header';
+import { colors } from '../../theme/colors';
+import { 
+  typography, 
+  spacing, 
+  shadows, 
+  borderRadius, 
+  premiumComponents 
+} from '../../theme/premiumStyles';
+import { 
+  animationSequences, 
+  AnimationController, 
+  microAnimations 
+} from '../../theme/animations';
+import { firestoreService, authService } from '../../services/firebaseService';
+import realtimeServiceInstance from '../../services/realtimeService';
+import notificationServiceInstance from '../../services/notificationService';
+
+const { width, height } = Dimensions.get('window');
 
 export default function BookingsScreen({ navigation }) {
-  const [fadeAnim] = useState(new Animated.Value(0));
+  const [upcomingBookings, setUpcomingBookings] = useState([]);
+  const [previousBookings, setPreviousBookings] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  React.useEffect(() => {
-    // Fade in animation when screen loads
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+  // Animation controller
+  const animationController = useRef(new AnimationController()).current;
+
+  // Animated values
+  const headerAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(-30),
+  }).current;
+
+  const upcomingAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(30),
+    scale: new Animated.Value(0.95),
+  }).current;
+
+  const previousAnimatedValues = useRef({
+    opacity: new Animated.Value(0),
+    translateY: new Animated.Value(30),
+    scale: new Animated.Value(0.95),
+  }).current;
+
+  useEffect(() => {
+    StatusBar.setBarStyle('light-content');
+    
+    // Start entrance animations
+    startEntranceAnimations();
+    
+    // Load initial bookings data
+    loadBookingsData();
+    
+    // Initialize real-time monitoring for booking updates
+    initializeRealtimeMonitoring();
+
+    return () => {
+      animationController.stopAllAnimations();
+    };
   }, []);
 
-  // Upcoming bookings exactly as shown in design
-  const upcomingBookings = [
+  const startEntranceAnimations = () => {
+    const headerAnimation = animationSequences.fadeInUp(headerAnimatedValues, 0);
+    const upcomingAnimation = animationSequences.fadeInUp(upcomingAnimatedValues, 200);
+    const previousAnimation = animationSequences.fadeInUp(previousAnimatedValues, 400);
+
+    animationController.registerAnimation('entrance', 
+      Animated.parallel([
+        headerAnimation,
+        upcomingAnimation,
+        previousAnimation,
+      ])
+    );
+
+    animationController.animations.get('entrance').start();
+  };
+
+  const loadBookingsData = async () => {
+    try {
+      setIsLoading(true);
+      const currentUser = authService.getCurrentUser();
+      
+      if (currentUser) {
+        const bookingsResult = await firestoreService.bookings.getByUser(currentUser.uid);
+        
+        if (bookingsResult.success) {
+          const allBookings = bookingsResult.data;
+          const now = new Date();
+          
+          // Separate upcoming and previous bookings
+          const upcoming = allBookings.filter(booking => {
+            const bookingDate = new Date(booking.date);
+            return bookingDate >= now && booking.status !== 'cancelled' && booking.status !== 'completed';
+          });
+          
+          const previous = allBookings.filter(booking => {
+            const bookingDate = new Date(booking.date);
+            return bookingDate < now || booking.status === 'completed' || booking.status === 'cancelled';
+          });
+          
+          setUpcomingBookings(upcoming);
+          setPreviousBookings(previous);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading bookings:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const initializeRealtimeMonitoring = async () => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        // Listen for real-time booking updates
+        const result = await realtimeServiceInstance.startListeningToUserBookings?.(currentUser.uid, (bookings) => {
+          console.log('📅 Real-time booking updates for customer:', bookings.length);
+          
+          const now = new Date();
+          const upcoming = bookings.filter(booking => {
+            const bookingDate = new Date(booking.date);
+            return bookingDate >= now && booking.status !== 'cancelled' && booking.status !== 'completed';
+          });
+          
+          const previous = bookings.filter(booking => {
+            const bookingDate = new Date(booking.date);
+            return bookingDate < now || booking.status === 'completed' || booking.status === 'cancelled';
+          });
+          
+          setUpcomingBookings(upcoming);
+          setPreviousBookings(previous);
+          
+          // Show notification for booking status updates
+          if (bookings.length > 0) {
+            const latestBooking = bookings[0];
+            if (latestBooking.status === 'confirmed') {
+              notificationServiceInstance.sendLocalNotification(
+                'Booking Confirmed!',
+                `Your ${latestBooking.serviceName} appointment is confirmed.`,
+                { type: 'booking_confirmed', bookingId: latestBooking.id }
+              );
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error initializing real-time monitoring:', error);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadBookingsData();
+    setIsRefreshing(false);
+  };
+
+  const handleBookingPress = (booking) => {
+    // Button press animation
+    const buttonScale = new Animated.Value(1);
+    Animated.sequence([
+      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start(() => {
+      navigation.navigate('BookingDetail', { booking });
+    });
+  };
+
+  const handleBookAgain = (booking) => {
+    // Navigate to booking flow with pre-filled service
+    navigation.navigate('BookingFlow', { 
+      prefilledService: {
+        id: booking.serviceId,
+        name: booking.serviceName,
+        salonId: booking.salonId,
+        salonName: booking.salonName
+      }
+    });
+  };
+
+  // Mock data for initial display (will be replaced by real data)
+  const mockUpcomingBookings = [
     {
       id: 1,
-      service: 'Classic Manicure',
-      salon: 'Gustav Salon',
-      address: 'Frederiks Alle 28',
-      date: 'I dag kl. 11:00',
+      serviceName: 'Classic Manicure',
+      salonName: 'Gustav Salon',
+      salonAddress: 'Frederiks Alle 28',
+      date: new Date(),
+      time: '11:00',
       status: 'confirmed',
       icon: '💅',
     },
   ];
 
-  // Previous bookings exactly as shown in design
-  const previousBookings = [
+  const mockPreviousBookings = [
     {
       id: 2,
-      service: 'Haircut',
-      salon: 'Hair Studio',
-      address: 'Borgergade 14',
-      date: '15. apr. 2024',
+      serviceName: 'Haircut',
+      salonName: 'Hair Studio',
+      salonAddress: 'Borgergade 14',
+      date: new Date('2024-04-15'),
+      time: '14:00',
       status: 'completed',
       icon: '✂️',
       canBook: true,
     },
   ];
+
+  const displayUpcomingBookings = upcomingBookings.length > 0 ? upcomingBookings : mockUpcomingBookings;
+  const displayPreviousBookings = previousBookings.length > 0 ? previousBookings : mockPreviousBookings;
 
   return (
     <View style={styles.container}>

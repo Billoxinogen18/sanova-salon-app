@@ -51,6 +51,50 @@ export class RealtimeService {
     }
   }
 
+  // Start listening to booking updates for a specific user (customer)
+  startListeningToUserBookings(userId, callback) {
+    try {
+      if (this.listeners.has(`user_bookings_${userId}`)) {
+        // Already listening, update callback
+        this.listeners.get(`user_bookings_${userId}`)();
+      }
+
+      // Create a custom listener for user bookings
+      const unsubscribe = firestoreService.realtime.listenToUserBookings?.(userId, (bookings) => {
+        console.log(`Real-time update: ${bookings.length} bookings for user ${userId}`);
+        
+        // Handle user booking updates
+        this.handleUserBookingUpdates(userId, bookings);
+        
+        // Call the provided callback
+        if (callback) callback(bookings);
+      });
+
+      if (unsubscribe) {
+        this.listeners.set(`user_bookings_${userId}`, unsubscribe);
+        return { success: true, unsubscribe };
+      } else {
+        // Fallback: poll for user bookings periodically
+        const pollInterval = setInterval(async () => {
+          try {
+            const result = await firestoreService.bookings.getByUser(userId);
+            if (result.success && callback) {
+              callback(result.data);
+            }
+          } catch (error) {
+            console.error('Error polling user bookings:', error);
+          }
+        }, 30000); // Poll every 30 seconds
+
+        this.listeners.set(`user_bookings_${userId}`, () => clearInterval(pollInterval));
+        return { success: true, unsubscribe: () => clearInterval(pollInterval) };
+      }
+    } catch (error) {
+      console.error('Error starting user booking listener:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   // Start listening to review updates for a salon
   startListeningToSalonReviews(salonId, callback) {
     try {
@@ -117,6 +161,32 @@ export class RealtimeService {
 
     } catch (error) {
       console.error('Error handling booking updates:', error);
+    }
+  }
+
+  // Handle user booking updates and send notifications
+  async handleUserBookingUpdates(userId, bookings) {
+    try {
+      // Get the latest booking
+      const latestBooking = bookings[0];
+      
+      if (!latestBooking) return;
+
+      // Check for status changes in user bookings
+      const now = new Date();
+      const statusChangedBookings = bookings.filter(booking => {
+        const updatedTime = new Date(booking.updatedAt?.seconds ? 
+          booking.updatedAt.seconds * 1000 : booking.updatedAt);
+        const timeDiff = now - updatedTime;
+        return timeDiff < 60000 && booking.updatedAt !== booking.createdAt;
+      });
+
+      for (const booking of statusChangedBookings) {
+        await this.sendCustomerBookingUpdateNotification(booking);
+      }
+
+    } catch (error) {
+      console.error('Error handling user booking updates:', error);
     }
   }
 
@@ -232,6 +302,50 @@ export class RealtimeService {
       console.log(`Booking status update notification sent for ${booking.status}`);
     } catch (error) {
       console.error('Error sending booking status notification:', error);
+    }
+  }
+
+  // Send customer booking update notification
+  async sendCustomerBookingUpdateNotification(booking) {
+    try {
+      let title, body;
+      
+      switch (booking.status) {
+        case 'confirmed':
+          title = '✅ Booking Confirmed!';
+          body = `Your ${booking.serviceName || 'appointment'} at ${booking.salonName || 'the salon'} has been confirmed!`;
+          break;
+        case 'cancelled':
+          title = '❌ Booking Cancelled';
+          body = `Your ${booking.serviceName || 'appointment'} has been cancelled. Contact the salon for details.`;
+          break;
+        case 'completed':
+          title = '🎉 Service Completed';
+          body = `Hope you enjoyed your ${booking.serviceName || 'service'}! Please leave a review.`;
+          break;
+        case 'rescheduled':
+          title = '📅 Booking Rescheduled';
+          body = `Your ${booking.serviceName || 'appointment'} has been rescheduled. Check details in the app.`;
+          break;
+        default:
+          title = '📢 Booking Update';
+          body = `Your ${booking.serviceName || 'appointment'} status has been updated.`;
+      }
+      
+      const notificationData = {
+        type: 'customer_booking_update',
+        bookingId: booking.id,
+        status: booking.status,
+        salonId: booking.salonId,
+        serviceName: booking.serviceName
+      };
+
+      // Send local notification (will be shown immediately if app is open)
+      await notificationService.sendLocalNotification(title, body, notificationData);
+      
+      console.log(`Customer booking update notification sent for status: ${booking.status}`);
+    } catch (error) {
+      console.error('Error sending customer booking notification:', error);
     }
   }
 

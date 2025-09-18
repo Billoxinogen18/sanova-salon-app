@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
+import { Animated, View, Text, TouchableOpacity } from 'react-native';
 import { colors } from './theme/colors';
+import { 
+  typography, 
+  spacing, 
+  shadows, 
+  borderRadius 
+} from './theme/premiumStyles';
+import { pageTransitions } from './theme/animations';
 
 // Import Customer Screens
 import MapScreen from './screens/customer/MapScreen';
@@ -22,52 +30,137 @@ import PaymentSuccessScreen from './screens/customer/PaymentSuccessScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
+// Premium Custom Tab Bar Component
+function CustomTabBar({ state, descriptors, navigation }) {
+  const animatedValues = useRef(
+    state.routes.map(() => new Animated.Value(0))
+  ).current;
+
+  useEffect(() => {
+    // Animate the active tab
+    animatedValues.forEach((value, index) => {
+      Animated.timing(value, {
+        toValue: state.index === index ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [state.index]);
+
+  return (
+    <View style={premiumTabBarStyles.container}>
+      <View style={premiumTabBarStyles.tabBar}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label = options.tabBarLabel !== undefined
+            ? options.tabBarLabel
+            : options.title !== undefined
+            ? options.title
+            : route.name;
+
+          const isFocused = state.index === index;
+
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              // Animate tab press
+              Animated.sequence([
+                Animated.timing(animatedValues[index], {
+                  toValue: 0.8,
+                  duration: 100,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(animatedValues[index], {
+                  toValue: 1,
+                  duration: 100,
+                  useNativeDriver: true,
+                }),
+              ]).start();
+
+              navigation.navigate(route.name);
+            }
+          };
+
+          let iconName;
+          switch (route.name) {
+            case 'Map':
+              iconName = isFocused ? 'map' : 'map-outline';
+              break;
+            case 'Marketplace':
+              iconName = isFocused ? 'storefront' : 'storefront-outline';
+              break;
+            case 'Urgent':
+              iconName = isFocused ? 'flash' : 'flash-outline';
+              break;
+            case 'Bookings':
+              iconName = isFocused ? 'calendar' : 'calendar-outline';
+              break;
+            case 'Profile':
+              iconName = isFocused ? 'person' : 'person-outline';
+              break;
+          }
+
+          const animatedStyle = {
+            transform: [{
+              scale: animatedValues[index].interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 1.1],
+              }),
+            }],
+          };
+
+          const backgroundStyle = {
+            opacity: animatedValues[index].interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 1],
+            }),
+          };
+
+          return (
+            <TouchableOpacity
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarTestID}
+              onPress={onPress}
+              style={premiumTabBarStyles.tabItem}
+              activeOpacity={0.8}
+            >
+              <Animated.View style={[premiumTabBarStyles.tabBackground, backgroundStyle]} />
+              <Animated.View style={[premiumTabBarStyles.tabContent, animatedStyle]}>
+                <Ionicons 
+                  name={iconName} 
+                  size={24} 
+                  color={isFocused ? colors.background.white : 'rgba(255,255,255,0.6)'} 
+                />
+                <Text style={[
+                  premiumTabBarStyles.tabLabel,
+                  { color: isFocused ? colors.background.white : 'rgba(255,255,255,0.6)' }
+                ]}>
+                  {label}
+                </Text>
+              </Animated.View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 function CustomerTabs() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === 'Map') {
-            iconName = focused ? 'map' : 'map-outline';
-          } else if (route.name === 'Marketplace') {
-            // 'bag' icons are not present in Ionicons set bundled with @expo/vector-icons.
-            // Use cart icons which exist across versions.
-            iconName = focused ? 'cart' : 'cart-outline';
-          } else if (route.name === 'Urgent') {
-            iconName = focused ? 'time' : 'time-outline';
-          } else if (route.name === 'Bookings') {
-            iconName = focused ? 'calendar' : 'calendar-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
-          }
-
-          return <Ionicons name={iconName} size={24} color={color} />;
-        },
-        tabBarActiveTintColor: colors.text.white, // White for selected icons
-        tabBarInactiveTintColor: 'rgba(255,255,255,0.6)', // Muted white for unselected icons
-        tabBarStyle: {
-          backgroundColor: colors.primary, // Deep green background
-          borderTopWidth: 0,
-          paddingTop: 8,
-          paddingBottom: 20,
-          height: 80,
-          borderTopLeftRadius: 16, // 16dp radius as specified
-          borderTopRightRadius: 16, // 16dp radius as specified
-          shadowColor: colors.black,
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
-          marginTop: 4,
-        },
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{
         headerShown: false,
-      })}
+      }}
     >
       <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Marketplace" component={MarketplaceScreen} />
@@ -83,18 +176,128 @@ export default function CustomerApp() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
+        ...pageTransitions.fadeScale,
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
       }}
     >
-      <Stack.Screen name="CustomerTabs" component={CustomerTabs} />
-      <Stack.Screen name="ServiceDetail" component={ServiceDetailScreen} />
-      <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
-      <Stack.Screen name="SalonDetail" component={SalonDetailScreen} />
-      <Stack.Screen name="BookingFlow" component={BookingFlowScreen} />
-      <Stack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
-      <Stack.Screen name="PaymentModel" component={PaymentModelScreen} />
-      <Stack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
-      <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="Review" component={ReviewScreen} />
+      <Stack.Screen 
+        name="CustomerTabs" 
+        component={CustomerTabs}
+        options={{
+          ...pageTransitions.fadeScale,
+        }}
+      />
+      <Stack.Screen 
+        name="ServiceDetail" 
+        component={ServiceDetailScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="ProductDetail" 
+        component={ProductDetailScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="SalonDetail" 
+        component={SalonDetailScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="BookingFlow" 
+        component={BookingFlowScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="PaymentMethod" 
+        component={PaymentMethodScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="PaymentModel" 
+        component={PaymentModelScreen}
+        options={{
+          ...pageTransitions.modalSlideUp,
+        }}
+      />
+      <Stack.Screen 
+        name="PaymentSuccess" 
+        component={PaymentSuccessScreen}
+        options={{
+          ...pageTransitions.fadeScale,
+        }}
+      />
+      <Stack.Screen 
+        name="Profile" 
+        component={ProfileScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="Review" 
+        component={ReviewScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
     </Stack.Navigator>
   );
 }
+
+// Premium Tab Bar Styles
+const premiumTabBarStyles = {
+  container: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'transparent',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: colors.primary,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    borderRadius: borderRadius.xl,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    ...shadows.floating,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.lg,
+  },
+  tabBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: borderRadius.lg,
+  },
+  tabContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabLabel: {
+    ...typography.small,
+    marginTop: spacing.xs,
+    fontWeight: '600',
+  },
+};
