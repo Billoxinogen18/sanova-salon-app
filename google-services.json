@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "307295342447",
+    "project_id": "thinkly-firebase-app-85965",
+    "storage_bucket": "thinkly-firebase-app-85965.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:307295342447:android:8be54acae8738d4b0ca29a",
+        "android_client_info": {
+          "package_name": "com.anonymous.thinkly"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "307295342447-lrenmpoeo3cq6h0dhoc463ui7moir046.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAt-5xMJKQz5yJ0BK_h_Hd0FQF1IA1APuc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "307295342447-lrenmpoeo3cq6h0dhoc463ui7moir046.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "307295342447-ld5o3ou3om6ohrqh8itrjeg3ug9l2002.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "thinkly"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

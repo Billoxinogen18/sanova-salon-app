@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Sanova Salon App",
+    "slug": "sanova-salon-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#263428"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ"
+      }
+    },
+    "android": {
+      "package": "com.sanova.salonapp",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#263428"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "80c9c3f9-eed5-47e1-8cfb-da354ce18d1b"
+      }
+    },
+    "owner": "shanekizito"
+  }
+}
