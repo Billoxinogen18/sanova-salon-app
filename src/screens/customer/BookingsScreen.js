@@ -150,12 +150,18 @@ export default function BookingsScreen({ navigation }) {
           const upcoming = allBookings.filter(booking => {
             const bookingDate = new Date(booking.date);
             return bookingDate >= now && booking.status !== 'cancelled' && booking.status !== 'completed';
-          });
+          }).map(booking => ({
+            ...booking,
+            date: booking.date instanceof Date ? booking.date.toLocaleDateString('da-DK') : booking.date
+          }));
           
           const previous = allBookings.filter(booking => {
             const bookingDate = new Date(booking.date);
             return bookingDate < now || booking.status === 'completed' || booking.status === 'cancelled';
-          });
+          }).map(booking => ({
+            ...booking,
+            date: booking.date instanceof Date ? booking.date.toLocaleDateString('da-DK') : booking.date
+          }));
           
           setUpcomingBookings(upcoming);
           setPreviousBookings(previous);
@@ -181,12 +187,18 @@ export default function BookingsScreen({ navigation }) {
             const upcoming = bookings.filter(booking => {
               const bookingDate = new Date(booking.date);
               return bookingDate >= now && booking.status !== 'cancelled' && booking.status !== 'completed';
-            });
+            }).map(booking => ({
+              ...booking,
+              date: booking.date instanceof Date ? booking.date.toLocaleDateString('da-DK') : booking.date
+            }));
             
             const previous = bookings.filter(booking => {
               const bookingDate = new Date(booking.date);
               return bookingDate < now || booking.status === 'completed' || booking.status === 'cancelled';
-            });
+            }).map(booking => ({
+              ...booking,
+              date: booking.date instanceof Date ? booking.date.toLocaleDateString('da-DK') : booking.date
+            }));
             
             setUpcomingBookings(upcoming);
             setPreviousBookings(previous);
@@ -256,7 +268,7 @@ export default function BookingsScreen({ navigation }) {
       serviceName: 'Classic Manicure',
       salonName: 'Gustav Salon',
       salonAddress: 'Frederiks Alle 28',
-      date: new Date(),
+      date: '15. Dec 2024', // Fixed: Use string instead of Date object
       time: '11:00',
       status: 'confirmed',
       icon: '💅',
@@ -269,7 +281,7 @@ export default function BookingsScreen({ navigation }) {
       serviceName: 'Haircut',
       salonName: 'Hair Studio',
       salonAddress: 'Borgergade 14',
-      date: new Date('2024-04-15'),
+      date: '15. Apr 2024', // Fixed: Use string instead of Date object
       time: '14:00',
       status: 'completed',
       icon: '✂️',

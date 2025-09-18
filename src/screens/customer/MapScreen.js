@@ -280,13 +280,9 @@ export default function MapScreen({ navigation }) {
               <Text style={styles.mapFallbackSubtext}>Finding nearby salons</Text>
             </View>
           )}
-          <View style={[styles.mapView, { backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' }]}>
-            <Text style={{ fontSize: 18, color: '#333' }}>Map Container Test</Text>
-            <Text style={{ fontSize: 14, color: '#666' }}>If you see this, the container works</Text>
-          </View>
           <MapView
             ref={mapRef}
-            style={[styles.mapView, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }]}
+            style={styles.mapView}
             initialRegion={{
               latitude: 40.7128, // New York coordinates for testing
               longitude: -74.0060,
@@ -309,7 +305,10 @@ export default function MapScreen({ navigation }) {
             showsMyLocationButton={false}
             mapType="hybrid"
             loadingEnabled={false}
-            onRegionChangeComplete={setRegion}
+            onRegionChangeComplete={(region) => {
+              console.log('🗺️ Region changed:', region);
+              setRegion(region);
+            }}
             >
               {[
                 { lat: 37.78825, lng: -122.4324, title: "Nordic Beauty", description: "Hair & Spa" },
