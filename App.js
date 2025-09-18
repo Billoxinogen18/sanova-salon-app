@@ -32,11 +32,11 @@ export default function App() {
       try {
         console.log('🚀 Initializing Sanova app...');
         
-        // Check if user is already logged in
-        const loginState = await authService.checkLoginState();
-        console.log('🔐 Login state check:', loginState);
+        // Check if user is already logged in using Firebase auth state
+        const currentUser = authService.getCurrentUser();
+        console.log('🔐 Current user check:', currentUser ? currentUser.uid : 'No user');
         
-        if (loginState.isLoggedIn && authService.getCurrentUser()) {
+        if (currentUser) {
           console.log('✅ User already logged in, navigating to app');
           setInitialRoute('CustomerApp'); // Default to customer app
         } else {
