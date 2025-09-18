@@ -3,8 +3,12 @@ import {
   createUserWithEmailAndPassword, 
   signOut, 
   updateProfile,
-  onAuthStateChanged 
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithCredential
 } from 'firebase/auth';
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
 import { 
   doc, 
   setDoc, 
@@ -27,6 +31,9 @@ import {
   deleteObject 
 } from 'firebase/storage';
 import { auth, db, storage } from '../../firebaseconfig';
+
+// Configure WebBrowser for Google Sign-In
+WebBrowser.maybeCompleteAuthSession();
 
 // Authentication Services
 export const authService = {
@@ -86,6 +93,78 @@ export const authService = {
   // Listen to auth state changes
   onAuthStateChanged: (callback) => {
     return onAuthStateChanged(auth, callback);
+  },
+
+  // Google Sign-In
+  signInWithGoogle: async () => {
+    try {
+      // Configure the request
+      const request = new AuthSession.AuthRequest({
+        clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+        scopes: ['openid', 'profile', 'email'],
+        additionalParameters: {},
+        redirectUri: AuthSession.makeRedirectUri({
+          scheme: 'com.sanova.salonapp',
+          useProxy: true,
+        }),
+      });
+
+      const result = await request.promptAsync({
+        authorizationEndpoint: 'https://accounts.google.com/oauth/authorize',
+      });
+
+      if (result.type === 'success') {
+        // Exchange the authorization code for an access token
+        const tokenResult = await AuthSession.exchangeCodeAsync(
+          {
+            clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+            code: result.params.code,
+            extraParams: {
+              code_verifier: request.codeVerifier,
+            },
+            redirectUri: AuthSession.makeRedirectUri({
+              scheme: 'com.sanova.salonapp',
+              useProxy: true,
+            }),
+          },
+          {
+            tokenEndpoint: 'https://oauth2.googleapis.com/token',
+          }
+        );
+
+        // Create a Google credential
+        const credential = GoogleAuthProvider.credential(
+          tokenResult.idToken,
+          tokenResult.accessToken
+        );
+
+        // Sign in with Firebase
+        const userCredential = await signInWithCredential(auth, credential);
+        const user = userCredential.user;
+
+        // Check if user exists in Firestore, create if not
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists()) {
+          await setDoc(doc(db, 'users', user.uid), {
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName,
+            photoURL: user.photoURL,
+            role: 'customer', // Default role
+            provider: 'google',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+        }
+
+        return { success: true, user };
+      } else {
+        return { success: false, error: 'Google Sign-In was cancelled or failed' };
+      }
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+      return { success: false, error: error.message };
+    }
   }
 };
 

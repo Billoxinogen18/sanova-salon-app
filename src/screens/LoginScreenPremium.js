@@ -243,6 +243,47 @@ export default function LoginScreenPremium({ navigation }) {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+
+    // Button press animation
+    Animated.sequence([
+      Animated.timing(buttonAnimatedValues.scale, { toValue: 0.96, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonAnimatedValues.scale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+
+    try {
+      const googleSignInResult = await authService.signInWithGoogle();
+      
+      if (!googleSignInResult.success) {
+        Alert.alert('Google Sign-In Failed', googleSignInResult.error);
+        setIsLoading(false);
+        return;
+      }
+
+      const user = googleSignInResult.user;
+      const userDataResult = await firestoreService.users.get(user.uid);
+      
+      if (userDataResult.success) {
+        const userData = userDataResult.data;
+        
+        // Navigate based on user role
+        if (userData.role === 'customer') {
+          navigation.navigate('CustomerApp');
+        } else {
+          navigation.navigate('SalonOwnerApp');
+        }
+      } else {
+        // For Google sign-in, default to customer role
+        navigation.navigate('CustomerApp');
+      }
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+      Alert.alert('Google Sign-In Failed', error.message || 'An unexpected error occurred');
+      setIsLoading(false);
+    }
+  };
+
   const logoFloatingTransform = floatingAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: [0, -8],
@@ -482,6 +523,17 @@ export default function LoginScreenPremium({ navigation }) {
             )}
           </TouchableOpacity>
 
+          {/* Google Sign-In Button */}
+          <TouchableOpacity
+            style={styles.googleButton}
+            onPress={handleGoogleSignIn}
+            disabled={isLoading}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="logo-google" size={20} color={colors.text.primary} />
+            <Text style={styles.googleButtonText}>Continue with Google</Text>
+          </TouchableOpacity>
+
           <View style={styles.signupSection}>
             <Text style={styles.signupText}>Don't have an account? </Text>
             <TouchableOpacity 
@@ -647,6 +699,23 @@ const styles = StyleSheet.create({
   loginButtonText: {
     ...typography.button,
     color: colors.primary,
+  },
+  googleButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: borderRadius.lg,
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+    flexDirection: 'row',
+    gap: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(38, 52, 40, 0.1)',
+    ...shadows.card,
+  },
+  googleButtonText: {
+    ...typography.button,
+    color: colors.text.primary,
   },
   loadingContainer: {
     flexDirection: 'row',

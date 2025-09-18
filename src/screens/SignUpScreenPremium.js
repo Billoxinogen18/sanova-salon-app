@@ -13,7 +13,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { authService } from '../services/firebaseService';
+import { authService, firestoreService } from '../services/firebaseService';
 import { colors } from '../theme/colors';
 import { typography, spacing, shadows, borderRadius } from '../theme/premiumStyles';
 import { animationSequences, AnimationController } from '../theme/animations';
@@ -214,6 +214,49 @@ export default function SignUpScreenPremium({ navigation }) {
     } catch (error) {
       console.error('Sign up error:', error);
       Alert.alert('Sign Up Failed', error.message || 'An unexpected error occurred');
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true);
+
+    // Button press animation
+    Animated.sequence([
+      Animated.timing(buttonAnimatedValues.scale, { toValue: 0.96, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonAnimatedValues.scale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+
+    try {
+      const googleSignInResult = await authService.signInWithGoogle();
+      
+      if (!googleSignInResult.success) {
+        Alert.alert('Google Sign-Up Failed', googleSignInResult.error);
+        setIsLoading(false);
+        return;
+      }
+
+      // Success animation
+      Animated.parallel([
+        Animated.timing(formAnimatedValues[0].scale, { toValue: 1.05, duration: 200, useNativeDriver: true }),
+        Animated.timing(formAnimatedValues[0].opacity, { toValue: 0.8, duration: 200, useNativeDriver: true }),
+      ]).start(() => {
+        Alert.alert(
+          'Success', 
+          'Account created successfully with Google!',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                navigation.navigate('CustomerApp'); // Default to customer for Google sign-up
+              }
+            }
+          ]
+        );
+      });
+    } catch (error) {
+      console.error('Google Sign-Up error:', error);
+      Alert.alert('Google Sign-Up Failed', error.message || 'An unexpected error occurred');
       setIsLoading(false);
     }
   };
@@ -562,6 +605,17 @@ export default function SignUpScreenPremium({ navigation }) {
               )}
             </TouchableOpacity>
 
+            {/* Google Sign-Up Button */}
+            <TouchableOpacity
+              style={styles.googleButton}
+              onPress={handleGoogleSignUp}
+              disabled={isLoading}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="logo-google" size={20} color={colors.text.primary} />
+              <Text style={styles.googleButtonText}>Sign up with Google</Text>
+            </TouchableOpacity>
+
             <View style={styles.loginSection}>
               <Text style={styles.loginText}>Already have an account? </Text>
               <TouchableOpacity 
@@ -717,6 +771,23 @@ const styles = StyleSheet.create({
   signUpButtonText: {
     ...typography.button,
     color: colors.primary,
+  },
+  googleButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: borderRadius.lg,
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+    flexDirection: 'row',
+    gap: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(38, 52, 40, 0.1)',
+    ...shadows.card,
+  },
+  googleButtonText: {
+    ...typography.button,
+    color: colors.text.primary,
   },
   loadingContainer: {
     flexDirection: 'row',

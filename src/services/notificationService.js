@@ -1,7 +1,8 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
-import { notificationService } from './firebaseService';
+// Note: For Expo managed workflow, we use Expo's push notification service
+// Firebase Cloud Messaging is handled via Expo's backend
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -133,11 +134,29 @@ export class NotificationService {
     }
   }
 
-  // Send push notification via our backend
+  // Send push notification via Expo's service
   async sendPushNotification(token, title, body, data = {}) {
     try {
-      const result = await notificationService.sendNotification(token, title, body, data);
-      return result;
+      const message = {
+        to: token,
+        sound: 'default',
+        title: title,
+        body: body,
+        data: data,
+      };
+
+      const response = await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Accept-encoding': 'gzip, deflate',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message),
+      });
+
+      const result = await response.json();
+      return { success: response.ok, data: result };
     } catch (error) {
       console.error('Error sending push notification:', error);
       return { success: false, error: error.message };
