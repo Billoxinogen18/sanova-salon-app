@@ -286,8 +286,8 @@ export default function MapScreen({ navigation }) {
             style={styles.mapView}
             googleMapsApiKey="AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ"
             initialRegion={{
-              latitude: 37.78825, // San Francisco coordinates for testing
-              longitude: -122.4324,
+              latitude: 40.7128, // New York coordinates for testing
+              longitude: -74.0060,
               latitudeDelta: 0.0922,
               longitudeDelta: 0.0421,
             }}
@@ -297,11 +297,15 @@ export default function MapScreen({ navigation }) {
             }}
             onError={(error) => {
               console.error('🚨 Map error:', error);
+              console.error('🚨 Map error details:', JSON.stringify(error));
             }}
             onMapLoaded={() => console.log('✅ Map loaded successfully!')}
+            onRegionChange={(region) => {
+              console.log('🗺️ Map region changed:', region);
+            }}
             showsUserLocation={false}
             showsMyLocationButton={false}
-            mapType="standard"
+            mapType="hybrid"
             loadingEnabled={false}
             onRegionChangeComplete={setRegion}
             >
