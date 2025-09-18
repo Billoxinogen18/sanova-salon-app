@@ -92,7 +92,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
               iconName = isFocused ? 'map' : 'map-outline';
               break;
             case 'Marketplace':
-              iconName = isFocused ? 'storefront' : 'storefront-outline';
+              iconName = isFocused ? 'grid' : 'grid-outline';
               break;
             case 'Urgent':
               iconName = isFocused ? 'flash' : 'flash-outline';
@@ -136,7 +136,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
               <Animated.View style={[premiumTabBarStyles.tabContent, animatedStyle]}>
                 <Ionicons 
                   name={iconName} 
-                  size={24} 
+                  size={20} 
                   color={isFocused ? colors.background.white : 'rgba(255,255,255,0.6)'} 
                 />
                 <Text style={[
@@ -263,14 +263,15 @@ const premiumTabBarStyles = {
     left: 0,
     right: 0,
     backgroundColor: 'transparent',
+    paddingBottom: 0, // Remove bottom padding to prevent content overlap
   },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: colors.primary,
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
+    marginHorizontal: spacing.md, // Reduce horizontal margin
+    marginBottom: spacing.sm, // Reduce bottom margin
     borderRadius: borderRadius.xl,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs, // Reduce vertical padding
     paddingHorizontal: spacing.xs,
     ...shadows.floating,
   },
@@ -279,7 +280,7 @@ const premiumTabBarStyles = {
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs, // Reduce padding
     borderRadius: borderRadius.lg,
   },
   tabBackground: {
@@ -296,8 +297,8 @@ const premiumTabBarStyles = {
     justifyContent: 'center',
   },
   tabLabel: {
-    ...typography.small,
-    marginTop: spacing.xs,
+    fontSize: 10, // Smaller font size
+    marginTop: 2, // Reduce margin
     fontWeight: '600',
   },
 };

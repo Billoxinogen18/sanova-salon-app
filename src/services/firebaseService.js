@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   doc, 
   setDoc, 
@@ -41,6 +42,12 @@ export const authService = {
   signIn: async (email, password) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Store login state
+      await AsyncStorage.setItem('userLoggedIn', 'true');
+      await AsyncStorage.setItem('userEmail', email);
+      await AsyncStorage.setItem('userUid', userCredential.user.uid);
+      
       return { success: true, user: userCredential.user };
     } catch (error) {
       return { success: false, error: error.message };
@@ -50,27 +57,62 @@ export const authService = {
   // Create new user account
   signUp: async (email, password, userData) => {
     try {
+      console.log('🚀 Starting sign up process...');
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log('✅ User created successfully:', user.uid);
       
       // Update user profile
-      await updateProfile(user, {
-        displayName: userData.name || userData.displayName
-      });
+      try {
+        await updateProfile(user, {
+          displayName: userData.name || userData.displayName
+        });
+        console.log('✅ Profile updated successfully');
+      } catch (profileError) {
+        console.warn('⚠️ Profile update failed:', profileError.message);
+        // Continue anyway, this is not critical
+      }
 
-      // Save additional user data to Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        email: user.email,
-        name: userData.name || userData.displayName,
-        phone: userData.phone || '',
-        role: userData.role || 'customer',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
+      // Store login state for new user
+      await AsyncStorage.setItem('userLoggedIn', 'true');
+      await AsyncStorage.setItem('userEmail', email);
+      await AsyncStorage.setItem('userUid', user.uid);
+
+      // Save additional user data to Firestore with retry logic
+      let firestoreSuccess = false;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (!firestoreSuccess && retryCount < maxRetries) {
+        try {
+          console.log(`📝 Attempting to save user data to Firestore (attempt ${retryCount + 1}/${maxRetries})...`);
+          await setDoc(doc(db, 'users', user.uid), {
+            uid: user.uid,
+            email: user.email,
+            name: userData.name || userData.displayName,
+            phone: userData.phone || '',
+            role: userData.role || 'customer',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+          console.log('✅ Firestore data saved successfully');
+          firestoreSuccess = true;
+        } catch (firestoreError) {
+          retryCount++;
+          console.warn(`⚠️ Firestore save attempt ${retryCount} failed:`, firestoreError.message);
+          if (retryCount < maxRetries) {
+            console.log(`🔄 Retrying in 2 seconds... (${retryCount}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          } else {
+            console.warn('⚠️ Firestore save failed after all retries, but user was created successfully');
+            // User is still created, just Firestore data failed
+          }
+        }
+      }
 
       return { success: true, user };
     } catch (error) {
+      console.error('❌ Sign up failed:', error.message);
       return { success: false, error: error.message };
     }
   },
@@ -79,6 +121,12 @@ export const authService = {
   signOut: async () => {
     try {
       await signOut(auth);
+      
+      // Clear stored login state
+      await AsyncStorage.removeItem('userLoggedIn');
+      await AsyncStorage.removeItem('userEmail');
+      await AsyncStorage.removeItem('userUid');
+      
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
@@ -95,25 +143,52 @@ export const authService = {
     return onAuthStateChanged(auth, callback);
   },
 
-  // Google Sign-In
+  // Check if user is logged in from storage
+  checkLoginState: async () => {
+    try {
+      const isLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+      const userEmail = await AsyncStorage.getItem('userEmail');
+      const userUid = await AsyncStorage.getItem('userUid');
+      
+      return {
+        isLoggedIn: isLoggedIn === 'true',
+        email: userEmail,
+        uid: userUid
+      };
+    } catch (error) {
+      return { isLoggedIn: false, email: null, uid: null };
+    }
+  },
+
+  // Google Sign-In - Optimized for better native experience
   signInWithGoogle: async () => {
     try {
-      // Configure the request
+      console.log('🚀 Starting Google Sign-In...');
+      
+      // Configure the request for better native experience
       const request = new AuthSession.AuthRequest({
         clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
         scopes: ['openid', 'profile', 'email'],
-        additionalParameters: {},
+        additionalParameters: {
+          prompt: 'select_account', // Shows account picker
+          access_type: 'offline',
+        },
         redirectUri: AuthSession.makeRedirectUri({
           scheme: 'com.sanova.salonapp',
           useProxy: true,
         }),
       });
 
+      console.log('📱 Prompting Google Sign-In...');
       const result = await request.promptAsync({
         authorizationEndpoint: 'https://accounts.google.com/oauth/authorize',
+        showInRecents: true,
+        preferEphemeralSession: false, // This allows account selection
       });
 
       if (result.type === 'success') {
+        console.log('✅ Google authorization successful, exchanging tokens...');
+        
         // Exchange the authorization code for an access token
         const tokenResult = await AuthSession.exchangeCodeAsync(
           {
@@ -132,6 +207,8 @@ export const authService = {
           }
         );
 
+        console.log('✅ Tokens exchanged, creating Firebase credential...');
+        
         // Create a Google credential
         const credential = GoogleAuthProvider.credential(
           tokenResult.idToken,
@@ -141,28 +218,48 @@ export const authService = {
         // Sign in with Firebase
         const userCredential = await signInWithCredential(auth, credential);
         const user = userCredential.user;
+        
+        console.log('✅ Firebase sign-in successful:', user.uid);
+
+        // Store login state for Google sign-in
+        await AsyncStorage.setItem('userLoggedIn', 'true');
+        await AsyncStorage.setItem('userEmail', user.email);
+        await AsyncStorage.setItem('userUid', user.uid);
 
         // Check if user exists in Firestore, create if not
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (!userDoc.exists()) {
-          await setDoc(doc(db, 'users', user.uid), {
-            uid: user.uid,
-            email: user.email,
-            name: user.displayName,
-            photoURL: user.photoURL,
-            role: 'customer', // Default role
-            provider: 'google',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          });
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (!userDoc.exists()) {
+            console.log('📝 Creating new user document in Firestore...');
+            await setDoc(doc(db, 'users', user.uid), {
+              uid: user.uid,
+              email: user.email,
+              name: user.displayName,
+              photoURL: user.photoURL,
+              role: 'customer', // Default role
+              provider: 'google',
+              createdAt: new Date(),
+              updatedAt: new Date()
+            });
+            console.log('✅ User document created successfully');
+          } else {
+            console.log('✅ User document already exists');
+          }
+        } catch (firestoreError) {
+          console.warn('⚠️ Firestore error during Google sign-in:', firestoreError);
+          // Continue anyway, user is still signed in
         }
 
         return { success: true, user };
+      } else if (result.type === 'cancel') {
+        console.log('❌ Google Sign-In was cancelled by user');
+        return { success: false, error: 'Sign-in was cancelled' };
       } else {
-        return { success: false, error: 'Google Sign-In was cancelled or failed' };
+        console.log('❌ Google Sign-In failed:', result);
+        return { success: false, error: 'Google Sign-In failed' };
       }
     } catch (error) {
-      console.error('Google Sign-In error:', error);
+      console.error('❌ Google Sign-In error:', error);
       return { success: false, error: error.message };
     }
   }

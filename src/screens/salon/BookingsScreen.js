@@ -19,10 +19,6 @@ import {
   borderRadius, 
   premiumComponents 
 } from '../../theme/premiumStyles';
-import { 
-  animationSequences, 
-  AnimationController 
-} from '../../theme/animations';
 import { firestoreService } from '../../services/firebaseService';
 import realtimeServiceInstance from '../../services/realtimeService';
 
@@ -32,7 +28,7 @@ export default function BookingsScreen({ navigation }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Animation controller
-  const animationController = useRef(new AnimationController()).current;
+  // Removed animation controller
 
   // Animated values
   const headerAnimatedValues = useRef({
@@ -58,20 +54,46 @@ export default function BookingsScreen({ navigation }) {
     initializeRealtimeMonitoring();
 
     return () => {
-      animationController.stopAllAnimations();
+      // Cleanup animations if needed
       realtimeServiceInstance.stopSalonMonitoring('salon_1');
     };
   }, []);
 
   const startEntranceAnimations = () => {
-    const headerAnimation = animationSequences.fadeInUp(headerAnimatedValues, 0);
-    const listAnimation = animationSequences.fadeInUp(listAnimatedValues, 200);
-
-    animationController.registerAnimation('entrance', 
-      Animated.parallel([headerAnimation, listAnimation])
-    );
-
-    animationController.animations.get('entrance').start();
+    // Start animations directly with proper timing
+    Animated.stagger(200, [
+      // Header animation
+      Animated.parallel([
+        Animated.timing(headerAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(headerAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // List animation
+      Animated.parallel([
+        Animated.timing(listAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(listAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(listAnimatedValues.scale, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
   };
 
   const loadBookingsData = async () => {

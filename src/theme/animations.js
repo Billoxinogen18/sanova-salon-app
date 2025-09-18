@@ -137,33 +137,33 @@ export const animationSequences = {
   },
 };
 
-// Animation hooks and utilities
+// Simple Animation Controller
 export class AnimationController {
   constructor() {
     this.animations = new Map();
   }
   
-  // Create animated value set for common animations
+  // Create simple animated values
   createAnimatedValueSet(initialValues = {}) {
     return {
-      opacity: new Animated.Value(initialValues.opacity || 0),
-      translateY: new Animated.Value(initialValues.translateY || 50),
-      translateX: new Animated.Value(initialValues.translateX || 0),
-      scale: new Animated.Value(initialValues.scale || 0.8),
-      rotate: new Animated.Value(initialValues.rotate || 0),
+      opacity: new Animated.Value(initialValues.opacity !== undefined ? initialValues.opacity : 1),
+      translateY: new Animated.Value(initialValues.translateY || 0),
+      scale: new Animated.Value(initialValues.scale !== undefined ? initialValues.scale : 1),
     };
   }
   
   // Register animation for cleanup
   registerAnimation(key, animation) {
-    this.animations.set(key, animation);
+    if (animation && typeof animation.stop === 'function') {
+      this.animations.set(key, animation);
+    }
     return animation;
   }
   
   // Stop specific animation
   stopAnimation(key) {
     const animation = this.animations.get(key);
-    if (animation) {
+    if (animation && typeof animation.stop === 'function') {
       animation.stop();
       this.animations.delete(key);
     }
@@ -171,8 +171,17 @@ export class AnimationController {
   
   // Stop all animations
   stopAllAnimations() {
-    this.animations.forEach((animation) => animation.stop());
+    this.animations.forEach((animation) => {
+      if (animation && typeof animation.stop === 'function') {
+        animation.stop();
+      }
+    });
     this.animations.clear();
+  }
+  
+  // Cleanup method
+  cleanup() {
+    this.stopAllAnimations();
   }
 }
 

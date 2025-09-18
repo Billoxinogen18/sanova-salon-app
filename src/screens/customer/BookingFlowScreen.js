@@ -19,11 +19,6 @@ import {
   borderRadius, 
   premiumComponents 
 } from '../../theme/premiumStyles';
-import { 
-  animationSequences, 
-  AnimationController, 
-  microAnimations 
-} from '../../theme/animations';
 import { firestoreService, authService } from '../../services/firebaseService';
 
 const { width, height } = Dimensions.get('window');
@@ -46,7 +41,7 @@ export default function BookingFlowScreen({ navigation, route }) {
   const [isLoading, setIsLoading] = useState(false);
 
   // Animation controller
-  const animationController = useRef(new AnimationController()).current;
+  // Removed animation controller
 
   // Animated values
   const headerAnimatedValues = useRef({
@@ -76,6 +71,9 @@ export default function BookingFlowScreen({ navigation, route }) {
     scale: new Animated.Value(1),
   }).current;
 
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
+
   useEffect(() => {
     StatusBar.setBarStyle('light-content');
     
@@ -83,28 +81,89 @@ export default function BookingFlowScreen({ navigation, route }) {
     startEntranceAnimations();
 
     return () => {
-      animationController.stopAllAnimations();
+      // Cleanup animations if needed
     };
   }, []);
 
   const startEntranceAnimations = () => {
-    const headerAnimation = animationSequences.fadeInUp(headerAnimatedValues, 0);
-    const serviceAnimation = animationSequences.fadeInUp(serviceCardAnimatedValues, 200);
-    const dateAnimation = animationSequences.fadeInUp(dateSelectionAnimatedValues, 400);
-    const timeAnimation = animationSequences.fadeInUp(timeSelectionAnimatedValues, 600);
-    const buttonAnimation = animationSequences.fadeInUp(buttonAnimatedValues, 800);
-
-    animationController.registerAnimation('entrance', 
+    // Start animations directly with proper timing
+    Animated.stagger(200, [
+      // Header animation
       Animated.parallel([
-        headerAnimation,
-        serviceAnimation,
-        dateAnimation,
-        timeAnimation,
-        buttonAnimation,
-      ])
-    );
-
-    animationController.animations.get('entrance').start();
+        Animated.timing(headerAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(headerAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Service animation
+      Animated.parallel([
+        Animated.timing(serviceCardAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(serviceCardAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(serviceCardAnimatedValues.scale, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Date animation
+      Animated.parallel([
+        Animated.timing(dateSelectionAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(dateSelectionAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Time animation
+      Animated.parallel([
+        Animated.timing(timeSelectionAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(timeSelectionAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Button animation
+      Animated.parallel([
+        Animated.timing(buttonAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonAnimatedValues.scale, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
   };
 
   // Available dates exactly as shown in design

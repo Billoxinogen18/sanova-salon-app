@@ -19,11 +19,6 @@ import {
   borderRadius, 
   premiumComponents 
 } from '../../theme/premiumStyles';
-import { 
-  animationSequences, 
-  AnimationController, 
-  microAnimations 
-} from '../../theme/animations';
 import realtimeServiceInstance from '../../services/realtimeService';
 import notificationServiceInstance from '../../services/notificationService';
 
@@ -37,7 +32,7 @@ export default function DashboardScreen({ navigation }) {
   const [monthRevenue, setMonthRevenue] = useState(4200);
 
   // Animation controller
-  const animationController = useRef(new AnimationController()).current;
+  // Removed animation controller
 
   // Animated values
   const headerAnimatedValues = useRef({
@@ -98,30 +93,91 @@ export default function DashboardScreen({ navigation }) {
     initializeRealtimeServices();
 
     return () => {
-      animationController.stopAllAnimations();
+      // Cleanup animations if needed
       // Stop real-time monitoring when component unmounts
       realtimeServiceInstance.stopSalonMonitoring('salon_1');
     };
   }, []);
 
   const startEntranceAnimations = () => {
-    const headerAnimation = animationSequences.fadeInUp(headerAnimatedValues, 0);
-    const welcomeAnimation = animationSequences.fadeInUp(welcomeAnimatedValues, 200);
-    const bookingsAnimation = animationSequences.fadeInUp(bookingsAnimatedValues, 400);
-    const revenueAnimation = animationSequences.fadeInUp(revenueAnimatedValues, 600);
-    const buttonsAnimation = animationSequences.fadeInUp(buttonsAnimatedValues, 800);
-
-    animationController.registerAnimation('entrance', 
+    // Start animations directly with proper timing
+    Animated.stagger(200, [
+      // Header animation
       Animated.parallel([
-        headerAnimation,
-        welcomeAnimation,
-        bookingsAnimation,
-        revenueAnimation,
-        buttonsAnimation,
-      ])
-    );
-
-    animationController.animations.get('entrance').start();
+        Animated.timing(headerAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(headerAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Welcome animation
+      Animated.parallel([
+        Animated.timing(welcomeAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(welcomeAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Bookings animation
+      Animated.parallel([
+        Animated.timing(bookingsAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bookingsAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bookingsAnimatedValues.scale, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Revenue animation
+      Animated.parallel([
+        Animated.timing(revenueAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(revenueAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(revenueAnimatedValues.scale, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Buttons animation
+      Animated.parallel([
+        Animated.timing(buttonsAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonsAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
   };
 
   const initializeRealtimeServices = async () => {
@@ -358,7 +414,7 @@ export default function DashboardScreen({ navigation }) {
 
           <View style={styles.productsRevenue}>
             <View style={styles.productsHeader}>
-              <Ionicons name="storefront-outline" size={20} color={colors.text.secondary} />
+              <Ionicons name="business-outline" size={20} color={colors.text.secondary} />
               <Text style={styles.productsLabel}>Product Sales</Text>
             </View>
             <Text style={styles.productsAmount}>$45</Text>

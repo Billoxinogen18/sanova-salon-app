@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,626 +6,290 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Animated,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
   StatusBar,
-  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { authService, firestoreService } from '../services/firebaseService';
 import { colors } from '../theme/colors';
-import { typography, spacing, shadows, borderRadius } from '../theme/premiumStyles';
-import { animationSequences, AnimationController } from '../theme/animations';
 
 export default function SignUpScreenPremium({ navigation }) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
-    userType: 'customer',
-    phone: '',
+    userType: 'customer'
   });
-
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState(null);
-
-  // Animation controller
-  const animationController = useRef(new AnimationController()).current;
-
-  // Animated values for different sections
-  const headerAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(-30),
-  }).current;
-
-  const userTypeAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(20),
-  }).current;
-
-  const formAnimatedValues = useRef([
-    { opacity: new Animated.Value(0), translateY: new Animated.Value(30) }, // Name inputs
-    { opacity: new Animated.Value(0), translateY: new Animated.Value(30) }, // Email input
-    { opacity: new Animated.Value(0), translateY: new Animated.Value(30) }, // Phone input
-    { opacity: new Animated.Value(0), translateY: new Animated.Value(30) }, // Password inputs
-  ]).current;
-
-  const buttonAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(30),
-    scale: new Animated.Value(1),
-  }).current;
-
-  // Input field animations
-  const inputAnimations = useRef({
-    firstName: { scale: new Animated.Value(1), borderColor: new Animated.Value(0) },
-    lastName: { scale: new Animated.Value(1), borderColor: new Animated.Value(0) },
-    email: { scale: new Animated.Value(1), borderColor: new Animated.Value(0) },
-    phone: { scale: new Animated.Value(1), borderColor: new Animated.Value(0) },
-    password: { scale: new Animated.Value(1), borderColor: new Animated.Value(0) },
-    confirmPassword: { scale: new Animated.Value(1), borderColor: new Animated.Value(0) },
-  }).current;
-
-  useEffect(() => {
-    StatusBar.setBarStyle('light-content');
-    startEntranceAnimations();
-
-    return () => {
-      animationController.stopAllAnimations();
-    };
-  }, []);
-
-  const startEntranceAnimations = () => {
-    const headerAnimation = animationSequences.fadeInUp(headerAnimatedValues, 0);
-    const userTypeAnimation = animationSequences.fadeInUp(userTypeAnimatedValues, 200);
-    const formAnimations = animationSequences.staggerFadeIn(formAnimatedValues, 150);
-    const buttonAnimation = animationSequences.fadeInUp(buttonAnimatedValues, 800);
-
-    const entranceAnimation = Animated.parallel([
-      headerAnimation,
-      userTypeAnimation,
-      formAnimations,
-      buttonAnimation,
-    ]);
-
-    animationController.registerAnimation('entrance', entranceAnimation);
-    entranceAnimation.start();
-  };
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleInputFocus = (field) => {
-    setFocusedField(field);
-    const animations = inputAnimations[field];
-    if (animations) {
-      Animated.parallel([
-        Animated.timing(animations.scale, { toValue: 1.02, duration: 200, useNativeDriver: true }),
-        Animated.timing(animations.borderColor, { toValue: 1, duration: 200, useNativeDriver: false }),
-      ]).start();
-    }
-  };
-
-  const handleInputBlur = (field) => {
-    setFocusedField(null);
-    const animations = inputAnimations[field];
-    if (animations) {
-      Animated.parallel([
-        Animated.timing(animations.scale, { toValue: 1, duration: 200, useNativeDriver: true }),
-        Animated.timing(animations.borderColor, { toValue: 0, duration: 200, useNativeDriver: false }),
-      ]).start();
-    }
-  };
-
-  const handleUserTypePress = (type) => {
-    if (type !== formData.userType) {
-      Animated.sequence([
-        Animated.timing(userTypeAnimatedValues.scale, { toValue: 0.98, duration: 100, useNativeDriver: true }),
-        Animated.timing(userTypeAnimatedValues.scale, { toValue: 1, duration: 100, useNativeDriver: true }),
-      ]).start();
-      
-      handleInputChange('userType', type);
-    }
-  };
-
-  const validateForm = () => {
-    if (!formData.firstName.trim() || !formData.lastName.trim() || 
-        !formData.email.trim() || !formData.password.trim()) {
+  const handleSignUp = async () => {
+    // Validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
       Alert.alert('Error', 'Please fill in all required fields');
-      return false;
+      return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
-      return false;
+      return;
     }
 
     if (formData.password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
-      return false;
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSignUp = async () => {
-    if (!validateForm()) return;
 
     setIsLoading(true);
-
-    // Button press animation
-    Animated.sequence([
-      Animated.timing(buttonAnimatedValues.scale, { toValue: 0.96, duration: 100, useNativeDriver: true }),
-      Animated.timing(buttonAnimatedValues.scale, { toValue: 1, duration: 100, useNativeDriver: true }),
-    ]).start();
-
     try {
       const userData = {
         name: `${formData.firstName} ${formData.lastName}`,
         displayName: `${formData.firstName} ${formData.lastName}`,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
         phone: formData.phone,
-        role: formData.userType,
+        role: formData.userType
       };
 
-      const signUpResult = await authService.signUp(formData.email, formData.password, userData);
+      console.log('🚀 Attempting sign up...');
+      const result = await authService.signUp(formData.email, formData.password, userData);
       
-      if (!signUpResult.success) {
-        Alert.alert('Sign Up Failed', signUpResult.error);
-        setIsLoading(false);
-        return;
-      }
-
-      // Success animation
-      Animated.parallel([
-        Animated.timing(formAnimatedValues[0].scale, { toValue: 1.05, duration: 200, useNativeDriver: true }),
-        Animated.timing(formAnimatedValues[0].opacity, { toValue: 0.8, duration: 200, useNativeDriver: true }),
-      ]).start(() => {
+      if (result.success) {
+        console.log('✅ Sign up successful, navigating...');
         Alert.alert(
-          'Success', 
+          'Success',
           'Account created successfully!',
           [
             {
               text: 'OK',
               onPress: () => {
-                if (formData.userType === 'customer') {
-                  navigation.navigate('CustomerApp');
+                if (formData.userType === 'salon') {
+                  navigation.replace('SalonOwnerApp');
                 } else {
-                  navigation.navigate('SalonOwnerApp');
+                  navigation.replace('CustomerApp');
                 }
               }
             }
           ]
         );
-      });
+      } else {
+        console.error('❌ Sign up failed:', result.error);
+        Alert.alert('Sign Up Failed', result.error);
+      }
     } catch (error) {
-      console.error('Sign up error:', error);
-      Alert.alert('Sign Up Failed', error.message || 'An unexpected error occurred');
+      console.error('❌ Sign up error:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleSignUp = async () => {
     setIsLoading(true);
-
-    // Button press animation
-    Animated.sequence([
-      Animated.timing(buttonAnimatedValues.scale, { toValue: 0.96, duration: 100, useNativeDriver: true }),
-      Animated.timing(buttonAnimatedValues.scale, { toValue: 1, duration: 100, useNativeDriver: true }),
-    ]).start();
-
     try {
-      const googleSignInResult = await authService.signInWithGoogle();
+      const result = await authService.signInWithGoogle();
       
-      if (!googleSignInResult.success) {
-        Alert.alert('Google Sign-Up Failed', googleSignInResult.error);
-        setIsLoading(false);
-        return;
+      if (result.success) {
+        // For Google sign-ups, default to customer role
+        navigation.replace('CustomerApp');
+      } else {
+        Alert.alert('Google Sign-Up Failed', result.error);
       }
-
-      // Success animation
-      Animated.parallel([
-        Animated.timing(formAnimatedValues[0].scale, { toValue: 1.05, duration: 200, useNativeDriver: true }),
-        Animated.timing(formAnimatedValues[0].opacity, { toValue: 0.8, duration: 200, useNativeDriver: true }),
-      ]).start(() => {
-        Alert.alert(
-          'Success', 
-          'Account created successfully with Google!',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                navigation.navigate('CustomerApp'); // Default to customer for Google sign-up
-              }
-            }
-          ]
-        );
-      });
     } catch (error) {
-      console.error('Google Sign-Up error:', error);
-      Alert.alert('Google Sign-Up Failed', error.message || 'An unexpected error occurred');
+      Alert.alert('Error', 'Google Sign-Up failed. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const getInputBorderColor = (field) => {
-    return inputAnimations[field]?.borderColor.interpolate({
-      inputRange: [0, 1],
-      outputRange: [colors.border.primary, colors.primary],
-    }) || colors.border.primary;
+  const handleUserTypePress = (type) => {
+    setFormData(prev => ({ ...prev, userType: type }));
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Header Section */}
-          <Animated.View 
-            style={[
-              styles.headerSection,
-              {
-                opacity: headerAnimatedValues.opacity,
-                transform: [{ translateY: headerAnimatedValues.translateY }],
-              }
-            ]}
-          >
-            <View style={styles.logoContainer}>
-              <Ionicons name="leaf" size={32} color={colors.background.white} />
-            </View>
-            <Text style={styles.headerTitle}>Create Account</Text>
-            <Text style={styles.headerSubtitle}>Join the Sanova community</Text>
-          </Animated.View>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Join the Sanova community</Text>
+          </View>
 
           {/* User Type Selection */}
-          <Animated.View 
-            style={[
-              styles.userTypeSection,
-              {
-                opacity: userTypeAnimatedValues.opacity,
-                transform: [
-                  { translateY: userTypeAnimatedValues.translateY },
-                  { scale: userTypeAnimatedValues.scale || 1 }
-                ],
-              }
-            ]}
-          >
-            <Text style={styles.sectionLabel}>I am a...</Text>
-            <View style={styles.userTypeContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.userTypeButton,
-                  formData.userType === 'customer' && styles.activeUserType
-                ]}
-                onPress={() => handleUserTypePress('customer')}
-                activeOpacity={0.8}
-              >
-                <Ionicons 
-                  name="person" 
-                  size={20} 
-                  color={formData.userType === 'customer' ? colors.background.white : colors.text.primary} 
-                />
-                <Text style={[
-                  styles.userTypeText,
-                  formData.userType === 'customer' && styles.activeUserTypeText
-                ]}>
-                  Customer
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[
-                  styles.userTypeButton,
-                  formData.userType === 'salon' && styles.activeUserType
-                ]}
-                onPress={() => handleUserTypePress('salon')}
-                activeOpacity={0.8}
-              >
-                <Ionicons 
-                  name="storefront" 
-                  size={20} 
-                  color={formData.userType === 'salon' ? colors.background.white : colors.text.primary} 
-                />
-                <Text style={[
-                  styles.userTypeText,
-                  formData.userType === 'salon' && styles.activeUserTypeText
-                ]}>
-                  Salon Owner
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-
-          {/* Name Fields */}
-          <Animated.View 
-            style={[
-              styles.formSection,
-              {
-                opacity: formAnimatedValues[0].opacity,
-                transform: [{ translateY: formAnimatedValues[0].translateY }],
-              }
-            ]}
-          >
-            <Text style={styles.sectionLabel}>Personal Information</Text>
-            <View style={styles.nameRow}>
-              <View style={styles.halfInputGroup}>
-                <Text style={styles.inputLabel}>First Name *</Text>
-                <Animated.View
-                  style={[
-                    styles.inputContainer,
-                    {
-                      borderColor: getInputBorderColor('firstName'),
-                      transform: [{ scale: inputAnimations.firstName.scale }],
-                    }
-                  ]}
-                >
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="First name"
-                    placeholderTextColor={colors.text.secondary}
-                    value={formData.firstName}
-                    onChangeText={(value) => handleInputChange('firstName', value)}
-                    onFocus={() => handleInputFocus('firstName')}
-                    onBlur={() => handleInputBlur('firstName')}
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                  />
-                </Animated.View>
-              </View>
-
-              <View style={styles.halfInputGroup}>
-                <Text style={styles.inputLabel}>Last Name *</Text>
-                <Animated.View
-                  style={[
-                    styles.inputContainer,
-                    {
-                      borderColor: getInputBorderColor('lastName'),
-                      transform: [{ scale: inputAnimations.lastName.scale }],
-                    }
-                  ]}
-                >
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Last name"
-                    placeholderTextColor={colors.text.secondary}
-                    value={formData.lastName}
-                    onChangeText={(value) => handleInputChange('lastName', value)}
-                    onFocus={() => handleInputFocus('lastName')}
-                    onBlur={() => handleInputBlur('lastName')}
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                  />
-                </Animated.View>
-              </View>
-            </View>
-          </Animated.View>
-
-          {/* Contact Information */}
-          <Animated.View 
-            style={[
-              styles.formSection,
-              {
-                opacity: formAnimatedValues[1].opacity,
-                transform: [{ translateY: formAnimatedValues[1].translateY }],
-              }
-            ]}
-          >
-            <Text style={styles.sectionLabel}>Contact Information</Text>
-            
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Email Address *</Text>
-              <Animated.View
-                style={[
-                  styles.inputContainer,
-                  {
-                    borderColor: getInputBorderColor('email'),
-                    transform: [{ scale: inputAnimations.email.scale }],
-                  }
-                ]}
-              >
-                <Ionicons name="mail-outline" size={20} color={colors.text.secondary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Enter your email"
-                  placeholderTextColor={colors.text.secondary}
-                  value={formData.email}
-                  onChangeText={(value) => handleInputChange('email', value)}
-                  onFocus={() => handleInputFocus('email')}
-                  onBlur={() => handleInputBlur('email')}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </Animated.View>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Phone Number</Text>
-              <Animated.View
-                style={[
-                  styles.inputContainer,
-                  {
-                    borderColor: getInputBorderColor('phone'),
-                    transform: [{ scale: inputAnimations.phone.scale }],
-                  }
-                ]}
-              >
-                <Ionicons name="call-outline" size={20} color={colors.text.secondary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Optional"
-                  placeholderTextColor={colors.text.secondary}
-                  value={formData.phone}
-                  onChangeText={(value) => handleInputChange('phone', value)}
-                  onFocus={() => handleInputFocus('phone')}
-                  onBlur={() => handleInputBlur('phone')}
-                  keyboardType="phone-pad"
-                />
-              </Animated.View>
-            </View>
-          </Animated.View>
-
-          {/* Password Fields */}
-          <Animated.View 
-            style={[
-              styles.formSection,
-              {
-                opacity: formAnimatedValues[2].opacity,
-                transform: [{ translateY: formAnimatedValues[2].translateY }],
-              }
-            ]}
-          >
-            <Text style={styles.sectionLabel}>Security</Text>
-            
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Password *</Text>
-              <Animated.View
-                style={[
-                  styles.inputContainer,
-                  {
-                    borderColor: getInputBorderColor('password'),
-                    transform: [{ scale: inputAnimations.password.scale }],
-                  }
-                ]}
-              >
-                <Ionicons name="lock-closed-outline" size={20} color={colors.text.secondary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Create a password"
-                  placeholderTextColor={colors.text.secondary}
-                  value={formData.password}
-                  onChangeText={(value) => handleInputChange('password', value)}
-                  onFocus={() => handleInputFocus('password')}
-                  onBlur={() => handleInputBlur('password')}
-                  secureTextEntry={!isPasswordVisible}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <TouchableOpacity
-                  onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                  style={styles.eyeIcon}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons 
-                    name={isPasswordVisible ? "eye-outline" : "eye-off-outline"} 
-                    size={20} 
-                    color={colors.text.secondary} 
-                  />
-                </TouchableOpacity>
-              </Animated.View>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Confirm Password *</Text>
-              <Animated.View
-                style={[
-                  styles.inputContainer,
-                  {
-                    borderColor: getInputBorderColor('confirmPassword'),
-                    transform: [{ scale: inputAnimations.confirmPassword.scale }],
-                  }
-                ]}
-              >
-                <Ionicons name="lock-closed-outline" size={20} color={colors.text.secondary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Confirm your password"
-                  placeholderTextColor={colors.text.secondary}
-                  value={formData.confirmPassword}
-                  onChangeText={(value) => handleInputChange('confirmPassword', value)}
-                  onFocus={() => handleInputFocus('confirmPassword')}
-                  onBlur={() => handleInputBlur('confirmPassword')}
-                  secureTextEntry={!isConfirmPasswordVisible}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <TouchableOpacity
-                  onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
-                  style={styles.eyeIcon}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons 
-                    name={isConfirmPasswordVisible ? "eye-outline" : "eye-off-outline"} 
-                    size={20} 
-                    color={colors.text.secondary} 
-                  />
-                </TouchableOpacity>
-              </Animated.View>
-            </View>
-          </Animated.View>
-
-          {/* Button Section */}
-          <Animated.View 
-            style={[
-              styles.buttonSection,
-              {
-                opacity: buttonAnimatedValues.opacity,
-                transform: [
-                  { translateY: buttonAnimatedValues.translateY },
-                  { scale: buttonAnimatedValues.scale }
-                ],
-              }
-            ]}
-          >
+          <View style={styles.userTypeContainer}>
             <TouchableOpacity
-              style={[styles.signUpButton, isLoading && styles.signUpButtonDisabled]}
-              onPress={handleSignUp}
-              disabled={isLoading}
-              activeOpacity={0.8}
+              style={[
+                styles.userTypeButton,
+                formData.userType === 'customer' && styles.userTypeButtonActive
+              ]}
+              onPress={() => handleUserTypePress('customer')}
             >
-              {isLoading ? (
-                <View style={styles.loadingContainer}>
-                  <Animated.View style={styles.loadingSpinner} />
-                  <Text style={styles.signUpButtonText}>Creating Account...</Text>
-                </View>
-              ) : (
-                <Text style={styles.signUpButtonText}>Create Account</Text>
-              )}
+              <Ionicons 
+                name="person" 
+                size={20} 
+                color={formData.userType === 'customer' ? colors.white : colors.text.primary} 
+              />
+              <Text style={[
+                styles.userTypeText,
+                formData.userType === 'customer' && styles.userTypeTextActive
+              ]}>Customer</Text>
             </TouchableOpacity>
 
-            {/* Google Sign-Up Button */}
+            <TouchableOpacity
+              style={[
+                styles.userTypeButton,
+                formData.userType === 'salon' && styles.userTypeButtonActive
+              ]}
+              onPress={() => handleUserTypePress('salon')}
+            >
+              <Ionicons 
+                name="business" 
+                size={20} 
+                color={formData.userType === 'salon' ? colors.white : colors.text.primary} 
+              />
+              <Text style={[
+                styles.userTypeText,
+                formData.userType === 'salon' && styles.userTypeTextActive
+              ]}>Salon Owner</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Form */}
+          <View style={styles.formContainer}>
+            <View style={styles.nameRow}>
+              <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="First Name"
+                  placeholderTextColor={colors.text.secondary}
+                  value={formData.firstName}
+                  onChangeText={(value) => handleInputChange('firstName', value)}
+                  autoCapitalize="words"
+                />
+              </View>
+
+              <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Last Name"
+                  placeholderTextColor={colors.text.secondary}
+                  value={formData.lastName}
+                  onChangeText={(value) => handleInputChange('lastName', value)}
+                  autoCapitalize="words"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Email address"
+                placeholderTextColor={colors.text.secondary}
+                value={formData.email}
+                onChangeText={(value) => handleInputChange('email', value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Phone number (optional)"
+                placeholderTextColor={colors.text.secondary}
+                value={formData.phone}
+                onChangeText={(value) => handleInputChange('phone', value)}
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor={colors.text.secondary}
+                value={formData.password}
+                onChangeText={(value) => handleInputChange('password', value)}
+                secureTextEntry={!isPasswordVisible}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+              >
+                <Ionicons
+                  name={isPasswordVisible ? 'eye-off' : 'eye'}
+                  size={20}
+                  color={colors.text.secondary}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Confirm Password"
+                placeholderTextColor={colors.text.secondary}
+                value={formData.confirmPassword}
+                onChangeText={(value) => handleInputChange('confirmPassword', value)}
+                secureTextEntry={!isConfirmPasswordVisible}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
+              >
+                <Ionicons
+                  name={isConfirmPasswordVisible ? 'eye-off' : 'eye'}
+                  size={20}
+                  color={colors.text.secondary}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.signUpButton, isLoading && styles.buttonDisabled]}
+              onPress={handleSignUp}
+              disabled={isLoading}
+            >
+              <Text style={styles.signUpButtonText}>
+                {isLoading ? 'Creating Account...' : 'Sign Up'}
+              </Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.googleButton}
               onPress={handleGoogleSignUp}
               disabled={isLoading}
-              activeOpacity={0.8}
             >
               <Ionicons name="logo-google" size={20} color={colors.text.primary} />
               <Text style={styles.googleButtonText}>Sign up with Google</Text>
             </TouchableOpacity>
 
-            <View style={styles.loginSection}>
-              <Text style={styles.loginText}>Already have an account? </Text>
-              <TouchableOpacity 
-                onPress={() => navigation.navigate('Login')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.loginLink}>Sign In</Text>
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
+            <TouchableOpacity
+              style={styles.loginLink}
+              onPress={() => navigation.navigate('Login')}
+            >
+              <Text style={styles.loginText}>
+                Already have an account? <Text style={styles.loginTextBold}>Sign In</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -643,177 +307,128 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: spacing.xl,
-  },
-  headerSection: {
+  header: {
     alignItems: 'center',
-    paddingTop: spacing.xxxl,
-    paddingBottom: spacing.xl,
-    paddingHorizontal: spacing.xl,
+    paddingTop: 60,
+    paddingBottom: 30,
+    paddingHorizontal: 24,
   },
-  logoContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-    ...shadows.card,
+  title: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: colors.white,
+    marginBottom: 8,
   },
-  headerTitle: {
-    ...typography.title2,
-    color: colors.background.white,
-    marginBottom: spacing.xs,
-  },
-  headerSubtitle: {
-    ...typography.body,
-    color: colors.background.white,
+  subtitle: {
+    fontSize: 16,
+    color: colors.text.secondary,
     opacity: 0.8,
-  },
-  userTypeSection: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.lg,
-  },
-  sectionLabel: {
-    ...typography.captionMedium,
-    color: colors.background.white,
-    marginBottom: spacing.md,
-    opacity: 0.9,
   },
   userTypeContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: borderRadius.lg,
-    padding: 4,
+    paddingHorizontal: 24,
+    marginBottom: 30,
+    gap: 12,
   },
   userTypeButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.md,
-    gap: spacing.sm,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    gap: 8,
   },
-  activeUserType: {
-    backgroundColor: colors.primary,
-    ...shadows.card,
+  userTypeButtonActive: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
   userTypeText: {
-    ...typography.bodyMedium,
-    color: colors.text.primary,
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.white,
   },
-  activeUserTypeText: {
-    color: colors.background.white,
+  userTypeTextActive: {
+    color: colors.white,
   },
-  formSection: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.lg,
+  formContainer: {
+    paddingHorizontal: 24,
+    marginBottom: 30,
   },
   nameRow: {
     flexDirection: 'row',
-    gap: spacing.md,
-  },
-  inputGroup: {
-    marginBottom: spacing.lg,
-  },
-  halfInputGroup: {
-    flex: 1,
-    marginBottom: spacing.lg,
-  },
-  inputLabel: {
-    ...typography.captionMedium,
-    color: colors.background.white,
-    marginBottom: spacing.sm,
-    opacity: 0.9,
+    marginBottom: 20,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    ...shadows.card,
+    position: 'relative',
+    marginBottom: 20,
   },
-  inputIcon: {
-    marginRight: spacing.md,
-  },
-  textInput: {
-    flex: 1,
-    ...typography.body,
+  input: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    fontSize: 16,
     color: colors.text.primary,
+    borderWidth: 1,
+    borderColor: 'rgba(38, 52, 40, 0.1)',
   },
   eyeIcon: {
-    padding: spacing.xs,
+    position: 'absolute',
+    right: 20,
+    top: 18,
   },
-  buttonSection: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
+  buttonContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   signUpButton: {
-    backgroundColor: colors.background.white,
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing.lg,
+    backgroundColor: colors.accent,
+    borderRadius: 12,
+    paddingVertical: 18,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
-    ...shadows.elevated,
+    marginBottom: 16,
   },
-  signUpButtonDisabled: {
+  buttonDisabled: {
     opacity: 0.7,
   },
   signUpButtonText: {
-    ...typography.button,
-    color: colors.primary,
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.white,
   },
   googleButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing.lg,
+    borderRadius: 12,
+    paddingVertical: 16,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.lg,
-    flexDirection: 'row',
-    gap: spacing.md,
+    marginBottom: 24,
     borderWidth: 1,
     borderColor: 'rgba(38, 52, 40, 0.1)',
-    ...shadows.card,
+    gap: 12,
   },
   googleButtonText: {
-    ...typography.button,
+    fontSize: 16,
+    fontWeight: '500',
     color: colors.text.primary,
   },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  loadingSpinner: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    borderTopColor: 'transparent',
-  },
-  loginSection: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  loginLink: {
     alignItems: 'center',
   },
   loginText: {
-    ...typography.body,
-    color: colors.background.white,
+    fontSize: 16,
+    color: colors.white,
     opacity: 0.8,
   },
-  loginLink: {
-    ...typography.bodyMedium,
-    color: colors.background.white,
+  loginTextBold: {
+    fontWeight: '600',
+    color: colors.accent,
+    opacity: 1,
   },
 });

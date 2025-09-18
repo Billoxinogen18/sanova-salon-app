@@ -19,11 +19,6 @@ import {
   borderRadius, 
   premiumComponents 
 } from '../../theme/premiumStyles';
-import { 
-  animationSequences, 
-  AnimationController, 
-  microAnimations 
-} from '../../theme/animations';
 import { firestoreService, authService } from '../../services/firebaseService';
 import realtimeServiceInstance from '../../services/realtimeService';
 import notificationServiceInstance from '../../services/notificationService';
@@ -37,7 +32,7 @@ export default function BookingsScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Animation controller
-  const animationController = useRef(new AnimationController()).current;
+  // Removed animation controller
 
   // Animated values
   const headerAnimatedValues = useRef({
@@ -57,6 +52,8 @@ export default function BookingsScreen({ navigation }) {
     scale: new Animated.Value(0.95),
   }).current;
 
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
   useEffect(() => {
     StatusBar.setBarStyle('light-content');
     
@@ -70,24 +67,71 @@ export default function BookingsScreen({ navigation }) {
     initializeRealtimeMonitoring();
 
     return () => {
-      animationController.stopAllAnimations();
+      // Cleanup real-time monitoring
+      try {
+        const currentUser = authService.getCurrentUser();
+        if (currentUser && realtimeServiceInstance.stopListening) {
+          realtimeServiceInstance.stopListening(`user_bookings_${currentUser.uid}`);
+        }
+      } catch (error) {
+        console.warn('Error cleaning up real-time monitoring:', error);
+      }
     };
   }, []);
 
   const startEntranceAnimations = () => {
-    const headerAnimation = animationSequences.fadeInUp(headerAnimatedValues, 0);
-    const upcomingAnimation = animationSequences.fadeInUp(upcomingAnimatedValues, 200);
-    const previousAnimation = animationSequences.fadeInUp(previousAnimatedValues, 400);
-
-    animationController.registerAnimation('entrance', 
+    // Start animations directly with proper timing
+    Animated.stagger(200, [
+      // Header animation
       Animated.parallel([
-        headerAnimation,
-        upcomingAnimation,
-        previousAnimation,
-      ])
-    );
-
-    animationController.animations.get('entrance').start();
+        Animated.timing(headerAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(headerAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Upcoming animation
+      Animated.parallel([
+        Animated.timing(upcomingAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(upcomingAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(upcomingAnimatedValues.scale, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Previous animation
+      Animated.parallel([
+        Animated.timing(previousAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(previousAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(previousAnimatedValues.scale, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
   };
 
   const loadBookingsData = async () => {
@@ -127,37 +171,49 @@ export default function BookingsScreen({ navigation }) {
   const initializeRealtimeMonitoring = async () => {
     try {
       const currentUser = authService.getCurrentUser();
-      if (currentUser) {
-        // Listen for real-time booking updates
-        const result = await realtimeServiceInstance.startListeningToUserBookings?.(currentUser.uid, (bookings) => {
-          console.log('📅 Real-time booking updates for customer:', bookings.length);
-          
-          const now = new Date();
-          const upcoming = bookings.filter(booking => {
-            const bookingDate = new Date(booking.date);
-            return bookingDate >= now && booking.status !== 'cancelled' && booking.status !== 'completed';
-          });
-          
-          const previous = bookings.filter(booking => {
-            const bookingDate = new Date(booking.date);
-            return bookingDate < now || booking.status === 'completed' || booking.status === 'cancelled';
-          });
-          
-          setUpcomingBookings(upcoming);
-          setPreviousBookings(previous);
-          
-          // Show notification for booking status updates
-          if (bookings.length > 0) {
-            const latestBooking = bookings[0];
-            if (latestBooking.status === 'confirmed') {
-              notificationServiceInstance.sendLocalNotification(
-                'Booking Confirmed!',
-                `Your ${latestBooking.serviceName} appointment is confirmed.`,
-                { type: 'booking_confirmed', bookingId: latestBooking.id }
-              );
+      if (currentUser && realtimeServiceInstance.startListeningToUserBookings) {
+        // Listen for real-time booking updates with error handling
+        const result = realtimeServiceInstance.startListeningToUserBookings(currentUser.uid, (bookings) => {
+          try {
+            console.log('📅 Real-time booking updates for customer:', bookings.length);
+            
+            const now = new Date();
+            const upcoming = bookings.filter(booking => {
+              const bookingDate = new Date(booking.date);
+              return bookingDate >= now && booking.status !== 'cancelled' && booking.status !== 'completed';
+            });
+            
+            const previous = bookings.filter(booking => {
+              const bookingDate = new Date(booking.date);
+              return bookingDate < now || booking.status === 'completed' || booking.status === 'cancelled';
+            });
+            
+            setUpcomingBookings(upcoming);
+            setPreviousBookings(previous);
+            
+            // Show notification for booking status updates
+            if (bookings.length > 0) {
+              const latestBooking = bookings[0];
+              if (latestBooking.status === 'confirmed') {
+                notificationServiceInstance.sendLocalNotification(
+                  'Booking Confirmed!',
+                  `Your ${latestBooking.serviceName} appointment is confirmed.`,
+                  { type: 'booking_confirmed', bookingId: latestBooking.id }
+                );
+              }
             }
+          } catch (callbackError) {
+            console.error('Error in real-time callback:', callbackError);
           }
         });
+        
+        if (result && result.success) {
+          console.log('✅ Real-time monitoring started successfully');
+        } else {
+          console.warn('⚠️ Real-time monitoring failed, using polling fallback');
+        }
+      } else {
+        console.warn('⚠️ Real-time monitoring not available, using polling fallback');
       }
     } catch (error) {
       console.error('Error initializing real-time monitoring:', error);
@@ -241,15 +297,15 @@ export default function BookingsScreen({ navigation }) {
         {/* Upcoming Bookings Section - exactly as shown in design */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Kommende Bookinger</Text>
-          {upcomingBookings.map((booking) => (
+          {displayUpcomingBookings.map((booking) => (
             <View key={booking.id} style={styles.bookingCard}>
               <View style={styles.bookingIcon}>
                 <Text style={styles.iconText}>{booking.icon}</Text>
               </View>
               <View style={styles.bookingInfo}>
-                <Text style={styles.serviceName}>{booking.service}</Text>
-                <Text style={styles.salonName}>{booking.salon} - {booking.address}</Text>
-                <Text style={styles.bookingDate}>{booking.date}</Text>
+                <Text style={styles.serviceName}>{booking.serviceName}</Text>
+                <Text style={styles.salonName}>{booking.salonName} - {booking.salonAddress}</Text>
+                <Text style={styles.bookingDate}>{booking.date} {booking.time}</Text>
               </View>
               <TouchableOpacity style={styles.detailsButton} activeOpacity={0.8}>
                 <Text style={styles.detailsButtonText}>Se detaljer</Text>
@@ -261,15 +317,15 @@ export default function BookingsScreen({ navigation }) {
         {/* Previous Bookings Section - exactly as shown in design */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Tidligere Bookinger</Text>
-          {previousBookings.map((booking) => (
+          {displayPreviousBookings.map((booking) => (
             <View key={booking.id} style={styles.bookingCard}>
               <View style={styles.bookingIcon}>
                 <Text style={styles.iconText}>{booking.icon}</Text>
               </View>
               <View style={styles.bookingInfo}>
-                <Text style={styles.serviceName}>{booking.service}</Text>
-                <Text style={styles.salonName}>{booking.salon} - {booking.address}</Text>
-                <Text style={styles.bookingDate}>{booking.date}</Text>
+                <Text style={styles.serviceName}>{booking.serviceName}</Text>
+                <Text style={styles.salonName}>{booking.salonName} - {booking.salonAddress}</Text>
+                <Text style={styles.bookingDate}>{booking.date} {booking.time}</Text>
               </View>
               <View style={styles.actionButtons}>
                 {booking.canBook && (

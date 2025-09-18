@@ -19,10 +19,8 @@ export default function WelcomeScreenEnhanced({ navigation }) {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
   const [scaleAnim] = useState(new Animated.Value(0.8));
-  const [logoRotate] = useState(new Animated.Value(0));
-
   useEffect(() => {
-    // Sequence of entrance animations
+    // Clean entrance animations - NO ROTATING LOGO
     const startAnimations = () => {
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -43,25 +41,11 @@ export default function WelcomeScreenEnhanced({ navigation }) {
           useNativeDriver: true,
         }),
       ]).start();
-
-      // Logo rotation animation
-      Animated.loop(
-        Animated.timing(logoRotate, {
-          toValue: 1,
-          duration: 10000,
-          useNativeDriver: true,
-        })
-      ).start();
     };
 
     const timer = setTimeout(startAnimations, 300);
     return () => clearTimeout(timer);
   }, []);
-
-  const rotate = logoRotate.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
 
   return (
     <View style={styles.container}>
@@ -93,12 +77,9 @@ export default function WelcomeScreenEnhanced({ navigation }) {
           }
         ]}
       >
-        {/* Animated Logo */}
+        {/* Clean Logo - NO ROTATION */}
         <Animated.View 
-          style={[
-            styles.logoContainer,
-            { transform: [{ rotate }] }
-          ]}
+          style={styles.logoContainer}
         >
           <View style={styles.logoCircle}>
             <Text style={styles.logoEmoji}>🌿</Text>
@@ -134,7 +115,10 @@ export default function WelcomeScreenEnhanced({ navigation }) {
             variant="primary"
             size="large"
             style={styles.primaryButton}
-            onPress={() => navigation.navigate('Login')}
+            onPress={() => {
+              console.log('Login button pressed');
+              navigation.navigate('Login');
+            }}
           >
             <View style={styles.buttonContent}>
               <Ionicons name="log-in" size={20} color={colors.text.white} />
@@ -146,11 +130,14 @@ export default function WelcomeScreenEnhanced({ navigation }) {
             variant="outline"
             size="large"
             style={styles.secondaryButton}
-            onPress={() => navigation.navigate('SignUp')}
+            onPress={() => {
+              console.log('SignUp button pressed');
+              navigation.navigate('SignUp');
+            }}
           >
             <View style={styles.buttonContent}>
-              <Ionicons name="person-add" size={20} color={colors.text.white} />
-              <Text style={[styles.buttonText, { color: colors.text.white }]}>Opret konto</Text>
+              <Ionicons name="person-add" size={20} color={colors.primary} />
+              <Text style={[styles.buttonText, { color: colors.primary }]}>Opret konto</Text>
             </View>
           </AnimatedButton>
         </Animated.View>
@@ -202,31 +189,32 @@ const styles = StyleSheet.create({
     left: width * 0.05,
   },
   logoContainer: {
-    marginBottom: 40,
+    marginBottom: 20,
+    marginTop: -20, // Move logo higher
   },
   logoCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 80, // Smaller logo
+    height: 80, // Smaller logo
+    borderRadius: 40,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   logoEmoji: {
-    fontSize: 50,
+    fontSize: 32, // Smaller emoji
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 50,
+    marginBottom: 30, // Reduced spacing
   },
   title: {
-    fontSize: 42,
+    fontSize: 32, // Smaller title
     fontWeight: 'bold',
     color: colors.text.white,
-    marginBottom: 8,
-    letterSpacing: 2,
+    marginBottom: 6,
+    letterSpacing: 1.5,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
@@ -245,8 +233,8 @@ const styles = StyleSheet.create({
   },
   featuresContainer: {
     alignItems: 'center',
-    marginBottom: 50,
-    gap: 16,
+    marginBottom: 30, // Reduced spacing
+    gap: 12, // Reduced gap
   },
   featureItem: {
     flexDirection: 'row',
@@ -264,12 +252,12 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   primaryButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     shadowColor: colors.shadow.dark,
   },
   secondaryButton: {
-    borderColor: colors.text.white,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: colors.primary,
+    backgroundColor: 'transparent',
   },
   buttonContent: {
     flexDirection: 'row',

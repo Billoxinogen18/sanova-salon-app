@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
+import { authService } from './src/services/firebaseService';
 
 // Import app types
 import CustomerApp from './src/CustomerApp';
@@ -22,11 +23,26 @@ import { pageTransitions } from './src/theme/animations';
 const Stack = createStackNavigator();
 
 export default function App() {
-  // Initialize services on app startup
+  const [isLoading, setIsLoading] = useState(true);
+  const [initialRoute, setInitialRoute] = useState('Welcome');
+
+  // Initialize services and check login state on app startup
   useEffect(() => {
-    const initializeServices = async () => {
+    const initializeApp = async () => {
       try {
-        console.log('🚀 Initializing Sanova services...');
+        console.log('🚀 Initializing Sanova app...');
+        
+        // Check if user is already logged in
+        const loginState = await authService.checkLoginState();
+        console.log('🔐 Login state check:', loginState);
+        
+        if (loginState.isLoggedIn && authService.getCurrentUser()) {
+          console.log('✅ User already logged in, navigating to app');
+          setInitialRoute('CustomerApp'); // Default to customer app
+        } else {
+          console.log('👤 No user logged in, showing welcome screen');
+          setInitialRoute('Welcome');
+        }
         
         // Initialize notification service
         const notificationResult = await notificationServiceInstance.initialize();
@@ -44,13 +60,16 @@ export default function App() {
           console.warn('⚠️ Real-time service failed to initialize:', realtimeResult.error);
         }
         
-        console.log('🎉 Sanova services initialization complete');
+        console.log('🎉 Sanova app initialization complete');
       } catch (error) {
-        console.error('❌ Error initializing services:', error);
+        console.error('❌ Error initializing app:', error);
+        setInitialRoute('Welcome'); // Fallback to welcome screen
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    initializeServices();
+    initializeApp();
 
     // Cleanup on app unmount
     return () => {
@@ -59,12 +78,21 @@ export default function App() {
     };
   }, []);
 
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <StatusBar style="light" backgroundColor="#263428" />
+        {/* Simple loading indicator */}
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" backgroundColor="#263428" />
       <NavigationContainer>
         <Stack.Navigator 
-          initialRouteName="Welcome"
+          initialRouteName={initialRoute}
           screenOptions={{
             headerShown: false,
             ...pageTransitions.fadeScale,

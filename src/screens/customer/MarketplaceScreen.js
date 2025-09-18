@@ -20,11 +20,6 @@ import {
   borderRadius, 
   premiumComponents 
 } from '../../theme/premiumStyles';
-import { 
-  animationSequences, 
-  AnimationController, 
-  microAnimations 
-} from '../../theme/animations';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,7 +28,7 @@ export default function MarketplaceScreen({ navigation }) {
   const [searchFocused, setSearchFocused] = useState(false);
 
   // Animation controller
-  const animationController = useRef(new AnimationController()).current;
+  // Removed animation controller
 
   // Animated values
   const headerAnimatedValues = useRef({
@@ -55,6 +50,18 @@ export default function MarketplaceScreen({ navigation }) {
   const productsAnimatedValues = useRef([]).current;
   const searchBorderAnimation = useRef(new Animated.Value(0)).current;
 
+  // Beauty products exactly as shown in design screenshots
+  const beautyProducts = [
+    { id: 1, name: 'Moisturizing Shampoo', price: '150 kr', emoji: '🧴', color: '#F5F1E8' },
+    { id: 2, name: 'Hydrating Serum', price: '200 kr', emoji: '🧴', color: '#8B4513' },
+    { id: 3, name: 'Face Cream', price: '180 kr', emoji: '🟢', color: '#2D5A3D' },
+    { id: 4, name: 'Body Lotion', price: '160 kr', emoji: '🧴', color: '#F5F1E8' },
+    { id: 5, name: 'Body Lotion', price: '180 kr', emoji: '🧴', color: '#F5F1E8' },
+    { id: 6, name: 'Hair Oil', price: '110 kr', emoji: '🧴', color: '#F5F1E8' },
+    { id: 7, name: 'Cleansing Oil', price: '180 kr', emoji: '🟢', color: '#2D5A3D' },
+    { id: 8, name: 'Cleansing Oil', price: '180 kr', emoji: '🧴', color: '#F5F1E8' },
+  ];
+
   useEffect(() => {
     StatusBar.setBarStyle('light-content');
     
@@ -73,57 +80,121 @@ export default function MarketplaceScreen({ navigation }) {
     startEntranceAnimations();
 
     return () => {
-      animationController.stopAllAnimations();
+      // Cleanup animations if needed
+      try {
+        productsAnimatedValues.forEach(values => {
+          if (values && values.opacity && typeof values.opacity.stopAnimation === 'function') {
+            values.opacity.stopAnimation();
+          }
+          if (values && values.translateY && typeof values.translateY.stopAnimation === 'function') {
+            values.translateY.stopAnimation();
+          }
+          if (values && values.scale && typeof values.scale.stopAnimation === 'function') {
+            values.scale.stopAnimation();
+          }
+        });
+      } catch (error) {
+        console.warn('Animation cleanup error:', error);
+      }
     };
   }, []);
 
   const startEntranceAnimations = () => {
-    const headerAnimation = animationSequences.fadeInUp(headerAnimatedValues, 0);
-    const searchAnimation = animationSequences.fadeInUp(searchAnimatedValues, 200);
-    const titleAnimation = animationSequences.fadeInUp(titleAnimatedValues, 400);
-    
-    // Stagger product animations
-    const productAnimations = productsAnimatedValues.map((values, index) => 
-      animationSequences.fadeInUp(values, 600 + (index * 100))
-    );
-
-    animationController.registerAnimation('entrance', 
+    // Start animations directly with proper timing
+    Animated.stagger(200, [
+      // Header animation
       Animated.parallel([
-        headerAnimation,
-        searchAnimation,
-        titleAnimation,
-        ...productAnimations,
-      ])
-    );
-
-    animationController.animations.get('entrance').start();
+        Animated.timing(headerAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(headerAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Search animation
+      Animated.parallel([
+        Animated.timing(searchAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(searchAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Title animation
+      Animated.parallel([
+        Animated.timing(titleAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(titleAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Product animations
+      ...productsAnimatedValues.map(values => 
+        Animated.parallel([
+          Animated.timing(values.opacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(values.translateY, {
+            toValue: 0,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(values.scale, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ])
+      ),
+    ]).start();
   };
 
   const handleSearchFocus = () => {
     setSearchFocused(true);
     Animated.parallel([
-      microAnimations.inputFocus(searchBorderAnimation, searchAnimatedValues.scale),
+      Animated.timing(searchBorderAnimation, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(searchAnimatedValues.scale, {
+        toValue: 1.02,
+        duration: 200,
+        useNativeDriver: true,
+      }),
     ]).start();
   };
 
   const handleSearchBlur = () => {
     setSearchFocused(false);
     Animated.parallel([
-      microAnimations.inputBlur(searchBorderAnimation, searchAnimatedValues.scale),
+      Animated.timing(searchBorderAnimation, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(searchAnimatedValues.scale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
     ]).start();
   };
-
-  // Beauty products exactly as shown in design screenshots
-  const beautyProducts = [
-    { id: 1, name: 'Moisturizing Shampoo', price: '150 kr', emoji: '🧴', color: '#F4E4BC' },
-    { id: 2, name: 'Hydrating Serum', price: '200 kr', emoji: '🧴', color: '#8B4513' },
-    { id: 3, name: 'Face Cream', price: '180 kr', emoji: '🟢', color: '#2D5A3D' },
-    { id: 4, name: 'Body Lotion', price: '160 kr', emoji: '🧴', color: '#F4E4BC' },
-    { id: 5, name: 'Body Lotion', price: '180 kr', emoji: '🧴', color: '#F4E4BC' },
-    { id: 6, name: 'Hair Oil', price: '110 kr', emoji: '🧴', color: '#F4E4BC' },
-    { id: 7, name: 'Cleansing Oil', price: '180 kr', emoji: '🟢', color: '#2D5A3D' },
-    { id: 8, name: 'Cleansing Oil', price: '180 kr', emoji: '🧴', color: '#F4E4BC' },
-  ];
 
   const handleProductPress = (item, index) => {
     // Button press animation

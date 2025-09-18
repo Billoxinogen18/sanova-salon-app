@@ -17,10 +17,6 @@ import {
   borderRadius, 
   premiumComponents 
 } from '../../theme/premiumStyles';
-import { 
-  animationSequences, 
-  AnimationController 
-} from '../../theme/animations';
 import notificationServiceInstance from '../../services/notificationService';
 
 const { width, height } = Dimensions.get('window');
@@ -29,7 +25,7 @@ export default function PaymentSuccessScreen({ navigation, route }) {
   const { service, booking, paymentMethod } = route.params || {};
 
   // Animation controller
-  const animationController = useRef(new AnimationController()).current;
+  // Removed animation controller
 
   // Animated values
   const successAnimatedValues = useRef({
@@ -61,7 +57,7 @@ export default function PaymentSuccessScreen({ navigation, route }) {
     sendSuccessNotification();
 
     return () => {
-      animationController.stopAllAnimations();
+      // Cleanup animations if needed
     };
   }, []);
 
@@ -77,20 +73,54 @@ export default function PaymentSuccessScreen({ navigation, route }) {
       }),
     ]);
 
-    const successAnimation = animationSequences.fadeInUp(successAnimatedValues, 0);
-    const cardAnimation = animationSequences.fadeInUp(cardAnimatedValues, 200);
-    const buttonAnimation = animationSequences.fadeInUp(buttonAnimatedValues, 600);
-
-    animationController.registerAnimation('success', 
+    // Start animations directly with proper timing
+    Animated.stagger(200, [
+      checkmarkAnimation,
+      // Success animation
       Animated.parallel([
-        checkmarkAnimation,
-        successAnimation,
-        cardAnimation,
-        buttonAnimation,
-      ])
-    );
-
-    animationController.animations.get('success').start();
+        Animated.timing(successAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(successAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Card animation
+      Animated.parallel([
+        Animated.timing(cardAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cardAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cardAnimatedValues.scale, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Button animation
+      Animated.parallel([
+        Animated.timing(buttonAnimatedValues.opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonAnimatedValues.translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
   };
 
   const sendSuccessNotification = async () => {

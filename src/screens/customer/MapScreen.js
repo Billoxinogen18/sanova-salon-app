@@ -22,11 +22,7 @@ import {
   borderRadius, 
   premiumComponents 
 } from '../../theme/premiumStyles';
-import { 
-  animationSequences, 
-  AnimationController, 
-  microAnimations 
-} from '../../theme/animations';
+// Removed animations
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,6 +30,7 @@ export default function MapScreen({ navigation }) {
   const [searchText, setSearchText] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef(null);
   const [region, setRegion] = useState({
     latitude: 65.972595, // Iceland coordinates
@@ -43,28 +40,28 @@ export default function MapScreen({ navigation }) {
   });
 
   // Animation controller
-  const animationController = useRef(new AnimationController()).current;
+  // Removed animation controller
 
   // Animated values
   const headerAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(-30),
+    opacity: new Animated.Value(1), // Start visible
+    translateY: new Animated.Value(0), // Start at normal position
   }).current;
 
   const mapAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    scale: new Animated.Value(0.95),
+    opacity: new Animated.Value(1), // Start visible
+    scale: new Animated.Value(1), // Start at normal scale
   }).current;
 
   const searchAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(50),
+    opacity: new Animated.Value(1), // Start visible
+    translateY: new Animated.Value(0), // Start at normal position
     scale: new Animated.Value(1),
   }).current;
 
   const productsAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(30),
+    opacity: new Animated.Value(1), // Start visible
+    translateY: new Animated.Value(0), // Start at normal position
   }).current;
 
   const searchBorderAnimation = useRef(new Animated.Value(0)).current;
@@ -73,80 +70,134 @@ export default function MapScreen({ navigation }) {
   useEffect(() => {
     StatusBar.setBarStyle('light-content');
     
-    // Start entrance animations
-    startEntranceAnimations();
-    
-    // Request location permissions
+    // Request location permissions immediately
     requestLocationPermission();
 
+    // Fallback: show map after 2 seconds even if not ready
+    const fallbackTimer = setTimeout(() => {
+      setMapReady(true);
+    }, 2000);
+
     return () => {
-      animationController.stopAllAnimations();
+      clearTimeout(fallbackTimer);
     };
   }, []);
 
   const startEntranceAnimations = () => {
-    const headerAnimation = animationSequences.fadeInUp(headerAnimatedValues, 0);
-    const mapAnimation = Animated.parallel([
-      Animated.timing(mapAnimatedValues.opacity, {
+    const headerAnimation = Animated.parallel([
+      Animated.timing(headerAnimatedValues.opacity, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
       }),
-      Animated.timing(mapAnimatedValues.scale, {
-        toValue: 1,
+      Animated.timing(headerAnimatedValues.translateY, {
+        toValue: 0,
         duration: 600,
         useNativeDriver: true,
       }),
     ]);
-    const searchAnimation = animationSequences.fadeInUp(searchAnimatedValues, 400);
-    const productsAnimation = animationSequences.fadeInUp(productsAnimatedValues, 800);
+    // Map is already visible, no animation needed
+    const mapAnimation = Animated.timing(mapAnimatedValues.opacity, {
+      toValue: 1,
+      duration: 0, // No animation
+      useNativeDriver: true,
+    });
+    const searchAnimation = Animated.parallel([
+      Animated.timing(searchAnimatedValues.opacity, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(searchAnimatedValues.translateY, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]);
+    const productsAnimation = Animated.parallel([
+      Animated.timing(productsAnimatedValues.opacity, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(productsAnimatedValues.translateY, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]);
 
-    animationController.registerAnimation('entrance', 
-      Animated.parallel([
-        headerAnimation,
-        mapAnimation,
-        searchAnimation,
-        productsAnimation,
-      ])
-    );
-
-    animationController.animations.get('entrance').start();
+    // Start animations directly (map is always visible)
+    Animated.stagger(200, [
+      headerAnimation,
+      searchAnimation,
+      productsAnimation,
+    ]).start();
   };
 
   const requestLocationPermission = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
-        const loc = await Location.getCurrentPositionAsync({ 
-          accuracy: Location.Accuracy.Balanced 
-        });
-        const nextRegion = {
-          latitude: loc.coords.latitude,
-          longitude: loc.coords.longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        };
-        setRegion(nextRegion);
-        if (mapRef.current) {
-          mapRef.current.animateToRegion(nextRegion, 1000);
+        try {
+          const loc = await Location.getCurrentPositionAsync({ 
+            accuracy: Location.Accuracy.Balanced,
+            timeout: 10000, // 10 second timeout
+            maximumAge: 60000, // Accept cached location up to 1 minute old
+          });
+          const nextRegion = {
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          };
+          setRegion(nextRegion);
+          if (mapRef.current) {
+            mapRef.current.animateToRegion(nextRegion, 1000);
+          }
+        } catch (locationError) {
+          console.warn('Could not get current location, using default Iceland coordinates:', locationError.message);
+          // Keep using the default Iceland coordinates
         }
+      } else {
+        console.warn('Location permission denied, using default Iceland coordinates');
+        // Keep using the default Iceland coordinates
       }
     } catch (error) {
-      console.error('Error requesting location permission:', error);
+      console.warn('Error requesting location permission, using default coordinates:', error.message);
+      // Keep using the default Iceland coordinates
     }
   };
 
   const handleSearchFocus = () => {
     setSearchFocused(true);
     Animated.parallel([
-      microAnimations.inputFocus(searchBorderAnimation, searchAnimatedValues.scale),
+      Animated.timing(searchBorderAnimation, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(searchAnimatedValues.scale, {
+        toValue: 1.02,
+        duration: 200,
+        useNativeDriver: true,
+      }),
     ]).start();
   };
 
   const handleSearchBlur = () => {
     setSearchFocused(false);
     Animated.parallel([
-      microAnimations.inputBlur(searchBorderAnimation, searchAnimatedValues.scale),
+      Animated.timing(searchBorderAnimation, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(searchAnimatedValues.scale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
     ]).start();
   };
 
@@ -196,7 +247,7 @@ export default function MapScreen({ navigation }) {
   });
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       
       {/* Premium Animated Header */}
@@ -216,18 +267,10 @@ export default function MapScreen({ navigation }) {
         <Text style={styles.headerSubtitle}>Find nearby salons</Text>
       </Animated.View>
 
-      {/* Premium Animated Map Container */}
-      <Animated.View 
-        style={[
-          styles.mapContainer,
-          {
-            opacity: mapAnimatedValues.opacity,
-            transform: [{ scale: mapAnimatedValues.scale }],
-          }
-        ]}
-      >
+      {/* Map Container - Always Visible */}
+      <View style={styles.mapContainer}>
         <View style={styles.mapWrapper}>
-          <MapView
+          {(mapReady || true) && <MapView
             key="iceland-map"
             ref={mapRef}
             provider={PROVIDER_GOOGLE}
@@ -240,6 +283,7 @@ export default function MapScreen({ navigation }) {
             }}
             onMapReady={() => {
               console.log('🗺️ Map is ready!');
+              setMapReady(true);
               // Force map to stay on Iceland coordinates with smooth animation
               if (mapRef.current) {
                 mapRef.current.animateToRegion({
@@ -257,7 +301,7 @@ export default function MapScreen({ navigation }) {
             showsUserLocation={true}
             showsMyLocationButton={false} // We'll use our custom button
             mapType="standard"
-            loadingEnabled={true}
+            loadingEnabled={false} // Disable loading indicator
             onRegionChangeComplete={setRegion}
             renderToHardwareTextureAndroid={true}
             customMapStyle={[
@@ -296,10 +340,10 @@ export default function MapScreen({ navigation }) {
                   </View>
                 </Marker>
           ))}
-        </MapView>
+        </MapView>}
         </View>
         
-        {/* Premium Animated Filter Button */}
+        {/* Filter Button */}
         <Animated.View
           style={[
             styles.filterButtonContainer,
@@ -315,7 +359,7 @@ export default function MapScreen({ navigation }) {
           </TouchableOpacity>
         </Animated.View>
         
-        {/* Premium Animated Search Bar */}
+        {/* Search Bar */}
         <Animated.View 
           style={[
             styles.searchContainer,
@@ -404,7 +448,7 @@ export default function MapScreen({ navigation }) {
             </Animated.View>
           )}
         </Animated.View>
-      </Animated.View>
+      </View>
       
       {/* Premium Animated Beauty Products Section */}
       <Animated.View 
@@ -454,7 +498,7 @@ export default function MapScreen({ navigation }) {
           ))}
         </ScrollView>
       </Animated.View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -494,7 +538,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   mapContainer: {
-    flex: 1,
+    height: 400, // Fixed height instead of flex: 1
     position: 'relative',
     borderTopLeftRadius: borderRadius.lg,
     borderTopRightRadius: borderRadius.lg,
@@ -582,7 +626,7 @@ const styles = StyleSheet.create({
   productsSection: {
     paddingTop: spacing.sm,
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.xxxl + 20, // Extra padding to avoid tab bar
     backgroundColor: colors.background.primary,
   },
   productsSectionHeader: {

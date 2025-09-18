@@ -186,7 +186,7 @@ export default function ReviewScreen({ navigation, route }) {
                   <Ionicons 
                     name={star <= rating ? 'star' : 'star-outline'} 
                     size={40} 
-                    color={star <= rating ? '#FFD700' : '#E5E5E5'}
+                    color={star <= rating ? '#4A6741' : '#E5E5E5'}
                     style={styles.star}
                   />
                 </Animated.View>
