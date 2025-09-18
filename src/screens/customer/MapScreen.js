@@ -273,6 +273,13 @@ export default function MapScreen({ navigation }) {
       {/* Map Container - Always Visible */}
       <View style={styles.mapContainer}>
         <View style={styles.mapWrapper}>
+          {/* Fallback view to test if container is working */}
+          {!mapReady && (
+            <View style={styles.mapFallback}>
+              <Text style={styles.mapFallbackText}>Loading Map...</Text>
+              <Text style={styles.mapFallbackSubtext}>Finding nearby salons</Text>
+            </View>
+          )}
           <MapView
             ref={mapRef}
             style={styles.mapView}
