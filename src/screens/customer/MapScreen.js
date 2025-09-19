@@ -300,8 +300,6 @@ export default function MapScreen({ navigation }) {
           <MapView
             ref={mapRef}
             style={styles.mapView}
-            provider={PROVIDER_GOOGLE}
-            googleMapsApiKey="AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ"
             initialRegion={{
               latitude: 40.7128, // New York coordinates for testing
               longitude: -74.0060,
@@ -315,15 +313,15 @@ export default function MapScreen({ navigation }) {
               setMapReady(true);
               console.log('🗺️ Map ready - NOT calling animateToRegion to prevent reset');
             }}
+            onMapLoaded={() => {
+              console.log('✅ Map loaded successfully!');
+              console.log('✅ Map tiles should be visible now');
+            }}
             onError={(error) => {
               console.error('🚨 Map error:', error);
               console.error('🚨 Map error details:', JSON.stringify(error));
               console.error('🚨 Map error type:', typeof error);
               console.error('🚨 Map error message:', error?.message);
-            }}
-            onMapLoaded={() => {
-              console.log('✅ Map loaded successfully!');
-              console.log('✅ Map tiles should be visible now');
             }}
             // Disable region change events to prevent infinite zoom
             // onRegionChange={(region) => {
@@ -334,7 +332,7 @@ export default function MapScreen({ navigation }) {
             // }}
             showsUserLocation={false}
             showsMyLocationButton={false}
-            mapType="standard"
+            mapType="satellite"
             loadingEnabled={true}
             loadingIndicatorColor="#4A6741"
             loadingBackgroundColor="#F5F1E8"
