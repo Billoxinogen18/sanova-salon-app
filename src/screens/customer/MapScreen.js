@@ -308,6 +308,18 @@ export default function MapScreen({ navigation }) {
               console.log('🗺️ Map ref exists:', !!mapRef.current);
               console.log('🗺️ Map container style:', styles.mapView);
               setMapReady(true);
+              
+              // Force set a proper region to prevent infinite zoom
+              const properRegion = {
+                latitude: 40.7128,
+                longitude: -74.0060,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              };
+              console.log('🗺️ Forcing proper region:', properRegion);
+              if (mapRef.current) {
+                mapRef.current.animateToRegion(properRegion, 1000);
+              }
             }}
             onError={(error) => {
               console.error('🚨 Map error:', error);
@@ -319,22 +331,13 @@ export default function MapScreen({ navigation }) {
               console.log('✅ Map loaded successfully!');
               console.log('✅ Map tiles should be visible now');
             }}
-            onRegionChange={(region) => {
-              console.log('🗺️ Map region changed:', region);
-              console.log('🗺️ Region latitude:', region.latitude);
-              console.log('🗺️ Region longitude:', region.longitude);
-            }}
-            onRegionChangeComplete={(region) => {
-              console.log('🗺️ Map region change complete:', region);
-              // Fix: Ensure delta values are never 0
-              const fixedRegion = {
-                ...region,
-                latitudeDelta: region.latitudeDelta || 0.0922,
-                longitudeDelta: region.longitudeDelta || 0.0421
-              };
-              console.log('🗺️ Fixed region set:', fixedRegion);
-              setRegion(fixedRegion);
-            }}
+            // Disable region change events to prevent infinite zoom
+            // onRegionChange={(region) => {
+            //   console.log('🗺️ Map region changed:', region);
+            // }}
+            // onRegionChangeComplete={(region) => {
+            //   console.log('🗺️ Map region change complete:', region);
+            // }}
             showsUserLocation={false}
             showsMyLocationButton={false}
             mapType="hybrid"
