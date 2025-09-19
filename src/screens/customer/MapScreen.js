@@ -84,14 +84,11 @@ export default function MapScreen({ navigation }) {
     requestLocationPermission();
 
     // Fallback: show map after 2 seconds even if not ready
-    const fallbackTimer = setTimeout(() => {
-      console.log('🗺️ Fallback timer triggered, setting mapReady to true');
-      setMapReady(true);
-    }, 2000);
+    // Removed fallback timer to prevent interference with map loading
 
     return () => {
       console.log('🗺️ MapScreen useEffect cleanup');
-      clearTimeout(fallbackTimer);
+      // No timer to clear anymore
     };
   }, []);
 
@@ -303,6 +300,8 @@ export default function MapScreen({ navigation }) {
           <MapView
             ref={mapRef}
             style={styles.mapView}
+            provider={PROVIDER_GOOGLE}
+            googleMapsApiKey="AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ"
             initialRegion={{
               latitude: 40.7128, // New York coordinates for testing
               longitude: -74.0060,
@@ -314,18 +313,7 @@ export default function MapScreen({ navigation }) {
               console.log('🗺️ Map ref exists:', !!mapRef.current);
               console.log('🗺️ Map container style:', styles.mapView);
               setMapReady(true);
-              
-              // Force set a proper region to prevent infinite zoom
-              const properRegion = {
-                latitude: 40.7128,
-                longitude: -74.0060,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421,
-              };
-              console.log('🗺️ Forcing proper region:', properRegion);
-              if (mapRef.current) {
-                mapRef.current.animateToRegion(properRegion, 1000);
-              }
+              console.log('🗺️ Map ready - NOT calling animateToRegion to prevent reset');
             }}
             onError={(error) => {
               console.error('🚨 Map error:', error);
