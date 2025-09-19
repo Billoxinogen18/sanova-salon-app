@@ -27,17 +27,21 @@ import {
 const { width, height } = Dimensions.get('window');
 
 export default function MapScreen({ navigation }) {
+  console.log('🗺️ MapScreen component rendering...');
+  
   const [searchText, setSearchText] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [searchFocused, setSearchFocused] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef(null);
   const [region, setRegion] = useState({
-    latitude: 37.78825, // San Francisco coordinates for testing
-    longitude: -122.4324,
+    latitude: 40.7128, // New York coordinates for testing
+    longitude: -74.0060,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
+  
+  console.log('🗺️ MapScreen state - mapReady:', mapReady, 'region:', region);
 
   // Animation controller
   // Removed animation controller
@@ -68,6 +72,10 @@ export default function MapScreen({ navigation }) {
   const filterButtonScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    console.log('🗺️ MapScreen useEffect triggered');
+    console.log('🗺️ Initial region state:', region);
+    console.log('🗺️ Initial mapReady state:', mapReady);
+    
     StatusBar.setBarStyle('light-content');
     
     console.log('🗺️ MapScreen mounted, requesting location...');
@@ -82,6 +90,7 @@ export default function MapScreen({ navigation }) {
     }, 2000);
 
     return () => {
+      console.log('🗺️ MapScreen useEffect cleanup');
       clearTimeout(fallbackTimer);
     };
   }, []);
@@ -139,6 +148,7 @@ export default function MapScreen({ navigation }) {
   };
 
   const requestLocationPermission = async () => {
+    console.log('🗺️ Requesting location permission...');
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
@@ -280,6 +290,10 @@ export default function MapScreen({ navigation }) {
               <Text style={styles.mapFallbackSubtext}>Finding nearby salons</Text>
             </View>
           )}
+          {console.log('🗺️ Rendering MapView with mapReady:', mapReady)}
+          {console.log('🗺️ Map container style:', styles.mapContainer)}
+          {console.log('🗺️ Map wrapper style:', styles.mapWrapper)}
+          {console.log('🗺️ Map view style:', styles.mapView)}
           <MapView
             ref={mapRef}
             style={styles.mapView}
@@ -291,24 +305,36 @@ export default function MapScreen({ navigation }) {
             }}
             onMapReady={() => {
               console.log('🗺️ Map is ready!');
+              console.log('🗺️ Map ref exists:', !!mapRef.current);
+              console.log('🗺️ Map container style:', styles.mapView);
               setMapReady(true);
             }}
             onError={(error) => {
               console.error('🚨 Map error:', error);
               console.error('🚨 Map error details:', JSON.stringify(error));
+              console.error('🚨 Map error type:', typeof error);
+              console.error('🚨 Map error message:', error?.message);
             }}
-            onMapLoaded={() => console.log('✅ Map loaded successfully!')}
+            onMapLoaded={() => {
+              console.log('✅ Map loaded successfully!');
+              console.log('✅ Map tiles should be visible now');
+            }}
             onRegionChange={(region) => {
               console.log('🗺️ Map region changed:', region);
+              console.log('🗺️ Region latitude:', region.latitude);
+              console.log('🗺️ Region longitude:', region.longitude);
+            }}
+            onRegionChangeComplete={(region) => {
+              console.log('🗺️ Map region change complete:', region);
+              console.log('🗺️ Final region set:', region);
+              setRegion(region);
             }}
             showsUserLocation={false}
             showsMyLocationButton={false}
             mapType="hybrid"
-            loadingEnabled={false}
-            onRegionChangeComplete={(region) => {
-              console.log('🗺️ Region changed:', region);
-              setRegion(region);
-            }}
+            loadingEnabled={true}
+            loadingIndicatorColor="#4A6741"
+            loadingBackgroundColor="#F5F1E8"
             >
               {[
                 { lat: 37.78825, lng: -122.4324, title: "Nordic Beauty", description: "Hair & Spa" },
