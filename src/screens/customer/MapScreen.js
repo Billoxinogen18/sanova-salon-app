@@ -11,7 +11,7 @@ import {
   StatusBar, 
   Dimensions 
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
@@ -297,75 +297,58 @@ export default function MapScreen({ navigation }) {
             <Text style={{ color: 'white', textAlign: 'center' }}>MAP TEST - RED BAR SHOULD BE VISIBLE</Text>
           </View>
           
-          <MapView
-            ref={mapRef}
+          <WebView
             style={styles.mapView}
-            initialRegion={{
-              latitude: 40.7128, // New York coordinates for testing
-              longitude: -74.0060,
-              latitudeDelta: 0.0922, // Fixed zoom level
-              longitudeDelta: 0.0421, // Fixed zoom level
+            source={{
+              html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <style>
+                    body { margin: 0; padding: 0; }
+                    #map { width: 100%; height: 100%; }
+                  </style>
+                </head>
+                <body>
+                  <div id="map"></div>
+                  <script>
+                    function initMap() {
+                      const map = new google.maps.Map(document.getElementById('map'), {
+                        center: { lat: 40.7128, lng: -74.0060 },
+                        zoom: 13,
+                        mapTypeId: 'roadmap'
+                      });
+                      
+                      // Add salon markers
+                      const salons = [
+                        { lat: 40.7128, lng: -74.0060, title: "Nordic Beauty", description: "Hair & Spa" },
+                        { lat: 40.7228, lng: -74.0160, title: "Icelandic Style", description: "Hair & Nails" },
+                        { lat: 40.7328, lng: -74.0260, title: "Arctic Glow", description: "Beauty & Wellness" }
+                      ];
+                      
+                      salons.forEach(salon => {
+                        new google.maps.Marker({
+                          position: { lat: salon.lat, lng: salon.lng },
+                          map: map,
+                          title: salon.title
+                        });
+                      });
+                    }
+                  </script>
+                  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ&callback=initMap"></script>
+                </body>
+                </html>
+              `
             }}
-            onMapReady={() => {
-              console.log('🗺️ Map is ready!');
-              console.log('🗺️ Map ref exists:', !!mapRef.current);
-              console.log('🗺️ Map container style:', styles.mapView);
+            onLoad={() => {
+              console.log('🗺️ WebView map loaded!');
               setMapReady(true);
-              console.log('🗺️ Map ready - NOT calling animateToRegion to prevent reset');
-            }}
-            onMapLoaded={() => {
-              console.log('✅ Map loaded successfully!');
-              console.log('✅ Map tiles should be visible now');
             }}
             onError={(error) => {
-              console.error('🚨 Map error:', error);
-              console.error('🚨 Map error details:', JSON.stringify(error));
-              console.error('🚨 Map error type:', typeof error);
-              console.error('🚨 Map error message:', error?.message);
+              console.error('🚨 WebView map error:', error);
             }}
-            // Disable region change events to prevent infinite zoom
-            // onRegionChange={(region) => {
-            //   console.log('🗺️ Map region changed:', region);
-            // }}
-            // onRegionChangeComplete={(region) => {
-            //   console.log('🗺️ Map region change complete:', region);
-            // }}
-            showsUserLocation={false}
-            showsMyLocationButton={false}
-            mapType="satellite"
-            loadingEnabled={true}
-            loadingIndicatorColor="#4A6741"
-            loadingBackgroundColor="#F5F1E8"
-            >
-              {[
-                { lat: 37.78825, lng: -122.4324, title: "Nordic Beauty", description: "Hair & Spa" },
-                { lat: 37.78925, lng: -122.4334, title: "Icelandic Style", description: "Hair & Nails" },
-                { lat: 37.78725, lng: -122.4314, title: "Aurora Salon", description: "Premium Beauty" },
-                { lat: 37.79025, lng: -122.4344, title: "Viking Cuts", description: "Modern Salon" },
-                { lat: 37.78625, lng: -122.4304, title: "Fjord Beauty", description: "Full Service" },
-                { lat: 37.78525, lng: -122.4294, title: "Glacier Spa", description: "Wellness & Beauty" },
-                { lat: 37.79125, lng: -122.4354, title: "Northern Lights", description: "Luxury Salon" },
-                { lat: 37.78425, lng: -122.4284, title: "Elf Salon", description: "Creative Cuts" },
-                { lat: 37.79225, lng: -122.4364, title: "Geyser Beauty", description: "Natural Care" },
-                { lat: 37.78325, lng: -122.4274, title: "Volcano Style", description: "Trendy Cuts" },
-                { lat: 37.79325, lng: -122.4374, title: "Midnight Sun", description: "24/7 Beauty" },
-                { lat: 37.78225, lng: -122.4264, title: "Puffin Parlor", description: "Family Salon" }
-              ].map((salon, idx) => (
-                <Marker
-                  key={idx}
-                  coordinate={{ latitude: salon.lat, longitude: salon.lng }}
-                  title={salon.title}
-                  description={salon.description}
-                >
-                  <View style={styles.customMarker}>
-                    <View style={styles.markerInner}>
-                      <Ionicons name="cut" size={18} color={colors.text.white} />
-                    </View>
-                    <View style={styles.markerShadow} />
-                  </View>
-                </Marker>
-          ))}
-        </MapView>
+          />
         </View>
         
         {/* Filter Button */}

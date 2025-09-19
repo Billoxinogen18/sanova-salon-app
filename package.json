@@ -44,6 +44,7 @@
     "react-native-screens": "~3.29.0",
     "react-native-svg": "14.1.0",
     "react-native-vector-icons": "^10.0.0",
+    "react-native-webview": "^13.16.0",
     "stripe": "^18.5.0",
     "typescript": "^5.1.3"
   },

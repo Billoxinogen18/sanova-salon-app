@@ -82,6 +82,11 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     namespace 'com.sanova.salonapp'
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
     defaultConfig {
         applicationId 'com.sanova.salonapp'
         minSdkVersion rootProject.ext.minSdkVersion
