@@ -294,11 +294,15 @@ export default function MapScreen({ navigation }) {
           {console.log('🗺️ Map container style:', styles.mapContainer)}
           {console.log('🗺️ Map wrapper style:', styles.mapWrapper)}
           {console.log('🗺️ Map view style:', styles.mapView)}
+          
+          {/* Test if MapView is rendering at all */}
+          <View style={{ backgroundColor: 'red', height: 20, width: '100%' }}>
+            <Text style={{ color: 'white', textAlign: 'center' }}>MAP TEST - RED BAR SHOULD BE VISIBLE</Text>
+          </View>
+          
           <MapView
             ref={mapRef}
             style={styles.mapView}
-            provider={PROVIDER_GOOGLE}
-            googleMapsApiKey="AIzaSyC4L64xvzsdKAwK84OrxPkCnkQEMrb-q9k"
             initialRegion={{
               latitude: 40.7128, // New York coordinates for testing
               longitude: -74.0060,
@@ -342,7 +346,7 @@ export default function MapScreen({ navigation }) {
             // }}
             showsUserLocation={false}
             showsMyLocationButton={false}
-            mapType="hybrid"
+            mapType="standard"
             loadingEnabled={true}
             loadingIndicatorColor="#4A6741"
             loadingBackgroundColor="#F5F1E8"
