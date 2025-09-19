@@ -161,8 +161,8 @@ export default function MapScreen({ navigation }) {
           const nextRegion = {
             latitude: loc.coords.latitude,
             longitude: loc.coords.longitude,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
+            latitudeDelta: 0.0922, // Fixed zoom level
+            longitudeDelta: 0.0421, // Fixed zoom level
           };
           setRegion(nextRegion);
           if (mapRef.current) {
@@ -300,8 +300,8 @@ export default function MapScreen({ navigation }) {
             initialRegion={{
               latitude: 40.7128, // New York coordinates for testing
               longitude: -74.0060,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
+              latitudeDelta: 0.0922, // Fixed zoom level
+              longitudeDelta: 0.0421, // Fixed zoom level
             }}
             onMapReady={() => {
               console.log('🗺️ Map is ready!');
@@ -326,8 +326,14 @@ export default function MapScreen({ navigation }) {
             }}
             onRegionChangeComplete={(region) => {
               console.log('🗺️ Map region change complete:', region);
-              console.log('🗺️ Final region set:', region);
-              setRegion(region);
+              // Fix: Ensure delta values are never 0
+              const fixedRegion = {
+                ...region,
+                latitudeDelta: region.latitudeDelta || 0.0922,
+                longitudeDelta: region.longitudeDelta || 0.0421
+              };
+              console.log('🗺️ Fixed region set:', fixedRegion);
+              setRegion(fixedRegion);
             }}
             showsUserLocation={false}
             showsMyLocationButton={false}
