@@ -297,6 +297,8 @@ export default function MapScreen({ navigation }) {
           <MapView
             ref={mapRef}
             style={styles.mapView}
+            provider={PROVIDER_GOOGLE}
+            googleMapsApiKey="AIzaSyC4L64xvzsdKAwK84OrxPkCnkQEMrb-q9k"
             initialRegion={{
               latitude: 40.7128, // New York coordinates for testing
               longitude: -74.0060,
