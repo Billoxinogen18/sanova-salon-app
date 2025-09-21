@@ -320,7 +320,7 @@ export default function MapScreen({ navigation }) {
         ]}
       >
         <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
+          <Image source={require('../../../assets/icon.png')} style={styles.logoImage} />
         </View>
         <Text style={styles.headerTitle}>SANOVA</Text>
         <Text style={styles.headerSubtitle}>Find nearby salons</Text>
@@ -858,6 +858,5 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 20,
     height: 20,
-    tintColor: colors.background.white,
   },
 });

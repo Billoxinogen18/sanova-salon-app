@@ -82,7 +82,7 @@ export default function WelcomeScreenEnhanced({ navigation }) {
           style={styles.logoContainer}
         >
           <View style={styles.logoCircle}>
-            <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
+            <Image source={require('../../assets/icon.png')} style={styles.logoImage} />
           </View>
         </Animated.View>
 
@@ -203,9 +203,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   logoImage: {
-    width: 40,
-    height: 40,
-    tintColor: colors.text.white,
+    width: 60,
+    height: 60,
+    resizeMode: 'contain',
   },
   titleContainer: {
     alignItems: 'center',

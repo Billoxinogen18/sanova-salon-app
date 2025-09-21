@@ -16,6 +16,7 @@
     },
     "android": {
       "package": "com.sanova.salonapp",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/applogo.png",
         "backgroundColor": "#263428"

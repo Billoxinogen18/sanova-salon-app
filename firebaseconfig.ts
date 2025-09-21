@@ -32,8 +32,9 @@ try {
 }
 let analytics=null
 
-// Initialize Firestore with cloud connection
+// Initialize Firestore - always use cloud database
 const db = getFirestore(app);
+console.log('🔥 Using cloud Firestore for all environments');
 
 console.log('🔥 Firestore initialized for project:', firebaseConfig.projectId);
 

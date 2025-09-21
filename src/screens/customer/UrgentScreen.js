@@ -193,7 +193,7 @@ export default function UrgentScreen({ navigation }) {
         ]}
       >
         <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
+          <Image source={require('../../../assets/icon.png')} style={styles.logoImage} />
         </View>
         <Text style={styles.headerTitle}>SANOVA</Text>
         <Text style={styles.headerSubtitle}>Find urgent appointments</Text>
@@ -438,6 +438,5 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 24,
     height: 24,
-    tintColor: colors.background.white,
   },
 });

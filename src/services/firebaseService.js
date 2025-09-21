@@ -17,7 +17,8 @@ import {
   collection, 
   addDoc, 
   updateDoc, 
-  deleteDoc, 
+  deleteDoc,
+  serverTimestamp, 
   query, 
   where, 
   getDocs, 
@@ -92,8 +93,8 @@ export const authService = {
             name: userData.name || userData.displayName,
             phone: userData.phone || '',
             role: userData.role || 'customer',
-            createdAt: new Date(),
-            updatedAt: new Date()
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
           });
           console.log('✅ Firestore data saved successfully');
           firestoreSuccess = true;
@@ -238,8 +239,8 @@ export const authService = {
               photoURL: user.photoURL,
               role: 'customer', // Default role
               provider: 'google',
-              createdAt: new Date(),
-              updatedAt: new Date()
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
             });
             console.log('✅ User document created successfully');
           } else {
@@ -279,8 +280,8 @@ export const firestoreService = {
           try {
             await setDoc(doc(db, 'users', userId), {
               ...userData,
-              createdAt: new Date(),
-              updatedAt: new Date()
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
             });
             console.log('✅ User created successfully in Firestore');
             return { success: true };
@@ -342,7 +343,7 @@ export const firestoreService = {
         const docRef = doc(db, 'users', userId);
         await updateDoc(docRef, {
           ...userData,
-          updatedAt: new Date()
+          updatedAt: serverTimestamp()
         });
         return { success: true };
       } catch (error) {
@@ -357,8 +358,8 @@ export const firestoreService = {
       try {
         const docRef = await addDoc(collection(db, 'salons'), {
           ...salonData,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
         });
         return { success: true, id: docRef.id };
       } catch (error) {
@@ -398,7 +399,7 @@ export const firestoreService = {
         const docRef = doc(db, 'salons', salonId);
         await updateDoc(docRef, {
           ...salonData,
-          updatedAt: new Date()
+          updatedAt: serverTimestamp()
         });
         return { success: true };
       } catch (error) {
@@ -414,8 +415,8 @@ export const firestoreService = {
         const docRef = await addDoc(collection(db, 'bookings'), {
           ...bookingData,
           status: 'pending',
-          createdAt: new Date(),
-          updatedAt: new Date()
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
         });
         return { success: true, id: docRef.id };
       } catch (error) {
@@ -464,7 +465,7 @@ export const firestoreService = {
         const docRef = doc(db, 'bookings', bookingId);
         await updateDoc(docRef, {
           ...bookingData,
-          updatedAt: new Date()
+          updatedAt: serverTimestamp()
         });
         return { success: true };
       } catch (error) {
@@ -477,7 +478,7 @@ export const firestoreService = {
         const docRef = doc(db, 'bookings', bookingId);
         await updateDoc(docRef, {
           status: 'cancelled',
-          updatedAt: new Date()
+          updatedAt: serverTimestamp()
         });
         return { success: true };
       } catch (error) {
@@ -492,8 +493,8 @@ export const firestoreService = {
       try {
         const docRef = await addDoc(collection(db, 'reviews'), {
           ...reviewData,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
         });
         return { success: true, id: docRef.id };
       } catch (error) {

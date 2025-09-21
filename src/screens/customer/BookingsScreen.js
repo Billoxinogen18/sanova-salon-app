@@ -339,7 +339,7 @@ export default function BookingsScreen({ navigation }) {
       {/* Header with dark green background exactly as in design */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
+          <Image source={require('../../../assets/icon.png')} style={styles.logoImage} />
         </View>
         <Text style={styles.headerTitle}>Mine Bookinger</Text>
       </View>
@@ -547,6 +547,5 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 24,
     height: 24,
-    tintColor: colors.text.white,
   },
 });

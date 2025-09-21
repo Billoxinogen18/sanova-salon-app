@@ -101,7 +101,7 @@ export default function AvailableTimesScreen({ navigation, route }) {
         
         {/* SANOVA Logo - Centered, flat white leaf icon above wordmark */}
         <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
+          <Image source={require('../../../assets/icon.png')} style={styles.logoImage} />
           <Text style={styles.logoText}>SANOVA</Text>
         </View>
       </View>
@@ -225,7 +225,6 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     marginRight: 8,
-    tintColor: colors.white,
   },
   
   logoText: {

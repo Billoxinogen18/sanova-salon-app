@@ -11,8 +11,6 @@ import SalonOwnerApp from './src/SalonOwnerApp';
 import WelcomeScreen from './src/screens/WelcomeScreenEnhanced';
 import LoginScreen from './src/screens/LoginScreenPremium';
 import SignUpScreen from './src/screens/SignUpScreenPremium';
-import TestScreen from './src/screens/TestScreen';
-import TestFirestoreScreen from './src/screens/TestFirestoreScreen';
 
 // Import services
 import notificationServiceInstance from './src/services/notificationService';
@@ -25,7 +23,7 @@ const Stack = createStackNavigator();
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [initialRoute, setInitialRoute] = useState('Test');
+  const [initialRoute, setInitialRoute] = useState('Welcome');
 
   // Initialize services and check login state on app startup
   useEffect(() => {
@@ -131,8 +129,6 @@ export default function App() {
             gestureDirection: 'horizontal',
           }}
         >
-          <Stack.Screen name="Test" component={TestScreen} />
-          <Stack.Screen name="TestFirestore" component={TestFirestoreScreen} />
           <Stack.Screen 
             name="Welcome" 
             component={WelcomeScreen}
