@@ -1,150 +1,191 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, Animated } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+  Animated,
+  Dimensions,
+  ScrollView,
+  Image,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, globalStyles } from '../../theme/styles';
-import Header from '../../components/Header';
+import { colors } from '../../theme/colors';
+import { typography } from '../../theme/typography';
+
+const { width } = Dimensions.get('window');
 
 export default function SalonDetailScreen({ navigation, route }) {
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [buttonScale] = useState(new Animated.Value(1));
+  const { time } = route.params || {};
+  
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
 
-  React.useEffect(() => {
-    // Fade in animation when screen loads
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  // Salon services exactly as shown in design
-  const salonServices = [
-    { id: 1, name: "Men's Haircut", price: '400 kr', emoji: '👨' },
-    { id: 2, name: "Women's Haircut", price: '500 kr', emoji: '👩' },
-    { id: 3, name: 'Hair Coloring', price: '600 kr', emoji: '🎨' },
-    { id: 4, name: 'Manicure', price: '200 kr', emoji: '💅' },
-    { id: 5, name: 'Pedicure', price: '250 kr', emoji: '🦶' },
-  ];
-
-  // Salon photos exactly as shown in design
-  const salonPhotos = [
-    { id: 1, emoji: '🏪' },
-    { id: 2, emoji: '💇‍♀️' },
-    { id: 3, emoji: '💅' },
-    { id: 4, emoji: '✨' },
-  ];
-
-  const handleCallSalon = () => {
-    Animated.sequence([
-      Animated.timing(buttonScale, {
-        toValue: 0.95,
-        duration: 100,
+  useEffect(() => {
+    StatusBar.setBarStyle('light-content');
+    
+    // Entrance animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
         useNativeDriver: true,
       }),
-      Animated.timing(buttonScale, {
-        toValue: 1,
-        duration: 100,
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
         useNativeDriver: true,
       }),
     ]).start();
+  }, []);
+
+  const handleCall = () => {
+    // Touch feedback animation
+    Animated.sequence([
+      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+    
+    // Handle call functionality
+    console.log('Call salon');
   };
 
-  const renderService = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.serviceCard}
-      onPress={() => navigation.navigate('ServiceDetail', { service: item })}
-      activeOpacity={0.8}
-    >
-      <View style={styles.serviceIcon}>
-        <Text style={styles.serviceEmoji}>{item.emoji}</Text>
-      </View>
-      <View style={styles.serviceInfo}>
-        <Text style={styles.serviceName}>{item.name}</Text>
-        <Text style={styles.servicePrice}>{item.price}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const handleBookService = (service) => {
+    navigation.navigate('DateTimeSelection', { service });
+  };
 
-  const renderPhoto = ({ item }) => (
-    <View style={styles.photoCard}>
-      <Text style={styles.photoEmoji}>{item.emoji}</Text>
-    </View>
-  );
+  // Mock data with actual assets
+  const salonData = {
+    name: 'Gustav Salon',
+    address: 'Frederiks Allé 28',
+    rating: 4.8,
+    heroImage: require('../../../assets/saloon.png'),
+    services: [
+      { name: "Women's Haircut", price: '350 kr' },
+      { name: "Men's Haircut", price: '250 kr' },
+      { name: "Hair Coloring", price: '450 kr' },
+      { name: "Hair Styling", price: '200 kr' },
+    ],
+    photos: [
+      require('../../../assets/saloon.png'),
+      require('../../../assets/barber.png'),
+      require('../../../assets/haircut.png'),
+      require('../../../assets/manicure.png'),
+    ],
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header with dark green background exactly as in design */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>SANOVA</Text>
-        <TouchableOpacity style={styles.callButton} onPress={handleCallSalon}>
-          <Ionicons name="call" size={24} color={colors.text.white} />
-        </TouchableOpacity>
+      {/* App Bar - Deep forest green, 76px height, rounded top corners */}
+      <View style={styles.appBar}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.deepForestGreen} />
+        
+        {/* SANOVA Logo */}
+        <View style={styles.logoContainer}>
+          <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
+          <Text style={styles.logoText}>SANOVA</Text>
+        </View>
       </View>
-      
-      <Animated.ScrollView 
-        style={[styles.content, { opacity: fadeAnim }]}
-        showsVerticalScrollIndicator={false}
+
+      <Animated.View 
+        style={[
+          styles.content,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
       >
-        {/* Large salon image - exactly as shown in design */}
-        <View style={styles.imageContainer}>
-          <View style={styles.salonImage}>
-            <Text style={styles.salonEmoji}>🏪</Text>
+        {/* Hero Image - Full width, 30px top radius, 168px height */}
+        <View style={styles.heroImageContainer}>
+          <Image source={{ uri: salonData.heroImage }} style={styles.heroImage} />
+        </View>
+
+        {/* Main Salon Card Section - White background */}
+        <View style={styles.salonCard}>
+          {/* Salon Details Block */}
+          <View style={styles.salonDetailsBlock}>
+            {/* Salon Name - Playfair Display or Inter, bold, 24px */}
+            <Text style={styles.salonName}>{salonData.name}</Text>
+            
+            {/* Salon Address - Inter, regular, 15px */}
+            <Text style={styles.salonAddress}>{salonData.address}</Text>
+            
+            {/* Rating - Star icon with rating value */}
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={14} color={colors.gold} style={styles.starIcon} />
+              <Text style={styles.ratingText}>{salonData.rating}</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Salon Info - exactly as shown in design */}
-        <View style={styles.salonInfo}>
-          <Text style={styles.salonName}>Gustav Salon</Text>
-          <Text style={styles.salonAddress}>Frederiks Alle 28, Copenhagen</Text>
-          <Text style={styles.salonHours}>Åben 9:00 - 18:00</Text>
-        </View>
-
-        {/* Services Section - exactly as shown in design */}
-        <View style={styles.servicesSection}>
-          <Text style={styles.sectionTitle}>Tjenester</Text>
-          <FlatList
-            data={salonServices}
-            renderItem={renderService}
-            keyExtractor={(item) => item.id.toString()}
-            scrollEnabled={false}
-          />
-        </View>
-
-        {/* Photos Section - exactly as shown in design */}
-        <View style={styles.photosSection}>
-          <Text style={styles.sectionTitle}>Billeder fra salonen</Text>
-          <FlatList
-            data={salonPhotos}
-            renderItem={renderPhoto}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.photosList}
-          />
-        </View>
-
-        {/* Contact Section - exactly as shown in design */}
-        <View style={styles.contactSection}>
-          <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-            <TouchableOpacity 
-              style={styles.callSalonButton}
-              onPress={handleCallSalon}
-              activeOpacity={0.9}
-            >
-              <Ionicons name="call" size={20} color={colors.text.white} />
-              <Text style={styles.callSalonText}>Ring til salon</Text>
-            </TouchableOpacity>
-          </Animated.View>
-          
-          <TouchableOpacity style={styles.directionsButton} activeOpacity={0.8}>
-            <Ionicons name="location" size={20} color={colors.primary} />
-            <Text style={styles.directionsText}>Få vejvisning</Text>
+          {/* Call Button - Top right in main card */}
+          <TouchableOpacity style={styles.callButton} onPress={handleCall}>
+            <Ionicons name="call" size={16} color={colors.darkGreen} style={styles.callIcon} />
+            <Text style={styles.callText}>Call</Text>
           </TouchableOpacity>
         </View>
-      </Animated.ScrollView>
+
+        {/* Services List Block */}
+        <View style={styles.servicesSection}>
+          <Text style={styles.servicesHeader}>Services</Text>
+          
+          {salonData.services.map((service, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.serviceRow}
+              onPress={() => handleBookService(service)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.serviceName}>{service.name}</Text>
+              <Text style={styles.servicePrice}>{service.price}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Photos Section */}
+        <View style={styles.photosSection}>
+          <Text style={styles.photosHeader}>Photos from the Salon</Text>
+          
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.photosScrollView}
+            contentContainerStyle={styles.photosContainer}
+          >
+            {salonData.photos.map((photo, index) => (
+              <View key={index} style={styles.photoCard}>
+                <Image source={{ uri: photo }} style={styles.photoImage} />
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      </Animated.View>
+
+      {/* Navigation Bar - Fixed height 63px, deep forest green */}
+      <View style={styles.navigationBar}>
+        <TouchableOpacity style={[styles.navItem, styles.activeNavItem]}>
+          <Ionicons name="map" size={30} color={colors.white} />
+          <Text style={styles.navLabel}>Map</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="storefront" size={24} color={colors.white} />
+          <Text style={styles.navLabel}>Marketplace</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="flash" size={24} color={colors.white} />
+          <Text style={styles.navLabel}>Urgent</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="calendar" size={24} color={colors.white} />
+          <Text style={styles.navLabel}>Bookings</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -152,194 +193,254 @@ export default function SalonDetailScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.primary,
+    backgroundColor: colors.warmCream, // Warm cream background
   },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+  
+  // App Bar - Deep forest green, 76px height, rounded top corners
+  appBar: {
+    height: 76,
+    backgroundColor: colors.deepForestGreen,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 20,
+  },
+  
+  logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
-  backButton: {
-    padding: 8,
+  
+  logoImage: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+    tintColor: colors.white,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text.white,
-    flex: 1,
-    textAlign: 'center',
+  
+  logoText: {
+    ...typography.logo,
+    fontSize: 28,
+    fontWeight: 'bold',
+    letterSpacing: 2,
+    color: colors.white,
   },
-  callButton: {
-    padding: 8,
-  },
+  
   content: {
     flex: 1,
   },
-  imageContainer: {
-    height: 250,
-    backgroundColor: colors.background.white,
-    marginHorizontal: 20,
-    marginTop: 20,
-    borderRadius: 12,
+  
+  // Hero Image - Full width, 30px top radius, 168px height
+  heroImageContainer: {
+    width: '100%',
+    height: 168,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     overflow: 'hidden',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  salonImage: {
+  
+  heroImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  
+  // Main Salon Card Section - White background
+  salonCard: {
+    backgroundColor: colors.white,
+    paddingHorizontal: 25, // 25px page side padding
+    paddingTop: 22, // 22px margin-top below image
+    paddingBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  
+  // Salon Details Block
+  salonDetailsBlock: {
     flex: 1,
-    backgroundColor: colors.background.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  salonEmoji: {
-    fontSize: 80,
-  },
-  salonInfo: {
-    padding: 20,
-  },
+  
+  // Salon Name - Playfair Display or Inter, bold, 24px
   salonName: {
+    fontFamily: 'Inter',
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.text.primary,
-    marginBottom: 8,
-  },
-  salonAddress: {
-    fontSize: 16,
-    color: colors.text.secondary,
+    color: colors.darkGreen,
     marginBottom: 4,
   },
-  salonHours: {
-    fontSize: 14,
-    color: colors.text.secondary,
+  
+  // Salon Address - Inter, regular, 15px
+  salonAddress: {
+    fontFamily: 'Inter',
+    fontSize: 15,
+    fontWeight: '400',
+    color: colors.mutedGreen, // #22311F
+    marginBottom: 8,
   },
-  servicesSection: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text.primary,
-    marginBottom: 16,
-  },
-  serviceCard: {
-    backgroundColor: colors.background.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+  
+  // Rating Container
+  ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  serviceIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: colors.background.primary,
-    justifyContent: 'center',
+  
+  // Star Icon - Gold, 14px wide, elevates 1px above address baseline
+  starIcon: {
+    marginRight: 4,
+  },
+  
+  // Rating Text - Small bold font, gold color
+  ratingText: {
+    fontFamily: 'Inter',
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: colors.gold,
+  },
+  
+  // Call Button - Top right in main card
+  callButton: {
+    height: 38,
+    width: 82,
+    backgroundColor: colors.paleIvory, // #EFEEDF
+    borderRadius: 16,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
+    justifyContent: 'center',
+    shadowColor: colors.deepForestGreen,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 7,
+    elevation: 2,
   },
-  serviceEmoji: {
+  
+  callIcon: {
+    marginRight: 8,
+  },
+  
+  callText: {
+    fontFamily: 'Inter',
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.darkGreen,
+  },
+  
+  // Services List Block
+  servicesSection: {
+    backgroundColor: colors.white,
+    paddingHorizontal: 25,
+    paddingTop: 23, // 23px margin-top below address/call row
+    paddingBottom: 20,
+  },
+  
+  // Services Header - Inter, bold, 20px
+  servicesHeader: {
+    fontFamily: 'Inter',
     fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.darkGreen,
+    marginBottom: 11, // 11px top margin below Services header
   },
-  serviceInfo: {
-    flex: 1,
+  
+  // Service Row
+  serviceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 6, // 6px between rows
+    minHeight: 48, // Minimum touch target
   },
+  
+  // Service Name - Inter, regular, 16px
   serviceName: {
+    fontFamily: 'Inter',
     fontSize: 16,
-    fontWeight: '500',
-    color: colors.text.primary,
+    fontWeight: '400',
+    color: colors.darkGreen,
   },
+  
+  // Service Price - Inter bold, 16px, right-aligned
   servicePrice: {
+    fontFamily: 'Inter',
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text.primary,
+    color: colors.mutedGreen, // #6B7D46
   },
+  
+  // Photos Section
   photosSection: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    backgroundColor: colors.white,
+    paddingHorizontal: 25,
+    paddingTop: 22, // 22px margin above
+    paddingBottom: 20,
   },
-  photosList: {
-    flexDirection: 'row',
+  
+  // Photos Header - Inter, bold, 18px
+  photosHeader: {
+    fontFamily: 'Inter',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.darkGreen,
+    marginBottom: 8, // 8px below for clear separation
   },
+  
+  photosScrollView: {
+    marginTop: 8,
+  },
+  
+  photosContainer: {
+    paddingRight: 25,
+  },
+  
+  // Photo Card - 70px square, 14px radius
   photoCard: {
-    width: 80,
-    height: 80,
-    backgroundColor: colors.background.white,
-    borderRadius: 12,
-    marginRight: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
+    width: 70,
+    height: 70,
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    marginRight: 12, // 12px horizontal between images
+    shadowColor: colors.deepForestGreen,
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
-  photoEmoji: {
-    fontSize: 30,
+  
+  photoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
   },
-  contactSection: {
+  
+  // Navigation Bar - Fixed height 63px, deep forest green
+  navigationBar: {
+    height: 63,
+    backgroundColor: colors.deepForestGreen,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 24,
-    gap: 12,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingTop: 8,
   },
-  callSalonButton: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    paddingVertical: 16,
-    borderRadius: 25,
-    flexDirection: 'row',
+  
+  navItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    minWidth: 48,
+    minHeight: 48,
   },
-  callSalonText: {
-    color: colors.text.white,
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+  
+  activeNavItem: {
+    // Active state styling if needed
   },
-  directionsButton: {
-    flex: 1,
-    backgroundColor: colors.background.white,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    paddingVertical: 16,
-    borderRadius: 25,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  directionsText: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+  
+  navLabel: {
+    fontFamily: 'Inter',
+    fontSize: 12,
+    color: colors.white,
+    marginTop: 2,
   },
 });

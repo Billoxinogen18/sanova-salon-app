@@ -8,7 +8,8 @@ import {
   Animated, 
   StatusBar, 
   Dimensions,
-  Alert 
+  Alert,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
@@ -248,7 +249,7 @@ export default function DashboardScreen({ navigation }) {
       >
         <View style={styles.headerContent}>
           <View style={styles.logoContainer}>
-            <Ionicons name="leaf" size={24} color={colors.primary} />
+            <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
           </View>
           <Text style={styles.headerTitle}>SANOVA</Text>
           <Text style={styles.headerSubtitle}>Salon Dashboard</Text>
@@ -804,5 +805,11 @@ const styles = StyleSheet.create({
     ...typography.small,
     color: colors.background.white,
     opacity: 0.8,
+  },
+  
+  logoImage: {
+    width: 24,
+    height: 24,
+    tintColor: colors.primary,
   },
 });

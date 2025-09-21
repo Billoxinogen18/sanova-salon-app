@@ -11,6 +11,13 @@ export default function TestScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>Go to Welcome</Text>
       </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={[styles.button, styles.firestoreButton]}
+        onPress={() => navigation.navigate('TestFirestore')}
+      >
+        <Text style={styles.buttonText}>Test Firestore Connection</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -38,5 +45,9 @@ const styles = StyleSheet.create({
     color: '#2D5A3D',
     fontSize: 16,
     fontWeight: '600',
+  },
+  firestoreButton: {
+    marginTop: 15,
+    backgroundColor: '#FF6B35',
   },
 });

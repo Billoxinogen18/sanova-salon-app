@@ -6,7 +6,8 @@ import {
   Animated, 
   Dimensions,
   TouchableOpacity,
-  StatusBar
+  StatusBar,
+  Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -51,12 +52,11 @@ export default function WelcomeScreenEnhanced({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       
-      {/* Animated Background Gradient */}
-      <LinearGradient
-        colors={[colors.primary, colors.accent, colors.secondary]}
+      {/* Onboarding Background Image */}
+      <Image 
+        source={require('../../assets/onboardingscreen.png')} 
         style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        resizeMode="cover"
       />
 
       {/* Floating Elements */}
@@ -82,7 +82,7 @@ export default function WelcomeScreenEnhanced({ navigation }) {
           style={styles.logoContainer}
         >
           <View style={styles.logoCircle}>
-            <Text style={styles.logoEmoji}>🌿</Text>
+            <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
           </View>
         </Animated.View>
 
@@ -202,8 +202,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
-  logoEmoji: {
-    fontSize: 32, // Smaller emoji
+  logoImage: {
+    width: 40,
+    height: 40,
+    tintColor: colors.text.white,
   },
   titleContainer: {
     alignItems: 'center',

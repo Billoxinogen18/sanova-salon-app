@@ -27,6 +27,11 @@ import ProfileScreen from './screens/customer/ProfileScreen';
 import ReviewScreen from './screens/customer/ReviewScreen';
 import PaymentSuccessScreen from './screens/customer/PaymentSuccessScreen';
 
+// Import New Booking Flow Screens
+import DateTimeSelectionScreen from './screens/customer/DateTimeSelectionScreen';
+import PaymentTermsScreen from './screens/customer/PaymentTermsScreen';
+import AvailableTimesScreen from './screens/customer/AvailableTimesScreen';
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -247,6 +252,27 @@ export default function CustomerApp() {
       <Stack.Screen 
         name="Review" 
         component={ReviewScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="DateTimeSelection" 
+        component={DateTimeSelectionScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="PaymentTerms" 
+        component={PaymentTermsScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="AvailableTimes" 
+        component={AvailableTimesScreen}
         options={{
           ...pageTransitions.slideFromRight,
         }}

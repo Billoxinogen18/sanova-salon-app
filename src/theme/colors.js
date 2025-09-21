@@ -1,46 +1,71 @@
 export const colors = {
-  // PRODUCTION colors - NO YELLOWS, only greens and creamy tints
-  primary: '#263428',      // Deep Green - headers and primary buttons
-  secondary: '#F8F6ED',    // Soft Beige - main background
-  accent: '#4A6741',       // Muted Green - accents and highlights (NO YELLOW)
+  // EXACT SPECIFICATIONS FROM DESIGN DOCUMENTS
+  // Primary brand colors
+  primary: '#1C3521',      // Deep forest green - headers and primary buttons
+  secondary: '#F8F6EC',    // Warm cream - main background
+  accent: '#4A6148',       // Muted green - accents and highlights
   white: '#FFFFFF',        // Pure white - cards and clean backgrounds
   black: '#000000',        // Pure black - for shadows
-  gray: '#9BA39B',         // Medium gray - secondary text
-  lightGray: '#E5E5E5',    // Light gray - borders and dividers
-  success: '#4CAF50',      // Green for success states
+  gray: '#7B857B',         // Medium gray - secondary text
+  lightGray: '#A0AEA8',    // Light gray - borders and dividers
+  success: '#3D7645',      // Green for success states
   warning: '#FF9800',      // Orange for warnings
   error: '#F44336',        // Red for errors
-  cream: '#F5F1E8',        // Cream tint for subtle highlights
 
-  // Text colors with perfect contrast ratios
+  // Specific design colors from specifications
+  warmCream: '#F8F6EC',    // Main background
+  deepForestGreen: '#1C3521', // App bar and primary elements
+  paleIvory: '#EFEEDF',    // Time buttons and light elements
+  lightCream: '#F8F6EC',   // Card backgrounds
+  paleGold: '#EFE7C8',     // Payment terms continue button
+  paymentCardBg: '#FDF7EA', // Payment method cards
+  offWhite: '#F6F3E9',     // Payment terms cards
+  searchBarBg: '#FBF9F1',  // Search bar background
+  mutedGreen: '#4A6148',   // Subheaders and muted text
+  darkGreen: '#232D1E',    // Primary text color
+  gold: '#CFAC4A',         // Star ratings
+  lightGreen: '#294C3B',   // Avatar backgrounds
+  borderLight: '#E7E6DD',  // Card borders
+  dividerGray: '#EBE6DC',  // Row dividers
+
+  // Text colors with exact specifications
   text: {
-    primary: '#263428',    // Deep green for main text
-    secondary: '#9BA39B',  // Gray for secondary text (from design specs)
-    light: '#F8F6ED',      // Soft beige for text on dark backgrounds
+    primary: '#232D1E',    // Main text color
+    secondary: '#7B857B',  // Secondary text
+    light: '#F8F6EC',      // Text on dark backgrounds
     white: '#FFFFFF',      // White text for dark backgrounds
-    muted: '#9BA39B',      // Muted gray for less important text
+    muted: '#7B857B',      // Muted gray text
+    dark: '#232D1E',       // Dark text for light backgrounds
+    green: '#4A6148',      // Muted green text
+    gold: '#CFAC4A',       // Gold text for ratings
   },
 
-  // Background colors matching design exactly
+  // Background colors matching exact specifications
   background: {
-    primary: '#F8F6ED',    // Main app background - soft beige
-    secondary: '#263428',  // Header background - deep green
+    primary: '#F8F6EC',    // Main app background - warm cream
+    secondary: '#1C3521',  // Header background - deep forest green
     white: '#FFFFFF',      // Card backgrounds - pure white
-    card: '#F8F6ED',       // Soft beige for grid items/list items
-    overlay: 'rgba(38, 52, 40, 0.08)', // Subtle green overlay (from design specs)
+    card: '#F8F6EC',       // Light card backgrounds
+    search: '#FBF9F1',     // Search bar background
+    payment: '#FDF7EA',    // Payment method cards
+    terms: '#F6F3E9',      // Payment terms cards
+    overlay: 'rgba(28, 53, 33, 0.08)', // Subtle green overlay
   },
 
   // Border colors for clean separation
   border: {
-    primary: '#E5E5E5',    // Light borders
-    secondary: '#263428',  // Deep green borders for emphasis
-    accent: '#4A6741',     // Muted green borders for subtle separation
+    primary: '#E7E6DD',    // Light borders
+    secondary: '#1C3521',  // Deep green borders for emphasis
+    accent: '#4A6148',     // Muted green borders
+    divider: '#EBE6DC',    // Row dividers
   },
 
-  // Shadow colors for depth
+  // Shadow colors for depth - using brand green
   shadow: {
-    light: 'rgba(38, 52, 40, 0.08)', // From design specs
-    medium: 'rgba(0, 0, 0, 0.15)',
-    dark: 'rgba(0, 0, 0, 0.25)',
+    light: 'rgba(28, 53, 33, 0.08)', // Light green shadow
+    medium: 'rgba(28, 53, 33, 0.12)', // Medium green shadow
+    dark: 'rgba(28, 53, 33, 0.20)', // Dark green shadow
+    card: 'rgba(28, 53, 33, 0.10)', // Card shadows
+    button: 'rgba(28, 53, 33, 0.15)', // Button shadows
   }
 };

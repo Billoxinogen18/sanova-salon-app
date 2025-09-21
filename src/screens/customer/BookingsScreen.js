@@ -8,7 +8,8 @@ import {
   Animated, 
   StatusBar, 
   Dimensions,
-  RefreshControl 
+  RefreshControl,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
@@ -245,7 +246,25 @@ export default function BookingsScreen({ navigation }) {
       Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
       Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
     ]).start(() => {
-      navigation.navigate('BookingDetail', { booking });
+      // Navigate to ServiceDetailScreen with booking data
+      navigation.navigate('ServiceDetail', { 
+        service: {
+          id: booking.serviceId || booking.id,
+          name: booking.serviceName,
+          salon: booking.salonName,
+          price: booking.price || 'Price not available',
+          duration: booking.duration || 'Duration not available',
+          date: booking.date,
+          time: booking.time,
+          address: booking.salonAddress,
+          status: booking.status,
+          description: `Booking details for ${booking.serviceName} at ${booking.salonName}. Status: ${booking.status}`,
+          rating: booking.rating || 4.5,
+          reviews: booking.reviews || 12,
+          services: ['Service included'],
+          amenities: ['Free WiFi', 'Parking available']
+        }
+      });
     });
   };
 
@@ -253,12 +272,35 @@ export default function BookingsScreen({ navigation }) {
     // Navigate to booking flow with pre-filled service
     navigation.navigate('BookingFlow', { 
       prefilledService: {
-        id: booking.serviceId,
+        id: booking.serviceId || booking.id,
         name: booking.serviceName,
         salonId: booking.salonId,
         salonName: booking.salonName
       }
     });
+  };
+
+  const handleCancelBooking = async (booking) => {
+    try {
+      // Update booking status to cancelled
+      const result = await firestoreService.bookings.update(booking.id, {
+        status: 'cancelled',
+        cancelledAt: new Date().toISOString()
+      });
+      
+      if (result.success) {
+        // Refresh the bookings data
+        await loadBookingsData();
+        
+        // Show success message
+        alert('Booking cancelled successfully');
+      } else {
+        alert('Failed to cancel booking. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      alert('Error cancelling booking. Please try again.');
+    }
   };
 
   // Mock data for initial display (will be replaced by real data)
@@ -297,7 +339,7 @@ export default function BookingsScreen({ navigation }) {
       {/* Header with dark green background exactly as in design */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Ionicons name="leaf" size={24} color={colors.text.white} />
+          <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
         </View>
         <Text style={styles.headerTitle}>Mine Bookinger</Text>
       </View>
@@ -319,9 +361,24 @@ export default function BookingsScreen({ navigation }) {
                 <Text style={styles.salonName}>{booking.salonName} - {booking.salonAddress}</Text>
                 <Text style={styles.bookingDate}>{booking.date} {booking.time}</Text>
               </View>
-              <TouchableOpacity style={styles.detailsButton} activeOpacity={0.8}>
-                <Text style={styles.detailsButtonText}>Se detaljer</Text>
-              </TouchableOpacity>
+              <View style={styles.actionButtons}>
+                <TouchableOpacity 
+                  style={styles.detailsButton} 
+                  activeOpacity={0.8}
+                  onPress={() => handleBookingPress(booking)}
+                >
+                  <Text style={styles.detailsButtonText}>Se detaljer</Text>
+                </TouchableOpacity>
+                {booking.status === 'confirmed' && (
+                  <TouchableOpacity 
+                    style={styles.cancelButton} 
+                    activeOpacity={0.8}
+                    onPress={() => handleCancelBooking(booking)}
+                  >
+                    <Text style={styles.cancelButtonText}>Annuller</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           ))}
         </View>
@@ -341,7 +398,11 @@ export default function BookingsScreen({ navigation }) {
               </View>
               <View style={styles.actionButtons}>
                 {booking.canBook && (
-                  <TouchableOpacity style={styles.bookAgainButton} activeOpacity={0.8}>
+                  <TouchableOpacity 
+                    style={styles.bookAgainButton} 
+                    activeOpacity={0.8}
+                    onPress={() => handleBookAgain(booking)}
+                  >
                     <Text style={styles.bookAgainText}>Book igen</Text>
                   </TouchableOpacity>
                 )}
@@ -456,6 +517,7 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     alignItems: 'flex-end',
+    gap: 8,
   },
   bookAgainButton: {
     backgroundColor: colors.background.primary,
@@ -469,5 +531,22 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 12,
     fontWeight: '600',
+  },
+  cancelButton: {
+    backgroundColor: '#FF6B6B',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  cancelButtonText: {
+    color: colors.text.white,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  
+  logoImage: {
+    width: 24,
+    height: 24,
+    tintColor: colors.text.white,
   },
 });

@@ -271,27 +271,68 @@ export const firestoreService = {
   users: {
     create: async (userId, userData) => {
       try {
-        await setDoc(doc(db, 'users', userId), {
-          ...userData,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-        return { success: true };
+        // Enhanced retry logic with exponential backoff for Firestore connection issues
+        let retries = 5;
+        let delay = 1000;
+        
+        while (retries > 0) {
+          try {
+            await setDoc(doc(db, 'users', userId), {
+              ...userData,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            });
+            console.log('✅ User created successfully in Firestore');
+            return { success: true };
+          } catch (retryError) {
+            retries--;
+            if (retries === 0) {
+              console.error('❌ All retries failed for user creation:', retryError);
+              throw retryError;
+            }
+            
+            console.log(`🔄 Firestore retry ${5 - retries}/5 for user creation (${retryError.message})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= 2; // Exponential backoff
+          }
+        }
       } catch (error) {
+        console.error('Firestore user creation error:', error);
         return { success: false, error: error.message };
       }
     },
 
     get: async (userId) => {
       try {
-        const docRef = doc(db, 'users', userId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          return { success: true, data: docSnap.data() };
-        } else {
-          return { success: false, error: 'User not found' };
+        // Enhanced retry logic with exponential backoff for Firestore connection issues
+        let retries = 5;
+        let delay = 1000;
+        
+        while (retries > 0) {
+          try {
+            const docRef = doc(db, 'users', userId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              console.log('✅ User retrieved successfully from Firestore');
+              return { success: true, data: docSnap.data() };
+            } else {
+              console.log('⚠️ User not found in Firestore');
+              return { success: false, error: 'User not found' };
+            }
+          } catch (retryError) {
+            retries--;
+            if (retries === 0) {
+              console.error('❌ All retries failed for user retrieval:', retryError);
+              throw retryError;
+            }
+            
+            console.log(`🔄 Firestore retry ${5 - retries}/5 for user get (${retryError.message})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= 2; // Exponential backoff
+          }
         }
       } catch (error) {
+        console.error('Firestore user get error:', error);
         return { success: false, error: error.message };
       }
     },

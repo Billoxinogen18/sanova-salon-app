@@ -24,17 +24,18 @@ import { firestoreService, authService } from '../../services/firebaseService';
 const { width, height } = Dimensions.get('window');
 
 export default function BookingFlowScreen({ navigation, route }) {
-  const { service, prefilledService } = route.params || {
-    service: {
-      name: 'Classic Manicure',
-      price: '200 kr',
-      salon: 'Gustav Salon',
-      duration: '45 min',
-    }
+  const { service, prefilledService } = route.params || {};
+  
+  // Default service data
+  const defaultService = {
+    name: 'Classic Manicure',
+    price: '200 kr',
+    salon: 'Gustav Salon',
+    duration: '45 min',
   };
 
-  // Use prefilled service if available (from "Book Again" functionality)
-  const bookingService = prefilledService || service;
+  // Use prefilled service if available (from "Book Again" functionality), otherwise use service, otherwise use default
+  const bookingService = prefilledService || service || defaultService;
 
   const [selectedDate, setSelectedDate] = useState('25. april');
   const [selectedTime, setSelectedTime] = useState('11:00');
@@ -220,9 +221,14 @@ export default function BookingFlowScreen({ navigation, route }) {
     ]).start();
 
     try {
+      console.log('🚀 Starting booking creation process...');
+      
       // Create booking in Firebase
       const currentUser = authService.getCurrentUser();
+      console.log('👤 Current user:', currentUser ? currentUser.uid : 'No user');
+      
       if (!currentUser) {
+        console.error('❌ No authenticated user found');
         Alert.alert('Error', 'Please log in to continue booking.');
         setIsLoading(false);
         return;
@@ -231,18 +237,23 @@ export default function BookingFlowScreen({ navigation, route }) {
       const bookingData = {
         userId: currentUser.uid,
         serviceId: bookingService.id || 'service-1',
-        serviceName: bookingService.name,
+        serviceName: bookingService.name || 'Service Name',
         salonId: bookingService.salonId || 'salon-1',
-        salonName: bookingService.salon || bookingService.salonName,
+        salonName: bookingService.salon || bookingService.salonName || 'Salon Name',
         date: selectedDate,
         time: selectedTime,
         duration: bookingService.duration || '45 min',
         price: bookingService.price || '200 kr',
         status: 'pending',
-        customerName: currentUser.displayName || currentUser.email?.split('@')[0],
+        customerName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Customer',
       };
 
+      console.log('📝 Booking data to create:', bookingData);
+      console.log('🔥 Calling firestoreService.bookings.create...');
+
       const result = await firestoreService.bookings.create(bookingData);
+      
+      console.log('📊 Booking creation result:', result);
       
       if (result.success) {
         console.log('✅ Booking created successfully:', result.id);
@@ -254,11 +265,13 @@ export default function BookingFlowScreen({ navigation, route }) {
           selectedDateTime: `${selectedDate} kl. ${selectedTime}` 
         });
       } else {
-        throw new Error(result.error);
+        console.error('❌ Booking creation failed:', result.error);
+        throw new Error(result.error || 'Unknown error occurred');
       }
     } catch (error) {
       console.error('❌ Error creating booking:', error);
-      Alert.alert('Error', 'Failed to create booking. Please try again.');
+      console.error('❌ Error stack:', error.stack);
+      Alert.alert('Error', `Failed to create booking: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -283,12 +296,12 @@ export default function BookingFlowScreen({ navigation, route }) {
         <View style={styles.serviceCard}>
           <Text style={styles.serviceTitle}>Book</Text>
           <View style={styles.serviceInfo}>
-            <Text style={styles.serviceName}>{service.name}</Text>
+            <Text style={styles.serviceName}>{bookingService.name || 'Service Name'}</Text>
             <Text style={styles.serviceDetails}>
               Dato og tid: {selectedDate} kl. {selectedTime}
             </Text>
-            <Text style={styles.serviceDuration}>Varighed: {service.duration || '45 min'}</Text>
-            <Text style={styles.servicePrice}>{service.price}</Text>
+            <Text style={styles.serviceDuration}>Varighed: {bookingService.duration || '45 min'}</Text>
+            <Text style={styles.servicePrice}>{bookingService.price || 'Price'}</Text>
           </View>
         </View>
 

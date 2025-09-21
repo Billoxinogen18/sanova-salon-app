@@ -1,211 +1,150 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Alert } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+  Animated,
+  Dimensions,
+  Image,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useStripe } from '@stripe/stripe-react-native';
-import { colors, globalStyles } from '../../theme/styles';
-import Header from '../../components/Header';
+import { colors } from '../../theme/colors';
+import { typography } from '../../theme/typography';
+
+const { width } = Dimensions.get('window');
 
 export default function PaymentMethodScreen({ navigation, route }) {
-  const { service } = route.params || {};
-  const [selectedMethod, setSelectedMethod] = useState('card');
-  const [buttonScale] = useState(new Animated.Value(1));
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [loading, setLoading] = useState(false);
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { service, selectedDate, selectedTime } = route.params || {};
+  
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('card');
+  
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
 
-  React.useEffect(() => {
-    // Fade in animation when screen loads
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+  useEffect(() => {
+    StatusBar.setBarStyle('light-content');
+    
+    // Entrance animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, []);
+
+  const handlePaymentMethodSelect = (method) => {
+    // Touch feedback animation
+    Animated.sequence([
+      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+    
+    setSelectedPaymentMethod(method);
+  };
+
+  const handlePayNow = () => {
+    // Button press animation
+    Animated.sequence([
+      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+
+    // Navigate to payment terms screen
+    navigation.navigate('PaymentTerms', {
+      service: service,
+      selectedDate,
+      selectedTime,
+      paymentMethod: selectedPaymentMethod,
+    });
+  };
 
   const paymentMethods = [
     {
       id: 'card',
-      name: 'Credit or Debit Card',
-      logo: 'VISA',
-      icon: 'card-outline',
+      label: 'Credit or Debit Card',
+      icon: 'card',
+      logo: 'https://img.icons8.com/color-glass/48/visa.png', // Visa logo
     },
     {
-      id: 'applepay',
-      name: 'Apple Pay',
-      logo: '🍎 Pay',
-      icon: 'logo-apple',
+      id: 'apple',
+      label: 'Apple Pay',
+      icon: 'phone-portrait',
+      logo: 'https://img.icons8.com/ios-filled/50/apple-pay.png', // Apple Pay logo
     },
     {
-      id: 'mobilepay',
-      name: 'MobilePay',
-      logo: 'MobilePay',
-      icon: 'phone-portrait-outline',
+      id: 'mobile',
+      label: 'Mobile Pay',
+      icon: 'phone-portrait',
+      logo: 'https://img.icons8.com/fluency/48/speaker-phone.png', // Mobile Pay logo
     },
   ];
 
-  const handleMethodSelect = (method) => {
-    // Animate selection
-    Animated.sequence([
-      Animated.timing(buttonScale, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonScale, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    
-    setSelectedMethod(method);
-  };
-
-  const handlePayNow = async () => {
-    if (loading) return;
-    
-    setLoading(true);
-    
-    try {
-      const { booking } = route.params || {};
-      
-      if (selectedMethod === 'card') {
-        // Initialize payment sheet for Stripe
-        const { error: initError } = await initPaymentSheet({
-          merchantDisplayName: 'Sanova Salon',
-          paymentIntentClientSecret: await createPaymentIntent(),
-          allowsDelayedPaymentMethods: true,
-        });
-
-        if (initError) {
-          Alert.alert('Error', initError.message);
-          setLoading(false);
-          return;
-        }
-
-        // Present payment sheet
-        const { error: presentError } = await presentPaymentSheet();
-
-        if (presentError) {
-          Alert.alert('Payment Failed', presentError.message);
-          setLoading(false);
-          return;
-        }
-
-        // Payment successful - update booking status
-        if (booking?.id) {
-          await firestoreService.bookings.update(booking.id, {
-            status: 'confirmed',
-            paymentMethod: selectedMethod,
-            paymentCompleted: true,
-            paymentDate: new Date(),
-          });
-        }
-
-        // Navigate to success screen
-        navigation.navigate('PaymentSuccess', { 
-          service, 
-          booking,
-          paymentMethod: selectedMethod 
-        });
-      } else {
-        // For Apple Pay and MobilePay, simulate payment and update booking
-        if (booking?.id) {
-          await firestoreService.bookings.update(booking.id, {
-            status: 'confirmed',
-            paymentMethod: selectedMethod,
-            paymentCompleted: true,
-            paymentDate: new Date(),
-          });
-        }
-
-        // Navigate to success screen
-        navigation.navigate('PaymentSuccess', { 
-          service, 
-          booking,
-          paymentMethod: selectedMethod 
-        });
-      }
-    } catch (error) {
-      console.error('Payment error:', error);
-      Alert.alert('Error', 'Payment failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createPaymentIntent = async () => {
-    try {
-      const response = await fetch(`https://sanova-bzuwmolyd-billoxinogen18s-projects.vercel.app/api/stripe-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: service?.price || 500, // Default amount
-          currency: 'dkk',
-          bookingId: Date.now().toString(),
-        }),
-      });
-
-      const data = await response.json();
-      return data.paymentIntent.client_secret;
-    } catch (error) {
-      console.error('Error creating payment intent:', error);
-      throw error;
-    }
-  };
-
   return (
     <View style={styles.container}>
-      {/* Header with dark green background exactly as in design */}
-      <View style={styles.header}>
+      {/* App Bar - Same as previous screen */}
+      <View style={styles.appBar}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.deepForestGreen} />
+        
+        {/* SANOVA Logo */}
         <View style={styles.logoContainer}>
-          <Ionicons name="leaf" size={24} color={colors.text.white} />
+          <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
+          <Text style={styles.logoText}>SANOVA</Text>
         </View>
-        <Text style={styles.headerTitle}>Payment Method</Text>
       </View>
-      
-      <Animated.ScrollView 
-        style={[styles.content, { opacity: fadeAnim }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Payment Methods - exactly as shown in design */}
-        <View style={styles.paymentMethods}>
-          {paymentMethods.map((method) => (
-            <TouchableOpacity
-              key={method.id}
-              style={[
-                styles.paymentMethodCard,
-                selectedMethod === method.id && styles.selectedPaymentMethod
-              ]}
-              onPress={() => handleMethodSelect(method.id)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.paymentMethodInfo}>
-                <View style={styles.methodLeft}>
-                  <Text style={styles.paymentMethodName}>{method.name}</Text>
-                </View>
-                <View style={styles.methodRight}>
-                  <Text style={styles.paymentLogo}>{method.logo}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </Animated.ScrollView>
 
-      <View style={styles.payButtonContainer}>
+      {/* Content Container - White card, top corners radius 24px */}
+      <Animated.View 
+        style={[
+          styles.contentContainer,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
+      >
+        {/* Section Header - "Payment Method", flush left, Inter bold, 26px */}
+        <Text style={styles.sectionHeader}>Payment Method</Text>
+
+        {/* Payment Option Cards */}
+        {paymentMethods.map((method, index) => (
+          <TouchableOpacity
+            key={method.id}
+            style={[
+              styles.paymentCard,
+              selectedPaymentMethod === method.id && styles.selectedPaymentCard,
+            ]}
+            onPress={() => handlePaymentMethodSelect(method.id)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.paymentCardContent}>
+              <Text style={styles.paymentLabel}>{method.label}</Text>
+              <Image source={{ uri: method.logo }} style={styles.paymentLogo} />
+            </View>
+          </TouchableOpacity>
+        ))}
+
+        {/* Pay Now Button - Bottom, full width minus 16px margins, 50px height */}
         <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
           <TouchableOpacity 
-            style={styles.payButton}
+            style={styles.payNowButton}
             onPress={handlePayNow}
             activeOpacity={0.9}
           >
-            <Text style={styles.payButtonText}>Pay Now</Text>
+            <Text style={styles.payNowButtonText}>Pay Now</Text>
           </TouchableOpacity>
         </Animated.View>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -213,98 +152,127 @@ export default function PaymentMethodScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.primary,
+    backgroundColor: colors.warmCream, // Warm cream background
   },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+  
+  // App Bar - Same styling as previous screen
+  appBar: {
+    height: 76,
+    backgroundColor: colors.deepForestGreen,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomLeftRadius: 16, // 16dp radius as specified
-    borderBottomRightRadius: 16, // 16dp radius as specified
-    overflow: 'hidden', // Make corner radius visible
+    paddingTop: 20,
   },
+  
   logoContainer: {
-    marginBottom: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text.white,
-    textAlign: 'center',
-    fontFamily: 'serif',
-    letterSpacing: 2, // +2 letter spacing as specified
-    textTransform: 'uppercase',
-  },
-  content: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-    borderTopLeftRadius: 16, // 16dp radius as specified
-    borderTopRightRadius: 16, // 16dp radius as specified
-    marginTop: -16, // Overlap with header to create seamless curve
-    overflow: 'hidden', // Make corner radius visible
-  },
-  paymentMethods: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-  },
-  paymentMethodCard: {
-    backgroundColor: colors.background.white,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: colors.border.primary,
-  },
-  selectedPaymentMethod: {
-    borderColor: colors.primary,
-    borderWidth: 2,
-  },
-  paymentMethodInfo: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  methodLeft: {
+  
+  logoImage: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+    tintColor: colors.white,
+  },
+  
+  logoText: {
+    ...typography.logo,
+    fontSize: 28,
+    fontWeight: 'bold',
+    letterSpacing: 2,
+    color: colors.white,
+  },
+  
+  // Content Container - White card, top corners radius 24px, flush left/right
+  contentContainer: {
     flex: 1,
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginTop: 12, // 12px margin-top
+    paddingHorizontal: 24,
+    paddingTop: 26, // 26px margin-top
   },
-  paymentMethodName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.text.primary,
+  
+  // Section Header - Inter bold, 26px, flush left
+  sectionHeader: {
+    fontFamily: 'Inter',
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: colors.darkGreen,
+    marginTop: 26,
   },
-  methodRight: {
-    alignItems: 'flex-end',
+  
+  // Payment Option Cards - Each card 52px height, 96% width
+  paymentCard: {
+    width: '96%',
+    height: 52,
+    backgroundColor: colors.paymentCardBg, // #FDF7EA
+    borderRadius: 12,
+    marginVertical: 7, // 14px vertical margin between cards (7px each side)
+    shadowColor: colors.deepForestGreen,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.07,
+    shadowRadius: 7,
+    elevation: 2,
   },
-  paymentLogo: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text.primary,
+  
+  selectedPaymentCard: {
+    backgroundColor: colors.paleIvory, // Slightly different when selected
+    borderWidth: 2,
+    borderColor: colors.deepForestGreen,
   },
-  payButtonContainer: {
-    padding: 20,
-    backgroundColor: colors.background.primary,
-  },
-  payButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 16,
-    borderRadius: 25,
+  
+  paymentCardContent: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    justifyContent: 'space-between',
+    paddingHorizontal: 22, // 22px left/right internal padding
+  },
+  
+  // Payment Label - Inter medium, 18px, left-aligned
+  paymentLabel: {
+    fontFamily: 'Inter',
+    fontSize: 18,
+    fontWeight: '500',
+    color: colors.darkGreen,
+  },
+  
+  // Payment Logo - 32px wide, right-aligned
+  paymentLogo: {
+    width: 32,
+    height: 32,
+    resizeMode: 'contain',
+  },
+  
+  // Pay Now Button - Bottom, full width minus 16px margins, 50px height
+  payNowButton: {
+    width: width - 32, // Full width minus 16px margins
+    height: 50,
+    backgroundColor: colors.deepForestGreen,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 30, // Space from last payment card
+    alignSelf: 'center',
+    shadowColor: colors.deepForestGreen,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
     elevation: 3,
   },
-  payButtonText: {
-    color: colors.text.white,
-    fontSize: 16,
-    fontWeight: '600',
+  
+  // Pay Now Button Text - Inter bold, 18px, white, letter-spacing 1.2px
+  payNowButtonText: {
+    fontFamily: 'Inter',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.white,
+    letterSpacing: 1.2,
   },
 });

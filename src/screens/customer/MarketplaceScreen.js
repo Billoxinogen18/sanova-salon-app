@@ -9,7 +9,8 @@ import {
   Animated, 
   TextInput, 
   Dimensions,
-  StatusBar 
+  StatusBar,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
@@ -52,14 +53,14 @@ export default function MarketplaceScreen({ navigation }) {
 
   // Beauty products exactly as shown in design screenshots
   const beautyProducts = [
-    { id: 1, name: 'Moisturizing Shampoo', price: '150 kr', emoji: '🧴', color: '#F5F1E8' },
-    { id: 2, name: 'Hydrating Serum', price: '200 kr', emoji: '🧴', color: '#8B4513' },
-    { id: 3, name: 'Face Cream', price: '180 kr', emoji: '🟢', color: '#2D5A3D' },
-    { id: 4, name: 'Body Lotion', price: '160 kr', emoji: '🧴', color: '#F5F1E8' },
-    { id: 5, name: 'Body Lotion', price: '180 kr', emoji: '🧴', color: '#F5F1E8' },
-    { id: 6, name: 'Hair Oil', price: '110 kr', emoji: '🧴', color: '#F5F1E8' },
-    { id: 7, name: 'Cleansing Oil', price: '180 kr', emoji: '🟢', color: '#2D5A3D' },
-    { id: 8, name: 'Cleansing Oil', price: '180 kr', emoji: '🧴', color: '#F5F1E8' },
+    { id: 1, name: 'Moisturizing Shampoo', price: '150 kr', image: require('../../../assets/shampoo.png'), color: '#F5F1E8' },
+    { id: 2, name: 'Hydrating Serum', price: '200 kr', image: require('../../../assets/hydratingserum.png'), color: '#8B4513' },
+    { id: 3, name: 'Face Cream', price: '180 kr', image: require('../../../assets/facecream.png'), color: '#2D5A3D' },
+    { id: 4, name: 'Body Lotion', price: '160 kr', image: require('../../../assets/bodylotion.png'), color: '#F5F1E8' },
+    { id: 5, name: 'Body Lotion', price: '180 kr', image: require('../../../assets/bodylotion.png'), color: '#F5F1E8' },
+    { id: 6, name: 'Hair Oil', price: '110 kr', image: require('../../../assets/hairoil.png'), color: '#F5F1E8' },
+    { id: 7, name: 'Cleansing Oil', price: '180 kr', image: require('../../../assets/cleansingoil.png'), color: '#2D5A3D' },
+    { id: 8, name: 'Cleansing Oil', price: '180 kr', image: require('../../../assets/cleansingoil.png'), color: '#F5F1E8' },
   ];
 
   useEffect(() => {
@@ -233,7 +234,7 @@ export default function MarketplaceScreen({ navigation }) {
           activeOpacity={0.9}
         >
           <View style={[styles.productImageContainer, { backgroundColor: item.color }]}>
-            <Text style={styles.productEmoji}>{item.emoji}</Text>
+            <Image source={item.image} style={styles.productImage} />
           </View>
           <Text style={styles.productName}>{item.name}</Text>
           <Text style={styles.productPrice}>{item.price}</Text>
@@ -262,7 +263,7 @@ export default function MarketplaceScreen({ navigation }) {
         ]}
       >
         <View style={styles.logoContainer}>
-          <Ionicons name="leaf" size={24} color={colors.background.white} />
+          <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
         </View>
         <Text style={styles.headerTitle}>SANOVA</Text>
       </Animated.View>
@@ -452,8 +453,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     ...shadows.card,
   },
-  productEmoji: {
-    fontSize: 28,
+  productImage: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
   },
   productName: {
     ...typography.captionMedium,
@@ -466,5 +469,11 @@ const styles = StyleSheet.create({
     ...typography.bodyMedium,
     color: colors.accent,
     fontWeight: '700',
+  },
+  
+  logoImage: {
+    width: 24,
+    height: 24,
+    tintColor: colors.background.white,
   },
 });

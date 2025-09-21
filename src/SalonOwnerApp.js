@@ -13,6 +13,7 @@ import PaymentsScreen from './screens/salon/PaymentsScreen';
 import NewBookingScreen from './screens/salon/NewBookingScreen';
 import NewServiceScreen from './screens/salon/NewServiceScreen';
 import NewProductScreen from './screens/salon/NewProductScreen';
+import BookingDetailScreen from './screens/salon/BookingDetailScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -75,6 +76,7 @@ export default function SalonOwnerApp() {
       <Stack.Screen name="NewBooking" component={NewBookingScreen} />
       <Stack.Screen name="NewService" component={NewServiceScreen} />
       <Stack.Screen name="NewProduct" component={NewProductScreen} />
+      <Stack.Screen name="BookingDetail" component={BookingDetailScreen} />
     </Stack.Navigator>
   );
 }

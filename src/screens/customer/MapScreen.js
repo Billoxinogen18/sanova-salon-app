@@ -9,9 +9,10 @@ import {
   TextInput, 
   Platform, 
   StatusBar, 
-  Dimensions 
+  Dimensions,
+  Image
 } from 'react-native';
-import { WebView } from 'react-native-webview';
+import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
@@ -211,11 +212,28 @@ export default function MapScreen({ navigation }) {
     ]).start();
   };
 
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState({
+    hair: true,
+    nails: true,
+    massage: true,
+    spa: true,
+  });
+
   const handleFilterPress = () => {
     Animated.sequence([
       Animated.timing(filterButtonScale, { toValue: 0.9, duration: 100, useNativeDriver: true }),
       Animated.timing(filterButtonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
-    ]).start();
+    ]).start(() => {
+      setShowFilters(!showFilters);
+    });
+  };
+
+  const toggleFilter = (filterType) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [filterType]: !prev[filterType]
+    }));
   };
 
   const fetchPlaces = async (text) => {
@@ -245,6 +263,37 @@ export default function MapScreen({ navigation }) {
     }
   };
 
+  // Generate random salon markers around user location
+  const generateSalonMarkers = (userLat, userLng) => {
+    const salons = [
+      { name: 'Nordic Beauty', description: 'Hair & Spa', emoji: '💇‍♀️', color: '#4A6741', type: 'hair' },
+      { name: 'Icelandic Style', description: 'Hair & Nails', emoji: '💅', color: '#8B4513', type: 'nails' },
+      { name: 'Arctic Glow', description: 'Beauty & Wellness', emoji: '✨', color: '#2D5A3D', type: 'spa' },
+      { name: 'Fjord Salon', description: 'Hair & Makeup', emoji: '💄', color: '#4A6741', type: 'hair' },
+      { name: 'Aurora Spa', description: 'Massage & Wellness', emoji: '🧘‍♀️', color: '#8B4513', type: 'massage' },
+      { name: 'Viking Cuts', description: 'Men\'s Grooming', emoji: '✂️', color: '#2D5A3D', type: 'hair' },
+      { name: 'Glacier Nails', description: 'Nail Art Studio', emoji: '🎨', color: '#4A6741', type: 'nails' },
+      { name: 'Midnight Sun Spa', description: 'Luxury Spa', emoji: '🛁', color: '#8B4513', type: 'spa' },
+      { name: 'Elf Hair Studio', description: 'Creative Hair', emoji: '🧝‍♀️', color: '#2D5A3D', type: 'hair' },
+      { name: 'Frost Massage', description: 'Therapeutic Massage', emoji: '💆‍♀️', color: '#4A6741', type: 'massage' },
+    ];
+
+    return salons.map((salon, index) => {
+      // Generate random coordinates within 5km radius
+      const radius = 0.05; // ~5km
+      const angle = (index * 36) * (Math.PI / 180); // Distribute evenly
+      const distance = Math.random() * radius;
+      
+      const lat = userLat + (distance * Math.cos(angle));
+      const lng = userLng + (distance * Math.sin(angle));
+      
+      return {
+        ...salon,
+        coordinate: { latitude: lat, longitude: lng }
+      };
+    });
+  };
+
   const beautyProducts = [
     { id: 1, name: 'Moisturizing Shampoo', price: '150 kr', emoji: '🧴' },
     { id: 2, name: 'Hydrating Serum', price: '200 kr', emoji: '✨' },
@@ -271,7 +320,7 @@ export default function MapScreen({ navigation }) {
         ]}
       >
         <View style={styles.logoContainer}>
-          <Ionicons name="leaf" size={20} color={colors.background.white} />
+          <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
         </View>
         <Text style={styles.headerTitle}>SANOVA</Text>
         <Text style={styles.headerSubtitle}>Find nearby salons</Text>
@@ -292,63 +341,54 @@ export default function MapScreen({ navigation }) {
           {console.log('🗺️ Map wrapper style:', styles.mapWrapper)}
           {console.log('🗺️ Map view style:', styles.mapView)}
           
-          {/* Test if MapView is rendering at all */}
-          <View style={{ backgroundColor: 'red', height: 20, width: '100%' }}>
-            <Text style={{ color: 'white', textAlign: 'center' }}>MAP TEST - RED BAR SHOULD BE VISIBLE</Text>
-          </View>
-          
-          <WebView
+          <MapView
+            ref={mapRef}
             style={styles.mapView}
-            source={{
-              html: `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <style>
-                    body { margin: 0; padding: 0; }
-                    #map { width: 100%; height: 100%; }
-                  </style>
-                </head>
-                <body>
-                  <div id="map"></div>
-                  <script>
-                    function initMap() {
-                      const map = new google.maps.Map(document.getElementById('map'), {
-                        center: { lat: 40.7128, lng: -74.0060 },
-                        zoom: 13,
-                        mapTypeId: 'roadmap'
-                      });
-                      
-                      // Add salon markers
-                      const salons = [
-                        { lat: 40.7128, lng: -74.0060, title: "Nordic Beauty", description: "Hair & Spa" },
-                        { lat: 40.7228, lng: -74.0160, title: "Icelandic Style", description: "Hair & Nails" },
-                        { lat: 40.7328, lng: -74.0260, title: "Arctic Glow", description: "Beauty & Wellness" }
-                      ];
-                      
-                      salons.forEach(salon => {
-                        new google.maps.Marker({
-                          position: { lat: salon.lat, lng: salon.lng },
-                          map: map,
-                          title: salon.title
-                        });
-                      });
-                    }
-                  </script>
-                  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ&callback=initMap"></script>
-                </body>
-                </html>
-              `
-            }}
-            onLoad={() => {
-              console.log('🗺️ WebView map loaded!');
+            initialRegion={region}
+            onMapReady={() => {
+              console.log('🗺️ React Native MapView loaded!');
               setMapReady(true);
             }}
-            onError={(error) => {
-              console.error('🚨 WebView map error:', error);
+            onRegionChangeComplete={(newRegion) => {
+              console.log('🗺️ Map region changed:', newRegion);
+              setRegion(newRegion);
             }}
-          />
+            onError={(error) => {
+              console.error('🗺️ MapView error:', error);
+            }}
+            onLoad={() => {
+              console.log('🗺️ MapView onLoad triggered');
+            }}
+            showsUserLocation={true}
+            showsMyLocationButton={true}
+            showsCompass={true}
+            showsScale={true}
+            mapType="standard"
+            loadingEnabled={true}
+            loadingIndicatorColor={colors.primary}
+            loadingBackgroundColor={colors.background.white}
+          >
+            {/* Add multiple salon markers around user location */}
+            {generateSalonMarkers(region.latitude, region.longitude).map((salon, index) => (
+              <Marker
+                key={index}
+                coordinate={salon.coordinate}
+                title={salon.name}
+                description={salon.description}
+                onPress={() => {
+                  // Navigate to salon detail
+                  navigation.navigate('SalonDetail', { salon });
+                }}
+              >
+                <View style={styles.customMarker}>
+                  <View style={styles.markerShadow} />
+                  <View style={[styles.markerInner, { backgroundColor: salon.color }]}>
+                    <Image source={require('../../../assets/mapmarker.png')} style={styles.markerImage} />
+                  </View>
+                </View>
+              </Marker>
+            ))}
+          </MapView>
         </View>
         
         {/* Filter Button */}
@@ -456,6 +496,32 @@ export default function MapScreen({ navigation }) {
             </Animated.View>
           )}
         </Animated.View>
+
+        {/* Filter Panel */}
+        {showFilters && (
+          <Animated.View style={styles.filterPanel}>
+            <Text style={styles.filterTitle}>Filter by Service</Text>
+            <View style={styles.filterOptions}>
+              {Object.entries(selectedFilters).map(([filterType, isSelected]) => (
+                <TouchableOpacity
+                  key={filterType}
+                  style={[
+                    styles.filterOption,
+                    isSelected && styles.filterOptionSelected
+                  ]}
+                  onPress={() => toggleFilter(filterType)}
+                >
+                  <Text style={[
+                    styles.filterOptionText,
+                    isSelected && styles.filterOptionTextSelected
+                  ]}>
+                    {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </Animated.View>
+        )}
       </View>
       
       {/* Premium Animated Beauty Products Section */}
@@ -742,5 +808,56 @@ const styles = StyleSheet.create({
     top: 2,
     left: -3,
     zIndex: 1,
+  },
+  markerImage: {
+    width: 24,
+    height: 24,
+    tintColor: colors.background.white,
+  },
+  filterPanel: {
+    position: 'absolute',
+    top: 80,
+    left: spacing.lg,
+    right: spacing.lg,
+    backgroundColor: colors.background.white,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    ...shadows.elevated,
+    zIndex: 15,
+  },
+  filterTitle: {
+    ...typography.title3,
+    color: colors.text.primary,
+    marginBottom: spacing.md,
+  },
+  filterOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  filterOption: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.primary,
+    backgroundColor: colors.background.primary,
+  },
+  filterOptionSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  filterOptionText: {
+    ...typography.caption,
+    color: colors.text.primary,
+  },
+  filterOptionTextSelected: {
+    color: colors.background.white,
+  },
+  
+  logoImage: {
+    width: 20,
+    height: 20,
+    tintColor: colors.background.white,
   },
 });

@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
-import { authService } from './src/services/firebaseService';
+import { authService, firestoreService } from './src/services/firebaseService';
 
 // Import app types
 import CustomerApp from './src/CustomerApp';
@@ -12,6 +12,7 @@ import WelcomeScreen from './src/screens/WelcomeScreenEnhanced';
 import LoginScreen from './src/screens/LoginScreenPremium';
 import SignUpScreen from './src/screens/SignUpScreenPremium';
 import TestScreen from './src/screens/TestScreen';
+import TestFirestoreScreen from './src/screens/TestFirestoreScreen';
 
 // Import services
 import notificationServiceInstance from './src/services/notificationService';
@@ -24,7 +25,7 @@ const Stack = createStackNavigator();
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [initialRoute, setInitialRoute] = useState('Welcome');
+  const [initialRoute, setInitialRoute] = useState('Test');
 
   // Initialize services and check login state on app startup
   useEffect(() => {
@@ -54,8 +55,21 @@ export default function App() {
         const user = await checkAuthState();
         
         if (user) {
-          console.log('✅ User already logged in, navigating to app');
-          setInitialRoute('CustomerApp'); // Default to customer app
+          console.log('✅ User already logged in, checking user role');
+          // Get user data from Firestore to determine navigation
+          try {
+            const userDoc = await firestoreService.users.get(user.uid);
+            if (userDoc.success && userDoc.data.role === 'salon') {
+              console.log('🏢 Salonist user, navigating to SalonOwnerApp');
+              setInitialRoute('SalonOwnerApp');
+            } else {
+              console.log('👤 Customer user, navigating to CustomerApp');
+              setInitialRoute('CustomerApp');
+            }
+          } catch (error) {
+            console.log('⚠️ Error checking user role, defaulting to CustomerApp');
+            setInitialRoute('CustomerApp');
+          }
         } else {
           console.log('👤 No user logged in, showing welcome screen');
           setInitialRoute('Welcome');
@@ -118,6 +132,7 @@ export default function App() {
           }}
         >
           <Stack.Screen name="Test" component={TestScreen} />
+          <Stack.Screen name="TestFirestore" component={TestFirestoreScreen} />
           <Stack.Screen 
             name="Welcome" 
             component={WelcomeScreen}

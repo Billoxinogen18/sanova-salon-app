@@ -1,52 +1,174 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+  Animated,
+  Dimensions,
+  ScrollView,
+  Image,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, globalStyles } from '../../theme/styles';
-import Header from '../../components/Header';
+import { colors } from '../../theme/colors';
+import { typography } from '../../theme/typography';
 
-export default function ProfileScreen({ navigation }) {
-  const profileOptions = [
-    { id: 1, title: 'Order History', icon: 'receipt-outline', onPress: () => {} },
-    { id: 2, title: 'Edit Phone Number', icon: 'create-outline', onPress: () => {} },
-    { id: 3, title: 'Notifications', icon: 'notifications-outline', onPress: () => {} },
-    { id: 4, title: 'Favorite Salons', icon: 'heart-outline', onPress: () => {} },
-    { id: 5, title: 'Support', icon: 'help-circle-outline', onPress: () => {} },
+const { width } = Dimensions.get('window');
+
+export default function ProfileScreen({ navigation, route }) {
+  const [selectedOption, setSelectedOption] = useState(null);
+  
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    StatusBar.setBarStyle('light-content');
+    
+    // Entrance animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const handleOptionPress = (option) => {
+    // Touch feedback animation
+    Animated.sequence([
+      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+    
+    setSelectedOption(option);
+    
+    // Handle navigation based on option
+    switch (option) {
+      case 'history':
+        navigation.navigate('OrderHistory');
+        break;
+      case 'edit':
+        navigation.navigate('EditPhone');
+        break;
+      case 'notifications':
+        navigation.navigate('Notifications');
+        break;
+      case 'favorites':
+        navigation.navigate('FavoriteSalons');
+        break;
+      case 'support':
+        navigation.navigate('Support');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const navigationOptions = [
+    {
+      id: 'history',
+      icon: 'time',
+      label: 'Order History',
+    },
+    {
+      id: 'edit',
+      icon: 'create',
+      label: 'Edit Phone Number',
+    },
+    {
+      id: 'notifications',
+      icon: 'notifications',
+      label: 'Notifications',
+    },
+    {
+      id: 'favorites',
+      icon: 'heart',
+      label: 'Favorite Salons',
+    },
+    {
+      id: 'support',
+      icon: 'help-circle',
+      label: 'Support',
+    },
   ];
 
   return (
     <View style={styles.container}>
-      {/* Header with dark green background exactly as in design */}
-      <View style={styles.header}>
+      {/* App Bar - Deep forest green, 74px height, rounded top corners */}
+      <View style={styles.appBar}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.deepForestGreen} />
+        
+        {/* SANOVA Logo */}
         <View style={styles.logoContainer}>
-          <Ionicons name="leaf" size={24} color={colors.text.white} />
+          <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
+          <Text style={styles.logoText}>SANOVA</Text>
         </View>
-        <Text style={styles.headerTitle}>My Account</Text>
       </View>
-      
-      <ScrollView style={styles.content}>
-        {/* Phone Number Section - exactly as in design */}
-        <View style={styles.phoneSection}>
+
+      {/* Main Content Card - White, top corners radius 24px, flush to screen edges */}
+      <Animated.View 
+        style={[
+          styles.contentCard,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
+      >
+        {/* Header - "My Account", flush left, Inter bold, 25px */}
+        <Text style={styles.header}>My Account</Text>
+
+        {/* Phone Info Block - Light cream background, radius 16px */}
+        <View style={styles.phoneInfoCard}>
           <Text style={styles.phoneLabel}>Phone Number</Text>
           <Text style={styles.phoneNumber}>+45 20 12 34 56</Text>
         </View>
 
-        {/* Menu Options - exactly matching the design layout */}
-        <View style={styles.optionsContainer}>
-          {profileOptions.map((option) => (
+        {/* Navigation Options List */}
+        <View style={styles.navigationList}>
+          {navigationOptions.map((option, index) => (
             <TouchableOpacity
               key={option.id}
-              style={styles.optionItem}
-              onPress={option.onPress}
+              style={[
+                styles.navigationRow,
+                index < navigationOptions.length - 1 && styles.navigationRowWithDivider,
+              ]}
+              onPress={() => handleOptionPress(option.id)}
+              activeOpacity={0.8}
             >
-              <View style={styles.optionLeft}>
-                <Ionicons name={option.icon} size={20} color={colors.text.primary} />
-                <Text style={styles.optionTitle}>{option.title}</Text>
+              <View style={styles.rowContent}>
+                {/* Icon - Left-most, vector SVG, pure black, 22px */}
+                <Ionicons 
+                  name={option.icon} 
+                  size={22} 
+                  color={colors.darkGreen} 
+                  style={styles.rowIcon} 
+                />
+                
+                {/* Label - Left-aligned, Inter medium, 17px */}
+                <Text style={styles.rowLabel}>{option.label}</Text>
+                
+                {/* Right Arrow - Vector chevron, flush right */}
+                <Ionicons 
+                  name="chevron-forward" 
+                  size={17} 
+                  color={colors.darkGreen} 
+                  style={styles.chevronIcon} 
+                />
               </View>
-              <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
             </TouchableOpacity>
           ))}
         </View>
-      </ScrollView>
+      </Animated.View>
     </View>
   );
 }
@@ -54,75 +176,134 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.primary, // Beige background
+    backgroundColor: colors.warmCream, // Soft, warm cream background
   },
-  header: {
-    backgroundColor: colors.primary, // Deep green header
-    paddingTop: 60, // Account for status bar
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+  
+  // App Bar - Deep forest green, 74px height, rounded top corners
+  appBar: {
+    height: 74,
+    backgroundColor: colors.deepForestGreen,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomLeftRadius: 16, // 16dp radius as specified
-    borderBottomRightRadius: 16, // 16dp radius as specified
-    overflow: 'hidden', // Make corner radius visible
+    paddingTop: 20,
   },
+  
   logoContainer: {
-    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text.white,
-    textAlign: 'center',
-    fontFamily: 'serif',
-    letterSpacing: 2, // +2 letter spacing as specified
-    textTransform: 'uppercase',
+  
+  logoImage: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+    tintColor: colors.white,
   },
-  content: {
+  
+  logoText: {
+    ...typography.logo,
+    fontSize: 28,
+    fontWeight: 'bold',
+    letterSpacing: 2,
+    color: colors.white,
+  },
+  
+  // Main Content Card - White, top corners radius 24px, flush to screen edges
+  contentCard: {
     flex: 1,
-    backgroundColor: colors.background.primary,
-    borderTopLeftRadius: 16, // 16dp radius as specified
-    borderTopRightRadius: 16, // 16dp radius as specified
-    marginTop: -16, // Overlap with header to create seamless curve
-    overflow: 'hidden', // Make corner radius visible
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingTop: 24, // 24px margin-top from top of card/container
   },
-  phoneSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+  
+  // Header - Inter bold, 25px, flush left
+  header: {
+    fontFamily: 'Inter',
+    fontSize: 25,
+    fontWeight: 'bold',
+    color: colors.darkGreen,
+    marginTop: 24,
   },
+  
+  // Phone Info Block - Light cream background, radius 16px
+  phoneInfoCard: {
+    backgroundColor: colors.lightCream, // #F8F6EC
+    borderRadius: 16,
+    paddingHorizontal: 22, // 22px left/right
+    paddingVertical: 16, // 16px top/bottom
+    marginTop: 18, // 18px margin-top below header
+    shadowColor: colors.deepForestGreen,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  
+  // Phone Label - Inter regular, 15px
   phoneLabel: {
-    fontSize: 14,
-    color: colors.text.secondary,
-    marginBottom: 4,
+    fontFamily: 'Inter',
+    fontSize: 15,
+    fontWeight: '400',
+    color: colors.mutedGreen, // #6A7463
+    marginBottom: 2,
   },
+  
+  // Phone Number - Inter bold, 19px
   phoneNumber: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: colors.text.primary,
+    fontFamily: 'Inter',
+    fontSize: 19,
+    fontWeight: 'bold',
+    color: colors.darkGreen,
   },
-  optionsContainer: {
-    paddingTop: 8,
+  
+  // Navigation Options List
+  navigationList: {
+    marginTop: 22, // 22px margin-top below phone card
+    flex: 1,
   },
-  optionItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+  
+  // Navigation Row - 56px height, width 100% of card
+  navigationRow: {
+    height: 56,
+    width: '100%',
+    backgroundColor: colors.lightCream, // #F8F6EC
+    justifyContent: 'center',
+    minHeight: 48, // Minimum touch target
+  },
+  
+  navigationRowWithDivider: {
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-    backgroundColor: colors.background.primary,
+    borderBottomColor: colors.dividerGray, // #EBE6DC, 1px, 14% opacity
   },
-  optionLeft: {
+  
+  rowContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 18, // 18px left margin from edge
+    flex: 1,
   },
-  optionTitle: {
-    fontSize: 16,
-    color: colors.text.primary,
-    marginLeft: 12,
-    fontWeight: '400',
+  
+  // Row Icon - Left-most, vector SVG, pure black, 22px
+  rowIcon: {
+    marginRight: 22, // 22px spacing from icon
+  },
+  
+  // Row Label - Left-aligned, Inter medium, 17px
+  rowLabel: {
+    fontFamily: 'Inter',
+    fontSize: 17,
+    fontWeight: '500',
+    color: colors.darkGreen,
+    flex: 1,
+  },
+  
+  // Chevron Icon - Vector chevron, flush right, 24px right margin
+  chevronIcon: {
+    marginRight: 24, // 24px right margin
   },
 });
