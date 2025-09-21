@@ -1,147 +1,97 @@
-# Sanova Salon App
+# SANOVA - Beauty & Hair Services App
 
-A modern React Native application for beauty and wellness salon booking and management. The app provides separate interfaces for customers and salon owners, enabling seamless booking experiences and comprehensive business management.
+A pixel-perfect React Native mobile application for beauty and hair services, featuring a map-based interface with salon locations, marketplace, urgent services, and booking management.
 
 ## Features
 
-### Customer App
-- **Map View**: Discover nearby salons with location markers
-- **Marketplace**: Browse services and beauty products
-- **Urgent Bookings**: Find the soonest available appointments
-- **Booking Management**: View and manage upcoming appointments
-- **Complete Booking Flow**: 
-  - Date and time selection
-  - Payment method selection (Card, Apple Pay, MobilePay)
-  - Payment model (Full payment or 50/50 split)
-- **Service & Product Details**: Detailed information with reviews
-- **Profile Management**: Account settings and preferences
-- **Review System**: Rate and review completed services
+- **Map Page**: Interactive map with custom gold markers showing salon locations
+- **Marketplace**: 2-column grid of beauty products with search functionality
+- **Urgent Services**: Emergency beauty services with centered content blocks
+- **Bookings**: Manage upcoming and past appointments with detailed cards
 
-### Salon Owner App
-- **Dashboard**: Overview of bookings, revenue, and key metrics
-- **Booking Management**: View and create new appointments
-- **Service Management**: Add and manage salon services
-- **Product Management**: Manage retail products with click & collect
-- **Financial Dashboard**: 
-  - Revenue tracking and analytics
-  - Payment method breakdown
-  - Tax calculations and reporting
-  - Export options (PDF, Excel)
-- **Business Insights**: Charts and trends
+## Design Specifications
 
-## Design System
+The app follows exact pixel-perfect specifications with:
+- **Color Palette**: Forest green (#1C3521), cream (#F8F6EC), gold (#C6AE78)
+- **Typography**: Inter font family with specific weights and sizes
+- **Components**: 13-18px border radius, subtle shadows, proper spacing
+- **Navigation**: 62px height bottom tab bar with active state indicators
 
-The app uses a consistent design language with:
-- **Primary Color**: Dark Green (#2D5A3D)
-- **Secondary Color**: Light Beige (#F5F5DC)
-- **Clean Typography**: Sans-serif fonts with clear hierarchy
-- **Modern UI**: Card-based layouts with subtle shadows
-- **Intuitive Navigation**: Bottom tab navigation for easy access
+## Installation
 
-## Technology Stack
-
-- **React Native**: Cross-platform mobile development
-- **Expo**: Development platform and tools
-- **React Navigation**: Navigation library for screen transitions
-- **Vector Icons**: Icon library for consistent iconography
-- **Custom Components**: Reusable UI components
-
-## Getting Started
-
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-- Expo CLI
-- iOS Simulator or Android Emulator (for testing)
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd sanova-salon-app
-```
-
-2. Install dependencies:
+1. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Start the development server:
+2. For iOS:
 ```bash
-npm start
+cd ios && pod install && cd ..
+npm run ios
 ```
 
-4. Run on your preferred platform:
+3. For Android:
 ```bash
-# iOS
-npm run ios
-
-# Android
 npm run android
-
-# Web
-npm run web
 ```
 
 ## Project Structure
 
 ```
 src/
-├── components/          # Reusable UI components
-│   ├── Header.js       # App header with logo and navigation
-│   └── StatusBar.js    # Custom status bar component
-├── screens/            # Screen components
-│   ├── customer/       # Customer app screens
-│   └── salon/          # Salon owner app screens
-├── theme/              # Design system
-│   ├── colors.js       # Color palette
-│   └── styles.js       # Global styles and components
-├── CustomerApp.js      # Customer app navigation
-├── SalonOwnerApp.js    # Salon owner app navigation
-└── WelcomeScreen.js    # App entry point
+├── components/
+│   ├── Header.tsx           # App header with logo
+│   ├── SearchBar.tsx        # Reusable search component
+│   ├── ProductCard.tsx      # Horizontal product cards
+│   ├── GridProductCard.tsx  # Grid product cards
+│   ├── CustomMarker.tsx     # Map marker component
+│   ├── UrgentCard.tsx       # Urgent service cards
+│   └── BookingCard.tsx      # Booking management cards
+├── pages/
+│   ├── MapPage.tsx          # Map with salon locations
+│   ├── MarketplacePage.tsx  # Product marketplace
+│   ├── UrgentPage.tsx       # Emergency services
+│   └── BookingsPage.tsx     # Booking management
+└── App.tsx                  # Main app with navigation
 ```
 
-## Key Features Implementation
+## Key Components
 
-### Navigation
-- Stack navigation for screen transitions
-- Bottom tab navigation for main app sections
-- Consistent header design across all screens
+### Map Page
+- 60% screen height map with custom styling
+- Gold circular markers (36px) with white scissor icons
+- Filter button (44px) in top-right corner
+- Horizontal scrolling beauty products below
 
-### State Management
-- Local state management with React hooks
-- Form handling for booking and service creation
-- Mock data for demonstration purposes
+### Marketplace Page
+- 2-column product grid (92px cards)
+- Consistent search bar and header
+- Product cards with images, names, and prices
 
-### UI Components
-- Custom header with logo and navigation
-- Reusable card components
-- Form inputs with consistent styling
-- Button components with proper states
+### Urgent Page
+- Centered urgent icon (80px circle)
+- Main urgent services card
+- Vertical list of emergency services
 
-## Future Enhancements
+### Bookings Page
+- "Mine Bookinger" main title
+- Upcoming and past booking sections
+- Detailed booking cards with action buttons
 
-- Backend integration with real APIs
-- Push notifications for booking reminders
-- Real-time chat between customers and salons
-- Advanced analytics and reporting
-- Multi-language support
-- Offline functionality
-- Payment gateway integration
+## Styling Guidelines
 
-## Contributing
+- All cards use 13-18px border radius
+- Shadows use #1C3521 color at 10-20% opacity
+- Text uses Inter font family with specific weights
+- Touch targets minimum 48x48px for accessibility
+- Proper color contrast for WCAG AA compliance
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+## Dependencies
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support and questions, please contact the development team or create an issue in the repository.
+- React Native 0.72.6
+- React Navigation 6.x
+- React Native Maps
+- React Native Vector Icons
+- React Native SVG
+- React Native Gesture Handler
+- React Native Safe Area Context
