@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
+import { globalStyles } from '../../theme/styles';
 import { 
   typography, 
   spacing, 
