@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, globalStyles } from '../../theme/styles';
 import Header from '../../components/Header';
@@ -70,8 +70,12 @@ export default function ProductDetailScreen({ navigation, route }) {
       >
         {/* Large product image - exactly as shown in design */}
         <View style={styles.imageContainer}>
-          <View style={styles.productImage}>
-            <Text style={styles.productEmoji}>{product.emoji}</Text>
+          <View style={styles.productImageContainer}>
+            {product.image ? (
+              <Image source={product.image} style={styles.productImage} />
+            ) : (
+              <Text style={styles.productEmoji}>{product.emoji || '🛍️'}</Text>
+            )}
           </View>
         </View>
 
@@ -172,11 +176,16 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  productImage: {
+  productImageContainer: {
     flex: 1,
     backgroundColor: colors.background.primary,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   productEmoji: {
     fontSize: 80,

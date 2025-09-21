@@ -26,6 +26,8 @@ import PaymentModelScreen from './screens/customer/PaymentModelScreen';
 import ProfileScreen from './screens/customer/ProfileScreen';
 import ReviewScreen from './screens/customer/ReviewScreen';
 import PaymentSuccessScreen from './screens/customer/PaymentSuccessScreen';
+import BookingHistoryScreen from './screens/customer/BookingHistoryScreen';
+import PaymentHistoryScreen from './screens/customer/PaymentHistoryScreen';
 
 // Import New Booking Flow Screens
 import DateTimeSelectionScreen from './screens/customer/DateTimeSelectionScreen';
@@ -273,6 +275,20 @@ export default function CustomerApp() {
       <Stack.Screen 
         name="AvailableTimes" 
         component={AvailableTimesScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="BookingHistory" 
+        component={BookingHistoryScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="PaymentHistory" 
+        component={PaymentHistoryScreen}
         options={{
           ...pageTransitions.slideFromRight,
         }}

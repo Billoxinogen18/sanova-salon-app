@@ -17,7 +17,7 @@ import { typography } from '../../theme/typography';
 const { width } = Dimensions.get('window');
 
 export default function SalonDetailScreen({ navigation, route }) {
-  const { time } = route.params || {};
+  const { salon, time } = route.params || {};
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -57,8 +57,8 @@ export default function SalonDetailScreen({ navigation, route }) {
     navigation.navigate('DateTimeSelection', { service });
   };
 
-  // Mock data with actual assets
-  const salonData = {
+  // Use passed salon data or fallback to mock data
+  const salonData = salon || {
     name: 'Gustav Salon',
     address: 'Frederiks Allé 28',
     rating: 4.8,
@@ -76,6 +76,20 @@ export default function SalonDetailScreen({ navigation, route }) {
       require('../../../assets/manicure.png'),
     ],
   };
+
+  // Ensure images are properly formatted
+  const heroImage = typeof salonData.heroImage === 'string' 
+    ? { uri: salonData.heroImage } 
+    : salonData.heroImage || require('../../../assets/saloon.png');
+    
+  const photos = salonData.photos ? salonData.photos.map(photo => 
+    typeof photo === 'string' ? { uri: photo } : photo
+  ) : [
+    require('../../../assets/saloon.png'),
+    require('../../../assets/barber.png'),
+    require('../../../assets/haircut.png'),
+    require('../../../assets/manicure.png'),
+  ];
 
   return (
     <View style={styles.container}>
@@ -101,7 +115,7 @@ export default function SalonDetailScreen({ navigation, route }) {
       >
         {/* Hero Image - Full width, 30px top radius, 168px height */}
         <View style={styles.heroImageContainer}>
-          <Image source={salonData.heroImage} style={styles.heroImage} />
+          <Image source={heroImage} style={styles.heroImage} />
         </View>
 
         {/* Main Salon Card Section - White background */}
@@ -155,7 +169,7 @@ export default function SalonDetailScreen({ navigation, route }) {
             style={styles.photosScrollView}
             contentContainerStyle={styles.photosContainer}
           >
-            {salonData.photos.map((photo, index) => (
+            {photos.map((photo, index) => (
               <View key={index} style={styles.photoCard}>
                 <Image source={photo} style={styles.photoImage} />
               </View>

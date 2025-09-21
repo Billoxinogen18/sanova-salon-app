@@ -53,8 +53,11 @@ export default function ProfileScreen({ navigation, route }) {
     
     // Handle navigation based on option
     switch (option) {
-      case 'history':
-        navigation.navigate('OrderHistory');
+      case 'bookings':
+        navigation.navigate('BookingHistory');
+        break;
+      case 'payments':
+        navigation.navigate('PaymentHistory');
         break;
       case 'edit':
         navigation.navigate('EditPhone');
@@ -75,9 +78,14 @@ export default function ProfileScreen({ navigation, route }) {
 
   const navigationOptions = [
     {
-      id: 'history',
-      icon: 'time',
-      label: 'Order History',
+      id: 'bookings',
+      icon: 'calendar',
+      label: 'My Bookings',
+    },
+    {
+      id: 'payments',
+      icon: 'card',
+      label: 'Payment History',
     },
     {
       id: 'edit',
