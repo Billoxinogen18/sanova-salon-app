@@ -6,210 +6,26 @@ import {
   TouchableOpacity, 
   ScrollView, 
   Animated, 
-  TextInput, 
-  Platform, 
-  StatusBar, 
-  Dimensions 
+  Dimensions, 
+  StatusBar 
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
-import { 
-  typography, 
-  spacing, 
-  shadows, 
-  borderRadius, 
-  premiumComponents 
-} from '../../theme/premiumStyles';
-// Removed animations
+import SearchBar from '../../components/SearchBar';
+import MapMarker from '../../components/MapMarker';
+import ProductCard from '../../components/ProductCard';
 
 const { width, height } = Dimensions.get('window');
 
 export default function MapScreen({ navigation }) {
-  console.log('🗺️ MapScreen component rendering...');
-  
   const [searchText, setSearchText] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const [searchFocused, setSearchFocused] = useState(false);
   const [mapReady, setMapReady] = useState(false);
-  const mapRef = useRef(null);
-  const [region, setRegion] = useState({
-    latitude: 40.7128, // New York coordinates for testing
-    longitude: -74.0060,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
-  
-  console.log('🗺️ MapScreen state - mapReady:', mapReady, 'region:', region);
-
-  // Animation controller
-  // Removed animation controller
-
-  // Animated values
-  const headerAnimatedValues = useRef({
-    opacity: new Animated.Value(1), // Start visible
-    translateY: new Animated.Value(0), // Start at normal position
-  }).current;
-
-  const mapAnimatedValues = useRef({
-    opacity: new Animated.Value(1), // Start visible
-    scale: new Animated.Value(1), // Start at normal scale
-  }).current;
-
-  const searchAnimatedValues = useRef({
-    opacity: new Animated.Value(1), // Start visible
-    translateY: new Animated.Value(0), // Start at normal position
-    scale: new Animated.Value(1),
-  }).current;
-
-  const productsAnimatedValues = useRef({
-    opacity: new Animated.Value(1), // Start visible
-    translateY: new Animated.Value(0), // Start at normal position
-  }).current;
-
-  const searchBorderAnimation = useRef(new Animated.Value(0)).current;
   const filterButtonScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    console.log('🗺️ MapScreen useEffect triggered');
-    console.log('🗺️ Initial region state:', region);
-    console.log('🗺️ Initial mapReady state:', mapReady);
-    
     StatusBar.setBarStyle('light-content');
-    
-    console.log('🗺️ MapScreen mounted, requesting location...');
-    
-    // Request location permissions immediately
-    requestLocationPermission();
-
-    // Fallback: show map after 2 seconds even if not ready
-    // Removed fallback timer to prevent interference with map loading
-
-    return () => {
-      console.log('🗺️ MapScreen useEffect cleanup');
-      // No timer to clear anymore
-    };
   }, []);
-
-  const startEntranceAnimations = () => {
-    const headerAnimation = Animated.parallel([
-      Animated.timing(headerAnimatedValues.opacity, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(headerAnimatedValues.translateY, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]);
-    // Map is already visible, no animation needed
-    const mapAnimation = Animated.timing(mapAnimatedValues.opacity, {
-      toValue: 1,
-      duration: 0, // No animation
-      useNativeDriver: true,
-    });
-    const searchAnimation = Animated.parallel([
-      Animated.timing(searchAnimatedValues.opacity, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(searchAnimatedValues.translateY, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]);
-    const productsAnimation = Animated.parallel([
-      Animated.timing(productsAnimatedValues.opacity, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(productsAnimatedValues.translateY, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]);
-
-    // Start animations directly (map is always visible)
-    Animated.stagger(200, [
-      headerAnimation,
-      searchAnimation,
-      productsAnimation,
-    ]).start();
-  };
-
-  const requestLocationPermission = async () => {
-    console.log('🗺️ Requesting location permission...');
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        try {
-          const loc = await Location.getCurrentPositionAsync({ 
-            accuracy: Location.Accuracy.Balanced,
-            timeout: 10000, // 10 second timeout
-            maximumAge: 60000, // Accept cached location up to 1 minute old
-          });
-          const nextRegion = {
-            latitude: loc.coords.latitude,
-            longitude: loc.coords.longitude,
-            latitudeDelta: 0.0922, // Fixed zoom level
-            longitudeDelta: 0.0421, // Fixed zoom level
-          };
-          setRegion(nextRegion);
-          if (mapRef.current) {
-            mapRef.current.animateToRegion(nextRegion, 1000);
-          }
-        } catch (locationError) {
-          console.warn('Could not get current location, using default Iceland coordinates:', locationError.message);
-          // Keep using the default Iceland coordinates
-        }
-      } else {
-        console.warn('Location permission denied, using default Iceland coordinates');
-        // Keep using the default Iceland coordinates
-      }
-    } catch (error) {
-      console.warn('Error requesting location permission, using default coordinates:', error.message);
-      // Keep using the default Iceland coordinates
-    }
-  };
-
-  const handleSearchFocus = () => {
-    setSearchFocused(true);
-    Animated.parallel([
-      Animated.timing(searchBorderAnimation, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-      Animated.timing(searchAnimatedValues.scale, {
-        toValue: 1.02,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const handleSearchBlur = () => {
-    setSearchFocused(false);
-    Animated.parallel([
-      Animated.timing(searchBorderAnimation, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-      Animated.timing(searchAnimatedValues.scale, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
 
   const handleFilterPress = () => {
     Animated.sequence([
@@ -218,140 +34,106 @@ export default function MapScreen({ navigation }) {
     ]).start();
   };
 
-  const fetchPlaces = async (text) => {
-    setSearchText(text);
-    if (!text || text.length < 2) {
-      setSuggestions([]);
-      return;
-    }
-    try {
-      // Use the same API key that's in your Android manifest
-      const apiKey = "AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ";
-      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(text)}&location=${region.latitude},${region.longitude}&radius=20000&key=${apiKey}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      
-      // Add error checking
-      if (json.status !== 'OK' && json.status !== 'ZERO_RESULTS') {
-        console.error('Places API Error:', json.status, json.error_message);
-        setSuggestions([]);
-        return;
-      }
-      
-      setSuggestions(json?.predictions?.slice(0, 5) || []);
-    } catch (e) {
-      console.error('Places API fetch error:', e);
-      setSuggestions([]);
-    }
-  };
-
   const beautyProducts = [
     { id: 1, name: 'Moisturizing Shampoo', price: '150 kr', emoji: '🧴' },
     { id: 2, name: 'Hydrating Serum', price: '200 kr', emoji: '✨' },
     { id: 3, name: 'Face Cream', price: '180 kr', emoji: '🌿' },
   ];
 
-  const searchBorderColor = searchBorderAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [colors.border.primary, colors.primary],
-  });
-
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       
-      {/* Premium Animated Header */}
-      <Animated.View 
-        style={[
-          styles.header,
-          {
-            opacity: headerAnimatedValues.opacity,
-            transform: [{ translateY: headerAnimatedValues.translateY }],
-          }
-        ]}
-      >
+      {/* Header Bar - Forest Green with Logo */}
+      <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Ionicons name="leaf" size={20} color={colors.background.white} />
+          <Ionicons name="leaf" size={20} color={colors.background.white} style={{ marginLeft: -8 }} />
         </View>
         <Text style={styles.headerTitle}>SANOVA</Text>
-        <Text style={styles.headerSubtitle}>Find nearby salons</Text>
-      </Animated.View>
+      </View>
 
-      {/* Map Container - Always Visible */}
+      {/* Map Section - 60% of screen height */}
       <View style={styles.mapContainer}>
-        <View style={styles.mapWrapper}>
-          {/* Fallback view to test if container is working */}
-          {!mapReady && (
-            <View style={styles.mapFallback}>
-              <Text style={styles.mapFallbackText}>Loading Map...</Text>
-              <Text style={styles.mapFallbackSubtext}>Finding nearby salons</Text>
-            </View>
-          )}
-          {console.log('🗺️ Rendering MapView with mapReady:', mapReady)}
-          {console.log('🗺️ Map container style:', styles.mapContainer)}
-          {console.log('🗺️ Map wrapper style:', styles.mapWrapper)}
-          {console.log('🗺️ Map view style:', styles.mapView)}
-          
-          {/* Test if MapView is rendering at all */}
-          <View style={{ backgroundColor: 'red', height: 20, width: '100%' }}>
-            <Text style={{ color: 'white', textAlign: 'center' }}>MAP TEST - RED BAR SHOULD BE VISIBLE</Text>
-          </View>
-          
-          <WebView
-            style={styles.mapView}
-            source={{
-              html: `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <style>
-                    body { margin: 0; padding: 0; }
-                    #map { width: 100%; height: 100%; }
-                  </style>
-                </head>
-                <body>
-                  <div id="map"></div>
-                  <script>
-                    function initMap() {
-                      const map = new google.maps.Map(document.getElementById('map'), {
-                        center: { lat: 40.7128, lng: -74.0060 },
-                        zoom: 13,
-                        mapTypeId: 'roadmap'
+        <WebView
+          style={styles.mapView}
+          source={{
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                  body { margin: 0; padding: 0; background-color: #F8F6EC; }
+                  #map { width: 100%; height: 100%; }
+                </style>
+              </head>
+              <body>
+                <div id="map"></div>
+                <script>
+                  function initMap() {
+                    const map = new google.maps.Map(document.getElementById('map'), {
+                      center: { lat: 40.7128, lng: -74.0060 },
+                      zoom: 13,
+                      mapTypeId: 'roadmap',
+                      styles: [
+                        {
+                          featureType: 'all',
+                          elementType: 'geometry.fill',
+                          stylers: [{ color: '#F8F6EC' }]
+                        },
+                        {
+                          featureType: 'road',
+                          elementType: 'geometry.fill',
+                          stylers: [{ color: '#F5F1E8' }]
+                        },
+                        {
+                          featureType: 'water',
+                          elementType: 'geometry.fill',
+                          stylers: [{ color: '#E8F4F8' }]
+                        },
+                        {
+                          featureType: 'poi.park',
+                          elementType: 'geometry.fill',
+                          stylers: [{ color: '#E8F5E8' }]
+                        }
+                      ]
+                    });
+                    
+                    // Add salon markers with custom styling
+                    const salons = [
+                      { lat: 40.7128, lng: -74.0060, title: "Nordic Beauty" },
+                      { lat: 40.7228, lng: -74.0160, title: "Icelandic Style" },
+                      { lat: 40.7328, lng: -74.0260, title: "Arctic Glow" },
+                      { lat: 40.7028, lng: -73.9960, title: "Scandinavian Spa" },
+                      { lat: 40.7428, lng: -74.0360, title: "Nordic Wellness" }
+                    ];
+                    
+                    salons.forEach(salon => {
+                      const marker = new google.maps.Marker({
+                        position: { lat: salon.lat, lng: salon.lng },
+                        map: map,
+                        title: salon.title,
+                        icon: {
+                          path: google.maps.SymbolPath.CIRCLE,
+                          fillColor: '#C6AE78',
+                          fillOpacity: 1,
+                          strokeWeight: 0,
+                          scale: 18
+                        }
                       });
-                      
-                      // Add salon markers
-                      const salons = [
-                        { lat: 40.7128, lng: -74.0060, title: "Nordic Beauty", description: "Hair & Spa" },
-                        { lat: 40.7228, lng: -74.0160, title: "Icelandic Style", description: "Hair & Nails" },
-                        { lat: 40.7328, lng: -74.0260, title: "Arctic Glow", description: "Beauty & Wellness" }
-                      ];
-                      
-                      salons.forEach(salon => {
-                        new google.maps.Marker({
-                          position: { lat: salon.lat, lng: salon.lng },
-                          map: map,
-                          title: salon.title
-                        });
-                      });
-                    }
-                  </script>
-                  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ&callback=initMap"></script>
-                </body>
-                </html>
-              `
-            }}
-            onLoad={() => {
-              console.log('🗺️ WebView map loaded!');
-              setMapReady(true);
-            }}
-            onError={(error) => {
-              console.error('🚨 WebView map error:', error);
-            }}
-          />
-        </View>
+                    });
+                  }
+                </script>
+                <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ&callback=initMap"></script>
+              </body>
+              </html>
+            `
+          }}
+          onLoad={() => setMapReady(true)}
+        />
         
-        {/* Filter Button */}
+        {/* Filter Button - Top Right */}
         <Animated.View
           style={[
             styles.filterButtonContainer,
@@ -363,115 +145,24 @@ export default function MapScreen({ navigation }) {
             onPress={handleFilterPress}
             activeOpacity={0.8}
           >
-            <Ionicons name="funnel-outline" size={20} color={colors.background.white} />
+            <Ionicons name="funnel-outline" size={28} color={colors.background.white} />
           </TouchableOpacity>
-        </Animated.View>
-        
-        {/* Search Bar */}
-        <Animated.View 
-          style={[
-            styles.searchContainer,
-            {
-              opacity: searchAnimatedValues.opacity,
-              transform: [
-                { translateY: searchAnimatedValues.translateY },
-                { scale: searchAnimatedValues.scale },
-              ],
-            }
-          ]}
-        >
-          <Animated.View
-            style={[
-              styles.searchBar,
-              { borderColor: searchBorderColor }
-            ]}
-          >
-            <Ionicons 
-              name="search" 
-              size={20} 
-              color={searchFocused ? colors.primary : colors.text.secondary} 
-            />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search salons, services..."
-              placeholderTextColor={colors.text.secondary}
-              value={searchText}
-              onChangeText={fetchPlaces}
-              onFocus={handleSearchFocus}
-              onBlur={handleSearchBlur}
-            />
-            {searchText.length > 0 && (
-              <TouchableOpacity
-                onPress={() => {
-                  setSearchText('');
-                  setSuggestions([]);
-                }}
-                style={styles.clearButton}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="close-circle" size={20} color={colors.text.secondary} />
-              </TouchableOpacity>
-            )}
-          </Animated.View>
-          
-          {suggestions.length > 0 && (
-            <Animated.View style={styles.suggestions}>
-              {suggestions.map((s) => (
-                <TouchableOpacity
-                  key={s.place_id}
-                  style={styles.suggestion}
-                  onPress={async () => {
-                    setSuggestions([]);
-                    setSearchText(s.description);
-                    try {
-                      const apiKey = "AIzaSyBD61clYyqUPsJcPsEZ_fPAQRJv1XDLwcQ";
-                      const detailsRes = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${s.place_id}&key=${apiKey}`);
-                      const details = await detailsRes.json();
-                      
-                      if (details.status === 'OK') {
-                        const loc = details?.result?.geometry?.location;
-                        if (loc && mapRef.current) {
-                          const nextRegion = {
-                            latitude: loc.lat,
-                            longitude: loc.lng,
-                            latitudeDelta: 0.02,
-                            longitudeDelta: 0.02,
-                          };
-                          setRegion(nextRegion);
-                          mapRef.current.animateToRegion(nextRegion, 1500);
-                        }
-                      } else {
-                        console.error('Place details error:', details.status, details.error_message);
-                      }
-                    } catch (error) {
-                      console.error('Place details fetch error:', error);
-                    }
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="location-outline" size={16} color={colors.text.secondary} />
-                  <Text style={styles.suggestionText}>{s.description}</Text>
-                </TouchableOpacity>
-              ))}
-            </Animated.View>
-          )}
         </Animated.View>
       </View>
       
-      {/* Premium Animated Beauty Products Section */}
-      <Animated.View 
-        style={[
-          styles.productsSection,
-          {
-            opacity: productsAnimatedValues.opacity,
-            transform: [{ translateY: productsAnimatedValues.translateY }],
-          }
-        ]}
-      >
-        <View style={styles.productsSectionHeader}>
-          <Text style={styles.sectionTitle}>Featured Products</Text>
-          <Text style={styles.sectionSubtitle}>Premium beauty essentials</Text>
-        </View>
+      {/* Search Bar - Floating above content */}
+      <View style={styles.searchContainer}>
+        <SearchBar
+          placeholder="Search"
+          value={searchText}
+          onChangeText={setSearchText}
+          containerStyle={styles.searchBarContainer}
+        />
+      </View>
+
+      {/* Beauty Products Section */}
+      <View style={styles.productsSection}>
+        <Text style={styles.sectionTitle}>Beauty Products</Text>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -479,268 +170,110 @@ export default function MapScreen({ navigation }) {
           contentContainerStyle={styles.productsScrollContainer}
         >
           {beautyProducts.map((product, index) => (
-            <TouchableOpacity 
-              key={product.id} 
-              style={[
-                styles.productCard,
-                index === 0 && styles.firstProductCard,
-                index === beautyProducts.length - 1 && styles.lastProductCard,
-              ]}
-              onPress={() => {
-                // Product press animation
-                Animated.sequence([
-                  Animated.timing(new Animated.Value(1), { toValue: 0.95, duration: 100, useNativeDriver: true }),
-                  Animated.timing(new Animated.Value(0.95), { toValue: 1, duration: 100, useNativeDriver: true }),
-                ]).start(() => {
-                  navigation.navigate('ProductDetail', { product });
-                });
-              }}
-              activeOpacity={0.9}
-            >
-              <View style={styles.productImageContainer}>
-                <Text style={styles.productImage}>{product.emoji}</Text>
-              </View>
-              <Text style={styles.productTitle}>{product.name}</Text>
-              <Text style={styles.productPrice}>{product.price}</Text>
-            </TouchableOpacity>
+            <ProductCard
+              key={product.id}
+              product={product}
+              variant="horizontal"
+              onPress={() => navigation.navigate('ProductDetail', { product })}
+            />
           ))}
         </ScrollView>
-      </Animated.View>
-    </ScrollView>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...premiumComponents.screenContainer,
+    flex: 1,
+    backgroundColor: colors.background.primary,
   },
   header: {
     backgroundColor: colors.primary,
-    paddingTop: spacing.xxxl + 20,
-    paddingBottom: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    ...shadows.elevated,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   logoContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-    ...shadows.card,
+    marginRight: 8,
   },
   headerTitle: {
-    ...typography.title2,
+    fontSize: 20,
+    fontWeight: 'bold',
     color: colors.background.white,
     fontFamily: 'serif',
     letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: spacing.xs,
-  },
-  headerSubtitle: {
-    ...typography.caption,
-    color: colors.background.white,
-    opacity: 0.8,
   },
   mapContainer: {
-    height: 500, // Increased height to make map more visible
+    height: height * 0.6, // 60% of screen height as specified
     position: 'relative',
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
-    overflow: 'hidden',
-    backgroundColor: colors.background.white,
-    marginTop: -2,
-    ...shadows.floating,
-  },
-  mapWrapper: {
-    flex: 1,
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
-    overflow: 'hidden',
     backgroundColor: colors.background.primary,
-    borderWidth: 1,
-    borderColor: 'rgba(38, 52, 40, 0.1)',
-    borderBottomWidth: 0,
   },
   mapView: {
     flex: 1,
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
-  },
-  mapFallback: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.background.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
-  },
-  mapFallbackText: {
-    ...typography.title2,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  mapFallbackSubtext: {
-    ...typography.body,
-    color: colors.text.secondary,
   },
   filterButtonContainer: {
     position: 'absolute',
-    top: spacing.lg,
-    left: spacing.lg,
+    top: 20,
+    right: 20,
     zIndex: 10,
   },
   filterButton: {
-    backgroundColor: 'rgba(38, 52, 40, 0.9)',
-    borderRadius: borderRadius.round,
-    padding: spacing.md,
-    ...shadows.floating,
+    backgroundColor: colors.primary,
+    width: 44, // 44px circle as specified
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 5,
   },
   searchContainer: {
     position: 'absolute',
-    bottom: spacing.xl + 20,
-    left: spacing.lg,
-    right: spacing.lg,
+    bottom: height * 0.6 - 50, // Position above map
+    left: 32, // 32px margin as specified
+    right: 32,
     zIndex: 10,
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md + 2,
-    borderWidth: 1,
-    borderColor: 'rgba(38, 52, 40, 0.1)',
-    ...shadows.floating,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: spacing.sm,
-    ...typography.body,
-    color: colors.text.primary,
-  },
-  clearButton: {
-    padding: spacing.xs,
-  },
-  suggestions: {
-    marginTop: spacing.sm,
-    backgroundColor: colors.background.white,
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    maxHeight: 200,
-    ...shadows.elevated,
-  },
-  suggestion: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
-    gap: spacing.sm,
-  },
-  suggestionText: {
-    ...typography.body,
-    color: colors.text.primary,
-    flex: 1,
+  searchBarContainer: {
+    backgroundColor: colors.background.white, // #F8F6EC as specified
+    borderRadius: 18, // 18px radius as specified
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   productsSection: {
-    paddingTop: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxxl + 20, // Extra padding to avoid tab bar
+    flex: 1,
+    paddingTop: 18, // 18px top margin as specified
+    paddingHorizontal: 20,
     backgroundColor: colors.background.primary,
   },
-  productsSectionHeader: {
-    marginBottom: spacing.lg,
-  },
   sectionTitle: {
-    ...typography.title3,
+    fontSize: 18,
+    fontWeight: '600',
     color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  sectionSubtitle: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    opacity: 0.8,
+    marginBottom: 16,
   },
   productsScrollView: {
     flexDirection: 'row',
   },
   productsScrollContainer: {
-    paddingRight: spacing.lg,
-  },
-  productCard: {
-    ...premiumComponents.premiumCard,
-    width: 140,
-    alignItems: 'center',
-    marginRight: spacing.md,
-    backgroundColor: colors.background.white,
-    ...shadows.card,
-  },
-  firstProductCard: {
-    marginLeft: 0,
-  },
-  lastProductCard: {
-    marginRight: 0,
-  },
-  productImageContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.background.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    ...shadows.card,
-  },
-  productImage: {
-    fontSize: 26,
-  },
-  productTitle: {
-    ...typography.captionMedium,
-    color: colors.text.primary,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-    lineHeight: 16,
-  },
-  productPrice: {
-    ...typography.bodyMedium,
-    color: colors.accent,
-    fontWeight: '700',
-  },
-  customMarker: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markerInner: {
-    backgroundColor: colors.accent,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: colors.background.white,
-    ...shadows.floating,
-    zIndex: 2,
-  },
-  markerShadow: {
-    position: 'absolute',
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    top: 2,
-    left: -3,
-    zIndex: 1,
+    paddingRight: 20,
   },
 });

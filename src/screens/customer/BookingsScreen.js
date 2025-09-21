@@ -5,351 +5,142 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   ScrollView, 
-  Animated, 
-  StatusBar, 
-  Dimensions,
-  RefreshControl 
+  StatusBar,
+  Animated 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
-import { 
-  typography, 
-  spacing, 
-  shadows, 
-  borderRadius, 
-  premiumComponents 
-} from '../../theme/premiumStyles';
-import { firestoreService, authService } from '../../services/firebaseService';
-import realtimeServiceInstance from '../../services/realtimeService';
-import notificationServiceInstance from '../../services/notificationService';
-
-const { width, height } = Dimensions.get('window');
 
 export default function BookingsScreen({ navigation }) {
-  const [upcomingBookings, setUpcomingBookings] = useState([]);
-  const [previousBookings, setPreviousBookings] = useState([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Animation controller
-  // Removed animation controller
-
-  // Animated values
-  const headerAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(-30),
-  }).current;
-
-  const upcomingAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(30),
-    scale: new Animated.Value(0.95),
-  }).current;
-
-  const previousAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(30),
-    scale: new Animated.Value(0.95),
-  }).current;
-
-  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     StatusBar.setBarStyle('light-content');
-    
-    // Start entrance animations
-    startEntranceAnimations();
-    
-    // Load initial bookings data
-    loadBookingsData();
-    
-    // Initialize real-time monitoring for booking updates
-    initializeRealtimeMonitoring();
-
-    return () => {
-      // Cleanup real-time monitoring
-      try {
-        const currentUser = authService.getCurrentUser();
-        if (currentUser && realtimeServiceInstance.stopListening) {
-          realtimeServiceInstance.stopListening(`user_bookings_${currentUser.uid}`);
-        }
-      } catch (error) {
-        console.warn('Error cleaning up real-time monitoring:', error);
-      }
-    };
   }, []);
 
-  const startEntranceAnimations = () => {
-    // Start animations directly with proper timing
-    Animated.stagger(200, [
-      // Header animation
-      Animated.parallel([
-        Animated.timing(headerAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(headerAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Upcoming animation
-      Animated.parallel([
-        Animated.timing(upcomingAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(upcomingAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(upcomingAnimatedValues.scale, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Previous animation
-      Animated.parallel([
-        Animated.timing(previousAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(previousAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(previousAnimatedValues.scale, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
-  };
-
-  const loadBookingsData = async () => {
-    try {
-      setIsLoading(true);
-      const currentUser = authService.getCurrentUser();
-      
-      if (currentUser) {
-        const bookingsResult = await firestoreService.bookings.getByUser(currentUser.uid);
-        
-        if (bookingsResult.success) {
-          const allBookings = bookingsResult.data;
-          const now = new Date();
-          
-          // Separate upcoming and previous bookings
-          const upcoming = allBookings.filter(booking => {
-            const bookingDate = new Date(booking.date);
-            return bookingDate >= now && booking.status !== 'cancelled' && booking.status !== 'completed';
-          }).map(booking => ({
-            ...booking,
-            date: booking.date instanceof Date ? booking.date.toLocaleDateString('da-DK') : booking.date
-          }));
-          
-          const previous = allBookings.filter(booking => {
-            const bookingDate = new Date(booking.date);
-            return bookingDate < now || booking.status === 'completed' || booking.status === 'cancelled';
-          }).map(booking => ({
-            ...booking,
-            date: booking.date instanceof Date ? booking.date.toLocaleDateString('da-DK') : booking.date
-          }));
-          
-          setUpcomingBookings(upcoming);
-          setPreviousBookings(previous);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading bookings:', error);
-    } finally {
-      setIsLoading(false);
+  const upcomingBookings = [
+    {
+      id: 1,
+      serviceName: 'Hair Cut & Style',
+      salonName: 'Nordic Beauty Salon',
+      address: 'Reykjavik, Iceland',
+      time: 'Today, 2:00 PM',
+      icon: 'cut'
+    },
+    {
+      id: 2,
+      serviceName: 'Manicure & Pedicure',
+      salonName: 'Icelandic Style',
+      address: 'Reykjavik, Iceland',
+      time: 'Tomorrow, 10:00 AM',
+      icon: 'hand-left'
     }
-  };
+  ];
 
-  const initializeRealtimeMonitoring = async () => {
-    try {
-      const currentUser = authService.getCurrentUser();
-      if (currentUser && realtimeServiceInstance.startListeningToUserBookings) {
-        // Listen for real-time booking updates with error handling
-        const result = realtimeServiceInstance.startListeningToUserBookings(currentUser.uid, (bookings) => {
-          try {
-            console.log('📅 Real-time booking updates for customer:', bookings.length);
-            
-            const now = new Date();
-            const upcoming = bookings.filter(booking => {
-              const bookingDate = new Date(booking.date);
-              return bookingDate >= now && booking.status !== 'cancelled' && booking.status !== 'completed';
-            }).map(booking => ({
-              ...booking,
-              date: booking.date instanceof Date ? booking.date.toLocaleDateString('da-DK') : booking.date
-            }));
-            
-            const previous = bookings.filter(booking => {
-              const bookingDate = new Date(booking.date);
-              return bookingDate < now || booking.status === 'completed' || booking.status === 'cancelled';
-            }).map(booking => ({
-              ...booking,
-              date: booking.date instanceof Date ? booking.date.toLocaleDateString('da-DK') : booking.date
-            }));
-            
-            setUpcomingBookings(upcoming);
-            setPreviousBookings(previous);
-            
-            // Show notification for booking status updates
-            if (bookings.length > 0) {
-              const latestBooking = bookings[0];
-              if (latestBooking.status === 'confirmed') {
-                notificationServiceInstance.sendLocalNotification(
-                  'Booking Confirmed!',
-                  `Your ${latestBooking.serviceName} appointment is confirmed.`,
-                  { type: 'booking_confirmed', bookingId: latestBooking.id }
-                );
-              }
-            }
-          } catch (callbackError) {
-            console.error('Error in real-time callback:', callbackError);
-          }
-        });
-        
-        if (result && result.success) {
-          console.log('✅ Real-time monitoring started successfully');
-        } else {
-          console.warn('⚠️ Real-time monitoring failed, using polling fallback');
-        }
-      } else {
-        console.warn('⚠️ Real-time monitoring not available, using polling fallback');
-      }
-    } catch (error) {
-      console.error('Error initializing real-time monitoring:', error);
+  const pastBookings = [
+    {
+      id: 3,
+      serviceName: 'Facial Treatment',
+      salonName: 'Arctic Glow Spa',
+      address: 'Reykjavik, Iceland',
+      time: 'Last week',
+      icon: 'sparkles'
+    },
+    {
+      id: 4,
+      serviceName: 'Eyebrow Shaping',
+      salonName: 'Scandinavian Beauty',
+      address: 'Reykjavik, Iceland',
+      time: '2 weeks ago',
+      icon: 'eye'
     }
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await loadBookingsData();
-    setIsRefreshing(false);
-  };
+  ];
 
   const handleBookingPress = (booking) => {
+    // Navigate to booking details
+    console.log('Booking pressed:', booking);
+  };
+
+  const handleActionPress = (booking, action) => {
     // Button press animation
     const buttonScale = new Animated.Value(1);
     Animated.sequence([
-      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonScale, { toValue: 0.9, duration: 100, useNativeDriver: true }),
       Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
     ]).start(() => {
-      navigation.navigate('BookingDetail', { booking });
-    });
-  };
-
-  const handleBookAgain = (booking) => {
-    // Navigate to booking flow with pre-filled service
-    navigation.navigate('BookingFlow', { 
-      prefilledService: {
-        id: booking.serviceId,
-        name: booking.serviceName,
-        salonId: booking.salonId,
-        salonName: booking.salonName
+      if (action === 'details') {
+        // Navigate to booking details
+        console.log('View details:', booking);
+      } else if (action === 'book_again') {
+        // Navigate to booking flow
+        console.log('Book again:', booking);
       }
     });
   };
 
-  // Mock data for initial display (will be replaced by real data)
-  const mockUpcomingBookings = [
-    {
-      id: 1,
-      serviceName: 'Classic Manicure',
-      salonName: 'Gustav Salon',
-      salonAddress: 'Frederiks Alle 28',
-      date: '15. Dec 2024', // Fixed: Use string instead of Date object
-      time: '11:00',
-      status: 'confirmed',
-      icon: '💅',
-    },
-  ];
-
-  const mockPreviousBookings = [
-    {
-      id: 2,
-      serviceName: 'Haircut',
-      salonName: 'Hair Studio',
-      salonAddress: 'Borgergade 14',
-      date: '15. Apr 2024', // Fixed: Use string instead of Date object
-      time: '14:00',
-      status: 'completed',
-      icon: '✂️',
-      canBook: true,
-    },
-  ];
-
-  const displayUpcomingBookings = upcomingBookings.length > 0 ? upcomingBookings : mockUpcomingBookings;
-  const displayPreviousBookings = previousBookings.length > 0 ? previousBookings : mockPreviousBookings;
+  const renderBookingCard = (booking, isUpcoming = true) => (
+    <TouchableOpacity 
+      key={booking.id}
+      style={styles.bookingCard}
+      onPress={() => handleBookingPress(booking)}
+      activeOpacity={0.9}
+    >
+      <View style={styles.bookingIconContainer}>
+        <Ionicons name={booking.icon} size={28} color={colors.text.primary} />
+      </View>
+      <View style={styles.bookingInfo}>
+        <Text style={styles.serviceName}>{booking.serviceName}</Text>
+        <Text style={styles.salonName}>{booking.salonName}</Text>
+        <Text style={styles.salonAddress}>{booking.address}</Text>
+        <Text style={styles.bookingTime}>{booking.time}</Text>
+      </View>
+      <TouchableOpacity 
+        style={styles.actionButton}
+        onPress={() => handleActionPress(booking, isUpcoming ? 'details' : 'book_again')}
+        activeOpacity={0.7} // Button darkens by 10% on tap as specified
+      >
+        <Text style={styles.actionButtonText}>
+          {isUpcoming ? 'Se detaljer' : 'Book igen'}
+        </Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
-      {/* Header with dark green background exactly as in design */}
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+      
+      {/* Header Bar - Forest Green with Logo */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Ionicons name="leaf" size={24} color={colors.text.white} />
+          <Ionicons name="leaf" size={20} color={colors.background.white} />
+          <Ionicons name="leaf" size={20} color={colors.background.white} style={{ marginLeft: -8 }} />
         </View>
-        <Text style={styles.headerTitle}>Mine Bookinger</Text>
+        <Text style={styles.headerTitle}>SANOVA</Text>
       </View>
       
-      <Animated.ScrollView 
-        style={[styles.content, { opacity: fadeAnim }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Upcoming Bookings Section - exactly as shown in design */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Kommende Bookinger</Text>
-          {displayUpcomingBookings.map((booking) => (
-            <View key={booking.id} style={styles.bookingCard}>
-              <View style={styles.bookingIcon}>
-                <Text style={styles.iconText}>{booking.icon}</Text>
-              </View>
-              <View style={styles.bookingInfo}>
-                <Text style={styles.serviceName}>{booking.serviceName}</Text>
-                <Text style={styles.salonName}>{booking.salonName} - {booking.salonAddress}</Text>
-                <Text style={styles.bookingDate}>{booking.date} {booking.time}</Text>
-              </View>
-              <TouchableOpacity style={styles.detailsButton} activeOpacity={0.8}>
-                <Text style={styles.detailsButtonText}>Se detaljer</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
+      <View style={styles.content}>
+        {/* Main Header */}
+        <Text style={styles.mainHeader}>Mine Bookinger</Text>
 
-        {/* Previous Bookings Section - exactly as shown in design */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tidligere Bookinger</Text>
-          {displayPreviousBookings.map((booking) => (
-            <View key={booking.id} style={styles.bookingCard}>
-              <View style={styles.bookingIcon}>
-                <Text style={styles.iconText}>{booking.icon}</Text>
-              </View>
-              <View style={styles.bookingInfo}>
-                <Text style={styles.serviceName}>{booking.serviceName}</Text>
-                <Text style={styles.salonName}>{booking.salonName} - {booking.salonAddress}</Text>
-                <Text style={styles.bookingDate}>{booking.date} {booking.time}</Text>
-              </View>
-              <View style={styles.actionButtons}>
-                {booking.canBook && (
-                  <TouchableOpacity style={styles.bookAgainButton} activeOpacity={0.8}>
-                    <Text style={styles.bookAgainText}>Book igen</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          ))}
-        </View>
-      </Animated.ScrollView>
+        <ScrollView 
+          style={styles.bookingsContainer}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.bookingsContent}
+        >
+          {/* Upcoming Bookings Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>Kommende Bookinger</Text>
+            {upcomingBookings.map(booking => renderBookingCard(booking, true))}
+          </View>
+
+          {/* Past Bookings Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>Tidligere Bookinger</Text>
+            {pastBookings.map(booking => renderBookingCard(booking, false))}
+          </View>
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -361,113 +152,125 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.primary,
-    paddingTop: 60,
+    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
-    borderBottomLeftRadius: 16, // 16dp radius as specified
-    borderBottomRightRadius: 16, // 16dp radius as specified
-    overflow: 'hidden', // Make corner radius visible
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   logoContainer: {
-    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text.white,
-    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.background.white,
     fontFamily: 'serif',
-    letterSpacing: 2, // +2 letter spacing as specified
-    textTransform: 'uppercase',
+    letterSpacing: 2,
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
     backgroundColor: colors.background.primary,
-    borderTopLeftRadius: 16, // 16dp radius as specified
-    borderTopRightRadius: 16, // 16dp radius as specified
-    marginTop: -16, // Overlap with header to create seamless curve
-    overflow: 'hidden', // Make corner radius visible
+    paddingTop: 22, // 22px top margin as specified
+  },
+  mainHeader: {
+    fontSize: 22, // 22px as specified
+    fontWeight: 'bold',
+    color: colors.text.primary, // #232D1E as specified
+    marginBottom: 24,
+    fontFamily: 'Inter',
+  },
+  bookingsContainer: {
+    flex: 1,
+  },
+  bookingsContent: {
+    paddingBottom: 100, // Extra padding for bottom navigation
   },
   section: {
     marginBottom: 32,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  sectionHeader: {
+    fontSize: 16, // 16px as specified
+    fontWeight: '500',
     color: colors.text.primary,
-    marginBottom: 16,
-    marginTop: 20,
+    marginBottom: 18, // 18px margin top/bottom as specified
+    fontFamily: 'Inter',
   },
   bookingCard: {
-    backgroundColor: colors.background.white, // White background for cards
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: colors.background.white,
+    borderRadius: 13, // 13px radius as specified
+    padding: 16,
+    marginBottom: 18, // 18px vertical gap as specified
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2, // Y2px as specified
+    },
+    shadowOpacity: 0.14, // 14% opacity as specified
+    shadowRadius: 10, // blur=10px as specified
+    elevation: 2,
   },
-  bookingIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  bookingIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.background.primary,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 16,
-  },
-  iconText: {
-    fontSize: 20,
   },
   bookingInfo: {
     flex: 1,
   },
   serviceName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text.primary,
-    marginBottom: 4,
+    fontSize: 16, // 16px as specified
+    fontWeight: 'bold',
+    color: colors.text.primary, // #232D1E as specified
+    marginBottom: 6, // 6px vertical spacing as specified
   },
   salonName: {
-    fontSize: 14,
+    fontSize: 13, // 13px as specified
+    fontWeight: '500',
     color: colors.text.secondary,
-    marginBottom: 4,
+    marginBottom: 6, // 6px vertical spacing as specified
   },
-  bookingDate: {
-    fontSize: 14,
+  salonAddress: {
+    fontSize: 13, // 13px as specified
+    fontWeight: '500',
     color: colors.text.secondary,
+    marginBottom: 6, // 6px vertical spacing as specified
   },
-  detailsButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+  bookingTime: {
+    fontSize: 12, // 12px as specified
+    color: colors.text.muted,
   },
-  detailsButtonText: {
-    color: colors.text.white,
-    fontSize: 12,
+  actionButton: {
+    backgroundColor: colors.background.white, // #F8F6EC as specified
+    height: 32, // 32px height as specified
+    paddingHorizontal: 22, // 22px horizontal padding as specified
+    borderRadius: 16, // Pill shape
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  actionButtonText: {
+    fontSize: 13, // 13px as specified
     fontWeight: '600',
-  },
-  actionButtons: {
-    alignItems: 'flex-end',
-  },
-  bookAgainButton: {
-    backgroundColor: colors.background.primary,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  bookAgainText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: '600',
+    color: colors.text.primary, // #1C3521 as specified
+    letterSpacing: 0.5,
+    fontFamily: 'Inter',
   },
 });

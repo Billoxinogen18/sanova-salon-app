@@ -30,7 +30,7 @@ import PaymentSuccessScreen from './screens/customer/PaymentSuccessScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Premium Custom Tab Bar Component
+// Custom Tab Bar Component matching exact specifications
 function CustomTabBar({ state, descriptors, navigation }) {
   const animatedValues = useRef(
     state.routes.map(() => new Animated.Value(0))
@@ -87,21 +87,23 @@ function CustomTabBar({ state, descriptors, navigation }) {
           };
 
           let iconName;
+          let iconSize = 20; // Default size
           switch (route.name) {
             case 'Map':
-              iconName = isFocused ? 'map' : 'map-outline';
+              iconName = 'location';
+              iconSize = isFocused ? 24 : 20; // 24px for active, 20px for inactive
               break;
             case 'Marketplace':
-              iconName = isFocused ? 'grid' : 'grid-outline';
+              iconName = 'briefcase';
+              iconSize = isFocused ? 24 : 20;
               break;
             case 'Urgent':
-              iconName = isFocused ? 'flash' : 'flash-outline';
+              iconName = 'compass';
+              iconSize = isFocused ? 24 : 20;
               break;
             case 'Bookings':
-              iconName = isFocused ? 'calendar' : 'calendar-outline';
-              break;
-            case 'Profile':
-              iconName = isFocused ? 'person' : 'person-outline';
+              iconName = 'call';
+              iconSize = isFocused ? 24 : 20;
               break;
           }
 
@@ -136,13 +138,13 @@ function CustomTabBar({ state, descriptors, navigation }) {
               <Animated.View style={[premiumTabBarStyles.tabContent, animatedStyle]}>
                 <Ionicons 
                   name={iconName} 
-                  size={20} 
-                  color={isFocused ? colors.background.white : 'rgba(255,255,255,0.6)'} 
+                  size={iconSize} 
+                  color={colors.background.white} 
                 />
-                <Text style={[
-                  premiumTabBarStyles.tabLabel,
-                  { color: isFocused ? colors.background.white : 'rgba(255,255,255,0.6)' }
-                ]}>
+                {isFocused && (
+                  <View style={premiumTabBarStyles.activeIndicator} />
+                )}
+                <Text style={premiumTabBarStyles.tabLabel}>
                   {label}
                 </Text>
               </Animated.View>
@@ -166,7 +168,6 @@ function CustomerTabs() {
       <Tab.Screen name="Marketplace" component={MarketplaceScreen} />
       <Tab.Screen name="Urgent" component={UrgentScreen} />
       <Tab.Screen name="Bookings" component={BookingsScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }
@@ -255,7 +256,7 @@ export default function CustomerApp() {
   );
 }
 
-// Premium Tab Bar Styles
+// Tab Bar Styles matching exact specifications
 const premiumTabBarStyles = {
   container: {
     position: 'absolute',
@@ -263,25 +264,22 @@ const premiumTabBarStyles = {
     left: 0,
     right: 0,
     backgroundColor: 'transparent',
-    paddingBottom: 0, // Remove bottom padding to prevent content overlap
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: colors.primary,
-    marginHorizontal: spacing.md, // Reduce horizontal margin
-    marginBottom: spacing.sm, // Reduce bottom margin
-    borderRadius: borderRadius.xl,
-    paddingVertical: spacing.xs, // Reduce vertical padding
-    paddingHorizontal: spacing.xs,
-    ...shadows.floating,
+    backgroundColor: colors.primary, // Deep forest green (#1C3521)
+    height: 62, // 62px height as specified
+    borderTopLeftRadius: 0, // Full-radius top corners as specified
+    borderTopRightRadius: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    paddingVertical: spacing.xs, // Reduce padding
-    borderRadius: borderRadius.lg,
+    paddingVertical: 8,
   },
   tabBackground: {
     position: 'absolute',
@@ -289,16 +287,26 @@ const premiumTabBarStyles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: borderRadius.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   tabContent: {
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    bottom: -2,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.background.white, // Brighter white accent underneath
   },
   tabLabel: {
-    fontSize: 10, // Smaller font size
-    marginTop: 2, // Reduce margin
-    fontWeight: '600',
+    fontSize: 12, // 12px as specified
+    marginTop: 4,
+    fontWeight: '400',
+    color: colors.background.white, // #FFFFFF as specified
+    fontFamily: 'Inter',
   },
 };
