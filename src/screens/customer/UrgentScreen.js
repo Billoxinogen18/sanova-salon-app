@@ -1,95 +1,124 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ScrollView, 
+  StatusBar 
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, globalStyles } from '../../theme/styles';
-import Header from '../../components/Header';
+import { colors } from '../../theme/colors';
+import SearchBar from '../../components/SearchBar';
 
 export default function UrgentScreen({ navigation }) {
-  const [fadeAnim] = useState(new Animated.Value(0));
   const [searchText, setSearchText] = useState('');
 
-  React.useEffect(() => {
-    // Fade in animation when screen loads
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+  useEffect(() => {
+    StatusBar.setBarStyle('light-content');
   }, []);
 
-  // Available appointment times exactly as shown in design
-  const availableTimes = [
+  const urgentOffers = [
     {
       id: 1,
-      service: 'Classic Manicure',
-      salon: 'Nail Spa Studio',
-      time: '10:00 AM',
-      distance: '0.5 km away',
+      title: 'Emergency Hair Repair',
+      description: 'Same-day hair treatment for damaged hair',
+      price: '299 kr',
+      timeLeft: '2 hours left',
+      icon: 'cut'
     },
     {
       id: 2,
-      service: "Men's Haircut",
-      salon: 'Trendy Salon',
-      time: '11:30 AM',
-      distance: '1.2 km away',
+      title: 'Express Manicure',
+      description: 'Quick 30-minute manicure service',
+      price: '199 kr',
+      timeLeft: '1 hour left',
+      icon: 'hand-left'
     },
     {
       id: 3,
-      service: 'Swedish Massage',
-      salon: 'Wellness Center',
-      time: '12:00 PM',
-      distance: '1.3 km away',
+      title: 'Last-Minute Facial',
+      description: 'Deep cleansing facial treatment',
+      price: '399 kr',
+      timeLeft: '3 hours left',
+      icon: 'sparkles'
     },
+    {
+      id: 4,
+      title: 'Urgent Eyebrow Shaping',
+      description: 'Professional eyebrow shaping and tinting',
+      price: '149 kr',
+      timeLeft: '45 min left',
+      icon: 'eye'
+    }
   ];
+
+  const handleOfferPress = (offer) => {
+    // Navigate to booking or offer details
+    console.log('Offer pressed:', offer);
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header with dark green background exactly as in design */}
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+      
+      {/* Header Bar - Forest Green with Logo */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Ionicons name="leaf" size={24} color={colors.text.white} />
+          <Ionicons name="leaf" size={20} color={colors.background.white} />
+          <Ionicons name="leaf" size={20} color={colors.background.white} style={{ marginLeft: -8 }} />
         </View>
         <Text style={styles.headerTitle}>SANOVA</Text>
       </View>
       
-      <Animated.ScrollView 
-        style={[styles.content, { opacity: fadeAnim }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Search Bar - exactly as shown in design - INSIDE content area */}
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={colors.text.secondary} />
-          <TextInput
-            style={styles.searchInput}
+      <View style={styles.content}>
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <SearchBar
             placeholder="Search"
-            placeholderTextColor={colors.text.secondary}
             value={searchText}
             onChangeText={setSearchText}
+            containerStyle={styles.searchBarContainer}
           />
         </View>
 
-        {/* Available Times Title */}
-        <Text style={styles.sectionTitle}>Available Times</Text>
-        
-        {/* Available appointments list - exactly as shown in design */}
-        {availableTimes.map((item) => (
-          <TouchableOpacity 
-            key={item.id}
-            style={styles.appointmentCard}
-            onPress={() => navigation.navigate('ServiceDetail', { service: item })}
-            activeOpacity={0.8}
-          >
-            <View style={styles.appointmentInfo}>
-              <Text style={styles.serviceName}>{item.service}</Text>
-              <Text style={styles.salonName}>{item.salon}</Text>
-              <Text style={styles.distance}>{item.distance}</Text>
-            </View>
-            <View style={styles.timeInfo}>
-              <Text style={styles.timeText}>{item.time}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </Animated.ScrollView>
+        {/* Urgent Icon/Content Block */}
+        <View style={styles.urgentBlock}>
+          <View style={styles.urgentIconContainer}>
+            <Ionicons name="flash" size={32} color={colors.accent} />
+          </View>
+          <Text style={styles.urgentTitle}>Urgent Services</Text>
+          <Text style={styles.urgentSubtitle}>Available now for immediate booking</Text>
+        </View>
+
+        {/* Urgent Offers List */}
+        <ScrollView 
+          style={styles.offersContainer}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.offersContent}
+        >
+          {urgentOffers.map((offer) => (
+            <TouchableOpacity 
+              key={offer.id}
+              style={styles.offerCard}
+              onPress={() => handleOfferPress(offer)}
+              activeOpacity={0.9}
+            >
+              <View style={styles.offerIconContainer}>
+                <Ionicons name={offer.icon} size={28} color={colors.text.primary} />
+              </View>
+              <View style={styles.offerInfo}>
+                <Text style={styles.offerTitle}>{offer.title}</Text>
+                <Text style={styles.offerDescription}>{offer.description}</Text>
+                <View style={styles.offerFooter}>
+                  <Text style={styles.offerPrice}>{offer.price}</Text>
+                  <Text style={styles.offerTime}>{offer.timeLeft}</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -101,103 +130,140 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.primary,
-    paddingTop: 60,
+    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
-    borderBottomLeftRadius: 16, // 16dp radius as specified
-    borderBottomRightRadius: 16, // 16dp radius as specified
-    overflow: 'hidden', // Make corner radius visible
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   logoContainer: {
-    marginBottom: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text.white,
-    textAlign: 'center',
-    fontFamily: 'serif',
-    letterSpacing: 2, // +2 letter spacing as specified
-    textTransform: 'uppercase',
-  },
-  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background.primary, // Soft beige background
-    borderRadius: 8, // 8dp radius as specified
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginTop: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: colors.border.primary,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginRight: 8,
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: 8,
-    fontSize: 16,
-    color: colors.text.primary,
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.background.white,
+    fontFamily: 'serif',
+    letterSpacing: 2,
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
     backgroundColor: colors.background.primary,
-    borderTopLeftRadius: 16, // 16dp radius as specified
-    borderTopRightRadius: 16, // 16dp radius as specified
-    marginTop: -16, // Overlap with header to create seamless curve
-    overflow: 'hidden', // Make corner radius visible
+    paddingTop: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text.primary,
-    marginBottom: 20,
-    marginTop: 20,
+  searchContainer: {
+    marginBottom: 18,
   },
-  appointmentCard: {
+  searchBarContainer: {
     backgroundColor: colors.background.white,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
+    borderRadius: 18,
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  appointmentInfo: {
-    flex: 1,
+  urgentBlock: {
+    backgroundColor: colors.background.white,
+    borderRadius: 13, // 13px radius as specified
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  serviceName: {
-    fontSize: 16,
-    fontWeight: '600',
+  urgentIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.background.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  urgentTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: colors.text.primary,
-    marginBottom: 4,
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  salonName: {
+  urgentSubtitle: {
     fontSize: 14,
     color: colors.text.secondary,
+    textAlign: 'center',
+  },
+  offersContainer: {
+    flex: 1,
+  },
+  offersContent: {
+    paddingBottom: 100, // Extra padding for bottom navigation
+  },
+  offerCard: {
+    backgroundColor: colors.background.white,
+    borderRadius: 13, // 13px radius as specified
+    padding: 16,
+    marginBottom: 18, // 18px vertical gap as specified
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4, // Y4px as specified
+    },
+    shadowOpacity: 0.2, // 20% opacity as specified
+    shadowRadius: 12, // blur=12px as specified
+    elevation: 4,
+  },
+  offerIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.background.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  offerInfo: {
+    flex: 1,
+  },
+  offerTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.text.primary,
     marginBottom: 4,
   },
-  distance: {
-    fontSize: 12,
+  offerDescription: {
+    fontSize: 14,
     color: colors.text.secondary,
+    marginBottom: 8,
   },
-  timeInfo: {
-    alignItems: 'flex-end',
+  offerFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  timeText: {
+  offerPrice: {
     fontSize: 16,
-    fontWeight: '600',
-    color: colors.text.primary,
+    fontWeight: 'bold',
+    color: colors.accent,
+  },
+  offerTime: {
+    fontSize: 12,
+    color: colors.text.muted,
+    fontStyle: 'italic',
   },
 });

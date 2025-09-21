@@ -1,54 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  ScrollView, 
   FlatList, 
-  Animated, 
-  TextInput, 
-  Dimensions,
   StatusBar 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
-import { 
-  typography, 
-  spacing, 
-  shadows, 
-  borderRadius, 
-  premiumComponents 
-} from '../../theme/premiumStyles';
-
-const { width, height } = Dimensions.get('window');
+import SearchBar from '../../components/SearchBar';
+import ProductCard from '../../components/ProductCard';
 
 export default function MarketplaceScreen({ navigation }) {
   const [searchText, setSearchText] = useState('');
-  const [searchFocused, setSearchFocused] = useState(false);
 
-  // Animation controller
-  // Removed animation controller
-
-  // Animated values
-  const headerAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(-30),
-  }).current;
-
-  const searchAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(20),
-    scale: new Animated.Value(1),
-  }).current;
-
-  const titleAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(20),
-  }).current;
-
-  const productsAnimatedValues = useRef([]).current;
-  const searchBorderAnimation = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    StatusBar.setBarStyle('light-content');
+  }, []);
 
   // Beauty products exactly as shown in design screenshots
   const beautyProducts = [
@@ -62,274 +31,50 @@ export default function MarketplaceScreen({ navigation }) {
     { id: 8, name: 'Cleansing Oil', price: '180 kr', emoji: '🧴', color: '#F5F1E8' },
   ];
 
-  useEffect(() => {
-    StatusBar.setBarStyle('light-content');
-    
-    // Initialize product animations
-    if (productsAnimatedValues.length === 0) {
-      beautyProducts.forEach((_, index) => {
-        productsAnimatedValues.push({
-          opacity: new Animated.Value(0),
-          translateY: new Animated.Value(30),
-          scale: new Animated.Value(0.9),
-        });
-      });
-    }
-
-    // Start entrance animations
-    startEntranceAnimations();
-
-    return () => {
-      // Cleanup animations if needed
-      try {
-        productsAnimatedValues.forEach(values => {
-          if (values && values.opacity && typeof values.opacity.stopAnimation === 'function') {
-            values.opacity.stopAnimation();
-          }
-          if (values && values.translateY && typeof values.translateY.stopAnimation === 'function') {
-            values.translateY.stopAnimation();
-          }
-          if (values && values.scale && typeof values.scale.stopAnimation === 'function') {
-            values.scale.stopAnimation();
-          }
-        });
-      } catch (error) {
-        console.warn('Animation cleanup error:', error);
-      }
-    };
-  }, []);
-
-  const startEntranceAnimations = () => {
-    // Start animations directly with proper timing
-    Animated.stagger(200, [
-      // Header animation
-      Animated.parallel([
-        Animated.timing(headerAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(headerAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Search animation
-      Animated.parallel([
-        Animated.timing(searchAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(searchAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Title animation
-      Animated.parallel([
-        Animated.timing(titleAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(titleAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Product animations
-      ...productsAnimatedValues.map(values => 
-        Animated.parallel([
-          Animated.timing(values.opacity, {
-            toValue: 1,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-          Animated.timing(values.translateY, {
-            toValue: 0,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-          Animated.timing(values.scale, {
-            toValue: 1,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-        ])
-      ),
-    ]).start();
-  };
-
-  const handleSearchFocus = () => {
-    setSearchFocused(true);
-    Animated.parallel([
-      Animated.timing(searchBorderAnimation, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-      Animated.timing(searchAnimatedValues.scale, {
-        toValue: 1.02,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const handleSearchBlur = () => {
-    setSearchFocused(false);
-    Animated.parallel([
-      Animated.timing(searchBorderAnimation, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-      Animated.timing(searchAnimatedValues.scale, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const handleProductPress = (item, index) => {
-    // Button press animation
-    const productScale = new Animated.Value(1);
-    Animated.sequence([
-      Animated.timing(productScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
-      Animated.timing(productScale, { toValue: 1, duration: 100, useNativeDriver: true }),
-    ]).start(() => {
-      navigation.navigate('ProductDetail', { product: item });
-    });
+  const handleProductPress = (item) => {
+    navigation.navigate('ProductDetail', { product: item });
   };
 
   const renderProduct = ({ item, index }) => {
-    const animatedValues = productsAnimatedValues[index] || {
-      opacity: new Animated.Value(1),
-      translateY: new Animated.Value(0),
-      scale: new Animated.Value(1),
-    };
-
     return (
-      <Animated.View
-        style={[
-          styles.productCardContainer,
-          {
-            opacity: animatedValues.opacity,
-            transform: [
-              { translateY: animatedValues.translateY },
-              { scale: animatedValues.scale },
-            ],
-          }
-        ]}
-      >
-        <TouchableOpacity 
-          style={styles.productCard}
-          onPress={() => handleProductPress(item, index)}
-          activeOpacity={0.9}
-        >
-          <View style={[styles.productImageContainer, { backgroundColor: item.color }]}>
-            <Text style={styles.productEmoji}>{item.emoji}</Text>
-          </View>
-          <Text style={styles.productName}>{item.name}</Text>
-          <Text style={styles.productPrice}>{item.price}</Text>
-        </TouchableOpacity>
-      </Animated.View>
+      <ProductCard
+        product={item}
+        variant="grid"
+        onPress={() => handleProductPress(item)}
+      />
     );
   };
-
-  const searchBorderColor = searchBorderAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [colors.border.primary, colors.primary],
-  });
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       
-      {/* Animated Header with premium design */}
-      <Animated.View 
-        style={[
-          styles.header,
-          {
-            opacity: headerAnimatedValues.opacity,
-            transform: [{ translateY: headerAnimatedValues.translateY }],
-          }
-        ]}
-      >
+      {/* Header Bar - Forest Green with Logo */}
+      <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Ionicons name="leaf" size={24} color={colors.background.white} />
+          <Ionicons name="leaf" size={20} color={colors.background.white} />
+          <Ionicons name="leaf" size={20} color={colors.background.white} style={{ marginLeft: -8 }} />
         </View>
         <Text style={styles.headerTitle}>SANOVA</Text>
-      </Animated.View>
+      </View>
       
       <View style={styles.content}>
-        {/* Premium Animated Search Bar */}
-        <Animated.View 
-          style={[
-            styles.searchContainer,
-            {
-              opacity: searchAnimatedValues.opacity,
-              transform: [
-                { translateY: searchAnimatedValues.translateY },
-                { scale: searchAnimatedValues.scale },
-              ],
-            }
-          ]}
-        >
-          <Animated.View
-            style={[
-              styles.searchBar,
-              {
-                borderColor: searchBorderColor,
-              }
-            ]}
-          >
-            <Ionicons 
-              name="search" 
-              size={20} 
-              color={searchFocused ? colors.primary : colors.text.secondary} 
-            />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search beauty products..."
-              placeholderTextColor={colors.text.secondary}
-              value={searchText}
-              onChangeText={setSearchText}
-              onFocus={handleSearchFocus}
-              onBlur={handleSearchBlur}
-            />
-            {searchText.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setSearchText('')}
-                style={styles.clearButton}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="close-circle" size={20} color={colors.text.secondary} />
-              </TouchableOpacity>
-            )}
-          </Animated.View>
-        </Animated.View>
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <SearchBar
+            placeholder="Search"
+            value={searchText}
+            onChangeText={setSearchText}
+            containerStyle={styles.searchBarContainer}
+          />
+        </View>
 
-        {/* Premium Animated Section Title */}
-        <Animated.View
-          style={[
-            styles.titleContainer,
-            {
-              opacity: titleAnimatedValues.opacity,
-              transform: [{ translateY: titleAnimatedValues.translateY }],
-            }
-          ]}
-        >
+        {/* Section Header */}
+        <View style={styles.titleContainer}>
           <Text style={styles.sectionTitle}>Beauty Products</Text>
-          <Text style={styles.sectionSubtitle}>Discover premium beauty essentials</Text>
-        </Animated.View>
+        </View>
         
-        {/* Premium Products Grid with Animations */}
+        {/* Products Grid - 2-column grid */}
         <FlatList
           data={beautyProducts}
           renderItem={renderProduct}
@@ -338,11 +83,7 @@ export default function MarketplaceScreen({ navigation }) {
           columnWrapperStyle={styles.row}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.productsContainer}
-          removeClippedSubviews={false}
-          initialNumToRender={8}
-          maxToRenderPerBatch={8}
-          windowSize={10}
-          scrollEventThrottle={16}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />} // 12px vertical gap
         />
       </View>
     </View>
@@ -351,120 +92,64 @@ export default function MarketplaceScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    ...premiumComponents.screenContainer,
+    flex: 1,
+    backgroundColor: colors.background.primary,
   },
   header: {
     backgroundColor: colors.primary,
-    paddingTop: spacing.xxxl + 20,
-    paddingBottom: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    borderBottomLeftRadius: borderRadius.lg,
-    borderBottomRightRadius: borderRadius.lg,
-    ...shadows.elevated,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   logoContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-    ...shadows.card,
+    marginRight: 8,
   },
   headerTitle: {
-    ...typography.title2,
+    fontSize: 20,
+    fontWeight: 'bold',
     color: colors.background.white,
     fontFamily: 'serif',
     letterSpacing: 2,
-    textTransform: 'uppercase',
   },
   content: {
     flex: 1,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: 20,
     backgroundColor: colors.background.primary,
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
-    marginTop: -borderRadius.lg,
-    paddingTop: spacing.xl,
+    paddingTop: 20,
   },
   searchContainer: {
-    marginBottom: spacing.xl,
+    marginBottom: 18, // 18px margin below search bar as specified
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.background.white,
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderWidth: 2,
-    borderColor: colors.border.primary,
-    ...shadows.card,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: spacing.sm,
-    ...typography.body,
-    color: colors.text.primary,
-  },
-  clearButton: {
-    padding: spacing.xs,
+  searchBarContainer: {
+    backgroundColor: colors.background.white, // #F8F6EC as specified
+    borderRadius: 18, // 18px radius as specified
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   titleContainer: {
-    marginBottom: spacing.xl,
+    marginBottom: 18, // 18px margin top/bottom as specified
   },
   sectionTitle: {
-    ...typography.title2,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  sectionSubtitle: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    opacity: 0.8,
+    fontSize: 20, // 20px as specified
+    fontWeight: 'bold',
+    color: colors.text.primary, // #232D1E as specified
+    fontFamily: 'Inter',
   },
   productsContainer: {
-    paddingBottom: spacing.xxxl,
+    paddingBottom: 100, // Extra padding for bottom navigation
   },
   row: {
     justifyContent: 'space-between',
-    marginBottom: spacing.lg,
-  },
-  productCardContainer: {
-    width: '48%',
-  },
-  productCard: {
-    ...premiumComponents.premiumCard,
-    alignItems: 'center',
-    padding: spacing.lg,
-    backgroundColor: colors.background.white,
-    borderRadius: borderRadius.lg,
-    ...shadows.elevated,
-  },
-  productImageContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    ...shadows.card,
-  },
-  productEmoji: {
-    fontSize: 28,
-  },
-  productName: {
-    ...typography.captionMedium,
-    color: colors.text.primary,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-    lineHeight: 16,
-  },
-  productPrice: {
-    ...typography.bodyMedium,
-    color: colors.accent,
-    fontWeight: '700',
   },
 });
