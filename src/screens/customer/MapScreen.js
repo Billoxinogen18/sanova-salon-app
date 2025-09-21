@@ -376,8 +376,22 @@ export default function MapScreen({ navigation }) {
                 title={salon.name}
                 description={salon.description}
                 onPress={() => {
-                  // Navigate to salon detail
-                  navigation.navigate('SalonDetail', { salon });
+                  // Navigate to salon detail with proper data structure
+                  const salonData = {
+                    ...salon,
+                    id: `salon_${index}`,
+                    rating: 4.5 + Math.random() * 0.5, // Random rating between 4.5-5.0
+                    address: `${salon.name} Address, Reykjavik`,
+                    phone: '+354 123 4567',
+                    hours: 'Mon-Fri: 9:00-18:00',
+                    description: salon.description,
+                    services: [
+                      { name: "Haircut", price: '250 kr' },
+                      { name: "Styling", price: '200 kr' },
+                      { name: "Coloring", price: '400 kr' },
+                    ]
+                  };
+                  navigation.navigate('SalonDetail', { salon: salonData });
                 }}
               >
                 <View style={styles.customMarker}>

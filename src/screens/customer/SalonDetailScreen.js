@@ -101,7 +101,7 @@ export default function SalonDetailScreen({ navigation, route }) {
       >
         {/* Hero Image - Full width, 30px top radius, 168px height */}
         <View style={styles.heroImageContainer}>
-          <Image source={{ uri: salonData.heroImage }} style={styles.heroImage} />
+          <Image source={salonData.heroImage} style={styles.heroImage} />
         </View>
 
         {/* Main Salon Card Section - White background */}
@@ -157,7 +157,7 @@ export default function SalonDetailScreen({ navigation, route }) {
           >
             {salonData.photos.map((photo, index) => (
               <View key={index} style={styles.photoCard}>
-                <Image source={{ uri: photo }} style={styles.photoImage} />
+                <Image source={photo} style={styles.photoImage} />
               </View>
             ))}
           </ScrollView>
