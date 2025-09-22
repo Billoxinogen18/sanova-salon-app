@@ -1,0 +1,1357 @@
+Prompts
+
+0. Images
+
+I need you to make these modifications, use the images found inside the image folder instead of placeholders across the whole app where necessary, for the logo across all screen headers and onboarding screen the image is titled logo.png,for the market place products place these images in their respective place ,as per the title in the app screen ,bodylotion.png,cleanisingoil.png,facecream.png,hairoil.png, hydratingsyrum.png,shampoo.png . For the onboarding screen background use the onboarding.png , for splash screen use splash.png , on booking page there's cards for haircut and manicure , the image inside the cards should be haircut.png and manicure.png. In the Map screen for the custom marker use mapmarker.png for all saloons in the map , on the booking page when I select an item and it takes me to the respective saloon offering the service since I only have haircut and manicure , the top image for those shops should be barber.png and saloon.png , on the map when I click a saloon or barber and it takes me to the saloon and the display images should be saloon.png and barber.png alternatively,for the app logo in eas.json or app.json the image to be used is applogo.png and for the payment options page use these images for the payment options display ,<img width="48" height="48" src="https://img.icons8.com/color-glass/48/visa.png" alt="visa"/> , <img width="50" height="50" src="https://img.icons8.com/ios-filled/50/apple-pay.png" alt="apple-pay"/> ,<img width="48" height="48" src="https://img.icons8.com/fluency/48/speaker-phone.png" alt="speaker-phone"/>
+
+0.1
+
+Pixel-Perfect React Native Android Onboarding Screen Prompt
+
+Screen Dimensions:
+
+Target a modern Android device with approx. 360dp width x 800dp height (e.g., Pixel 6 Pro).
+
+Use SafeAreaView with top inset approx. 44dp for status bar padding.
+
+Portrait orientation, full-screen layout.
+
+Background:
+
+Use a full-screen background image from assets:
+onboarding.png
+
+The image must cover the entire screen with resizeMode='cover'.
+
+Overlay a semi-transparent black overlay above the image to enhance contrast:
+Color: rgba(22, 22, 22, 0.17).
+
+The overlay sits between the image and UI layers.
+
+Header Logo (leaf + SANOVA):
+
+Positioned top center with marginTop: 40dp from status bar.
+
+Leaf Icon:
+
+Size: 52dp width x 33dp height.
+
+Color: white (#FFFFFF).
+
+SANOVA Text:
+
+Font: Playfair Display Bold (serif).
+
+Size: 22sp.
+
+Color: white (#FFFFFF).
+
+Letter spacing: 2%.
+
+Uppercase.
+
+marginTop: 8dp below leaf icon.
+
+Center aligned.
+
+Title Text:
+
+Centered horizontally.
+
+Positioned 42dp below header logo.
+
+Text lines:
+
+"Welcome to"
+
+"SANOVA" (on separate line)
+
+Font: Playfair Display Bold, 32sp.
+
+Color: white (#FFFFFF).
+
+TextAlign: center.
+
+Line height: 36sp.
+
+Features List:
+
+Vertical list 54dp below title, horizontally centered.
+
+Each feature as a horizontal row composed of:
+
+Circular icon container:
+
+36dp x 36dp.
+
+Background: rgba(34, 31, 31, 0.28) (#221F1F47).
+
+Border radius: 18dp.
+
+Backdrop blur radius ~4dp for glass effect where supported.
+
+Optional subtle 1dp white semi-transparent border for frosted outline.
+
+White SVG icon inside container, 20-22dp size, centered.
+
+Label text:
+
+Font: Inter Medium.
+
+Font size: 18sp.
+
+Color: white (#FFFFFF).
+
+MarginLeft: 12dp.
+
+Spacing between rows: 18dp vertical.
+
+Features:
+
+Discover salons nearby (mic/location icon).
+
+Fast easy booking (sun/bolt/clock icon).
+
+Reliable ratings (star icon).
+
+Action Buttons:
+
+Positioned near bottom, marginBottom: 64dp.
+
+Stack vertical with 22dp vertical gap.
+
+Sign In Button:
+
+Width: 84% of screen width, max 352dp.
+
+Height: 53dp.
+
+BorderRadius: 26.5dp.
+
+Background: white (#FFFFFF).
+
+Text: "Sign In" — Inter SemiBold, 19sp, black (#212121), center aligned.
+
+Elevation 4 with subtle shadow (#00000010).
+
+Create Account Button:
+
+Same styling as Sign In.
+
+Text: "Create Account".
+
+General UI:
+
+All text (except buttons' text) in white with a slight black text shadow for legibility.
+
+Icons are clean, sharp SVGs matching reference style.
+
+No additional outlines or drop shadows besides described.
+
+Use ScrollView to ensure vertical scroll on smaller devices.
+
+Overlay’s transparency balances the background image’s brightness for clear foreground.
+
+
+
+0.2 Login
+
+Here’s a highly detailed prompt description to generate a screen exactly similar to the provided image for a React Native app. This covers all colors, layout, icons, fonts, precise dimensions, paddings, and styling for every element.
+
+Prompt for Generating "SANOVA" Login Screen (React Native)
+
+
+
+Background
+
+Solid dark green gradient background (#194123 at the top fading to #19572C at the bottom).
+
+Subtle radial light vignette centered on the device screen, blending smoothly.
+
+Brand Header Section
+
+Top margin: 48px from the top edge.
+
+At center top, place the SANOVA logo (flat, minimal leafy plant in white, 48x48px).
+
+Below logo, add text: “SANOVA”, all caps, bold, font size 32px, line-height 40px, color: #FFFFFF, letter-spacing: 2px, centered.
+
+Subtitle: “Premium Wellness”, font size 16px, color: #C5DAC1, medium weight, centered, margin-top: 8px.
+
+User Type Selector
+
+Vertically below the logo/title, add two buttons side-by-side: “Customer” (default selected) and “Salon Owner”.
+
+Each button: width 48% of container, height: 48px, border-radius: 12px, shadow: elevation 2.
+
+Button background on selected: #2C8A4C, unselected: #213D2A, border on unselected: 2px solid #324C38.
+
+Button text: 18px, color #FFFFFF (selected), #C5DAC1 (unselected), bold, centered.
+
+Left icon in each button:
+
+Customer: User outline icon, size 20x20px, white.
+
+Salon Owner: Minimal building icon, outline, 20x20px, white.
+
+Padding between icon and label: 10px.
+
+Spacing between buttons: 12px.
+
+Input Fields
+
+Stack vertically with 18px between them.
+
+Each input: width 88% of screen, height 50px, border-radius: 10px, fill color: #FFFFFF, no border, box-shadow: subtle (elevation: 2).
+
+Placeholder text: #B3B8BB, size 16px, medium.
+
+Left padding inside input: 18px.
+
+Password field: eye-icon button on right, #98A89B, 22x22px.
+
+Actions
+
+Large “Sign In” button:
+
+Width: 72% of screen, height: 50px, background: #FFFFFF, border-radius: 25px.
+
+Font: 18px, bold, #1C3A25.
+
+Top margin: 28px after inputs.
+
+Subtle box shadow beneath (elevation 2).
+
+“Create Account” button:
+
+Same sizing as Sign In, positioned below with 16px spacing.
+
+White background, no icon, text only: “Create Account”, font 18px, bold, color #1C3A25.
+
+“Continue with Google” button:
+
+Same size and radius, below Create Account (16px spacing).
+
+White background, Google “G” logo (svg/png, color), size: 22x22px, left of label by 10px.
+
+Text: "Continue with Google", font 18px, bold, #1C3A25.
+
+Spacing & Layout
+
+Content centered vertically (~ balanced whitespace above and below main card).
+
+Global horizontal padding: 24px from the screen edge.
+
+Consistent spacing above and between all buttons/fields (see above).
+
+Fonts & Icons
+
+Use a clean, rounded sans-serif font like Inter, SF Pro, or Nunito.
+
+All icons: outline style, minimalist, matching text size visually.
+
+All text: crisp, no shadows, no letterpress.
+
+Visual Style
+
+All components should appear “flat”, non-3D, with subtle elevation for form elements and action buttons via shadow/elevation.
+
+No border lines except where specified.
+
+No extraneous gradients—use only background gradient.
+
+Overall effect: clean, professional, spa/wellness brand vibe.
+
+
+0.2 Sign Up screen
+
+
+Here is a highly detailed prompt for generating a React Native sign-up screen exactly like the provided image, including an additional “Second Name” field. This will guide AI generation tools, developers, or designers in producing a pixel-perfect result.
+
+Prompt: SANOVA Create Account Screen (React Native) – Exact Styling and Specifications
+
+Background
+
+Background: Apply a smooth linear gradient from #224a2d (top) to #235234 (bottom).
+
+Add subtle radial vignette for a soft, modern depth.
+
+Header & Branding
+
+Top margin: 44px from the top.
+
+SANOVA logo: Stylized white leaf icon, SVG or PNG, size 48x48px, centered horizontally.
+
+Directly under logo: “SANOVA” in all caps, font size 28px, weight 700 (bold), font: Inter or SF Pro, color: #FFFFFF, letter-spacing 1.5px, line height 32px, centered.
+
+Subtitle: “Create Account”, 24px bold, #FFFFFF, center aligned, line height 28px, margin-top: 18px after logo/title.
+
+Secondary subtitle: “Join the Sanova community”, 15px, #89AF97, font weight 500, margin-top: 4px, centered.
+
+Selection Buttons (Customer / Salon Owner)
+
+Margin-top: 24px after headers.
+
+Two side-by-side buttons (“Customer”, “Salon Owner”):
+
+Parent container: width 88% of screen, flexDirection: “row”, justifyContent: “space-between”, alignItems: “center”, alignSelf: “center”.
+
+Each button: width 48%, height 48px, border-radius: 12px, elevation/shadow 2.
+
+Selected button: background #6AC38F, border color: transparent, text color: #FFFFFF.
+
+Unselected: transparent background, border 2px solid #507456, text color: #D1E5D7.
+
+Left icons: “user” (for Customer) and “building” (for Salon Owner), outline style, size 20x20px, white, 10px spacing before text.
+
+Text: 18px, weight 600, all caps.
+
+Input Fields
+
+All input fields: width 88% of screen, min-height 48px, border-radius 10px, background #FFFFFF, no border, paddingLeft: 20px, font size 16px, color #224A2D, margin-top: 18px between each.
+
+Placeholder color: #BFD7C6.
+
+First row: “First Name” and (NEW) “Second Name”, stacked vertically with 12px gap.
+
+Next rows: “Phnail number (optional)” [should read "Phone number (optional)"], “Password”, “Confirm Password” (each its own field).
+
+Password fields add “eye” icon (right) for show/hide, icon color #A5B8A2, size 20px.
+
+Sign Up Button
+
+Margin-top: 28px after input fields.
+
+Button: width 88%, height 52px, background: #FFFFFF, border-radius: 26px, alignSelf: “center”.
+
+Text: “Sign Up”, bold, 19px, center, color: #1C3A25.
+
+Drop shadow: subtle, elevation 3 for floating effect.
+
+Google Sign Up
+
+Margin-top: 18px after main submit.
+
+Button: width 88%, height 52px, border-radius: 26px, background: transparent, border: none, flexDirection: “row”, alignItems: “center”, alignSelf: “center”.
+
+Center Google “G” logo (22x22px, color version), then label “Google” in bold #FFFFFF, size 17px, 12px to the right of logo.
+
+Layout & Spacing
+
+All elements center-aligned.
+
+Screen horizontal padding: 24px; container elements never touch screen edges.
+
+Space between all elements: consistent vertical margins (as above).
+
+No card or extra containers—just layered styling over background.
+
+Fonts & Icons
+
+Font family: Inter, SF Pro, or Nunito (rounded, sans-serif).
+
+All icons: use Outline (Material or similar), white on colored backgrounds, #224A2D or #A5B8A2 on white fields.
+
+Visual Style
+
+Modern, minimal: no gradients in buttons or fields, only the background.
+
+Shadow/elevation for all main white buttons and fields, subtle, for soft separation.
+
+No visible hard borders except the unselected toggle button.
+
+Ensure the “Second Name” field appears directly under “First Name”, and all other field and design spacings, colors, and icon placements are matched to this description and the provided reference image.
+
+
+
+
+1. Maps
+
+To achieve a pixel-perfect, dimension-accurate React Native screen based on your image, here
+is an extremely detailed and precise prompt for use with an LLM or design-to-code tool. This
+description breaks down every observable dimension, color, spacing, border radius, shadow,
+icons, and alignment on your reference image to the closest possible numerical value, targeting
+iPhone 13 screen size 390844pt, 428926px 3x).
+Screen Size Assumption:
+Be exact and very detailed with each and every
+dimension to match reference image , be very
+exact about space distance , border
+radius,shadows, card height and width , each and
+every component positioning,icons , background
+colors . The final outcome should be pixel perfect
+copy of this reference image
+Ultra-Precise Prompt for SANOVA Maps Page Exclude Tab Bar)
+iPhone 13 reference
+Safe area width: 390pt 428px 3x)
+Safe area height: 844pt 926px 3x)
+Header
+Background: Deep green (#213527.
+Height: 122px (top edge to bottom of green area including status bar).
+Status Bar Height: 47px (space from top to below notch).
+Logo Placement: Centered horizontally and vertically in header.
+Logo Icon: Leaf symbol, width 36px, height 22px, 18px from top edge of header.
+Logo Text: "SANOVA", uppercase, font-size 26px, font-family: Playfair Display or similar,
+letter-spacing: 2px, color: #FFF, 7px below leaf icon.
+Map Card
+Background: Cream (#FAF6EC.
+Position: Top edges rounded only, 32px border radius.
+Width: 100% safe area 390pt/428px).
+Height: 340px from below header to above search bar.
+Shadow: Subtle, y-offset 6px, blur 24px, opacity 0.20, color: #000.
+Map Details: Pale yellow/beige grid, soft green parks scattered, blue river as on image. Use
+static styled image or exact SVG paths (not a dynamic map).
+Map Markers: 14 total.
+Size: 4848px, perfect circle.
+Background: Soft gold (#CAB28D.
+Icon: White scissors, SVG; centered.
+Shadow: None.
+Placement: Evenly scattered across map. Specific xy-positions:
+46px from top, 56px from left (example, adjust using measured px)
+Space each marker 72px apart horizontally, 6085px vertically, visually matching
+image.
+Map Filter Button
+Circular Button at map's top right.
+Position: 32px from right edge, 32px from top of map card.
+Size: 4646px, circle.
+Background: Deep green (#213527.
+Icon: White funnel, SVG, 2828px, centered.
+Search Bar
+Position: Directly below map card, 24px vertical space.
+Width: 87% 332px.
+Height: 48px.
+Background: White (#FFF).
+Border Radius: 24px (fully pill-shaped).
+Shadow: Very soft: 2px y-offset, 8px blur, #000, 0.08 opacity.
+Icon: Black magnifier, SVG, 2626px, left inset 18px.
+Text: "Search", font-size 20px, color #444, left margin after icon: 10px.
+Component X/Y position (px) Width (px) Height (px) Border Radius (px)
+Header (green) 0 / 0 428 122 0
+Logo leaf center/29 36 22 -
+SANOVA text center/56 - 26 -
+Map Card 0 / 122 428 340 32 (top only)
+Map Marker (sample) 56/46 48 48 24
+Filter Button 350/25 46 46 23
+Beauty Products Section
+Section Title: "Beauty Products"
+Font: 19px, bold 700, color: #1A1A1A.
+Position: 18px below search bar, left aligned 24px from left).
+Product Card List: Horizontal scroll.
+Card Count: At least 2 visible, scroll to reveal more.
+Card Size: 148px width x 94px height.
+Background: White (#FFF).
+Corner Radius: 20px.
+Shadow: 2px y-offset, 12px blur, #000, 0.10 opacity.
+Spacing: 18px between cards, first card 24px left margin.
+Card Content:
+Image: Bottle, 46px tall, 20px left margin inside card.
+Text: "Moisturizing Shampoo", 16px bold, color: #1A1A1A, 9px below top edge;
+"150 kr" underneath, 14px, #888, 2px below product name.
+Text left margin: 18px.
+Colors
+Header/Filter: #213527
+Map Markers: #CAB28D
+Map Card: #FAF6EC
+Section Title: #1A1A1A
+Product Card: #FFF
+Price: #888
+Search Text: #444
+Shadow: #000 (opacity specified above)
+Exact Geometry/Sizing Reference Table
+Component X/Y position (px) Width (px) Height (px) Border Radius (px)
+Search Bar 24/462 332 48 24
+Beauty Title 24/526 - 19 -
+Product Card 24/567 148 94 20
+This prompt should produce a result indistinguishable from your screenshot to all reasonable
+inspection, matching every visual and spatial feature precisely.
+⁂
+Additional Instructions
+All measurements, radii, colors, and spaces must be matched EXACTLY.
+All icons (scissors, leaf, magnifier, bottle, funnel) must be SVGs, precisely matching
+reference.
+Maintain all font-weights, sizes, colors.
+Shadows must match in color, blur, and spread, avoiding default shadow styles.
+
+
+2. SALOON
+
+
+Here is an extremely detailed prompt to achieve a pixel-perfect, dimension-accurate React
+Native implementation matching the provided salon details screen:
+Screen Dimensions Assumed:
+When I click on a saloon it should look exactly like
+this .Be exact and very detailed with each and
+every dimension to match reference image , be
+very exact about space distance , border
+radius,shadows, card height and width , each and
+every component positioning,icons , background
+color
+Ultra-Detailed Prompt for Salon Details Screen SANOVA
+iPhone 13 reference 390pt × 844pt, 428px × 926px 3x)
+Header Section
+Background: Deep green (#213527.
+Header Height: 111px (from screen top to base of green area, including status bar).
+Logo: Centered horizontally and vertically in header.
+Leaf Icon: SVG, 38px wide, 21px high, 16px from top header edge.
+Text: "SANOVA", uppercase serif font, font-size 26px, color #FFF, letter-spacing 2px,
+8px below icon.
+Main Card Salon Details)
+Container Background: Cream (#FAF6EC.
+Position: Below header, top vertical space 0px from header (seamless joint).
+Width: 100% 428px.
+Height: 646px (from header bottom to above tab navigator).
+Border Radius: Top corners only, 32px radius.
+Shadow: Subtle, y-offset 7px, blur 22px, opacity 0.19, #000.
+Salon Image Section
+Image Position: Top of the card, full width 428px.
+Image Height: 196px.
+Border Radius: Top left and right, 32px; bottom corners square.
+Vertical Space below image: 0px to salon title.
+Salon Title Row
+Title: "Gustav Salon", left-aligned, font-size 27px, weight 700, color #1A1A1A, 22px below
+image.
+Address Row: "Frederiks Allé 28", font-size 17px, weight 400, color #3F4143, 7px below
+title.
+Star Rating: Right after address, star icon SVG, 18px), color #FEBC45, rating value
+("4,8"), font-size 15px, color #6A6A6A.
+Call Button: Right-aligned in row, vertically centered to salon title and address.
+Width: 102px, Height: 42px, Border Radius: 12px.
+Background: #F5F4EF
+Shadow: 2px y-offset, 8px blur, #000, 0.09 opacity.
+Icon: Call (phone), SVG, color #1B392E, 24px, 18px left margin in button.
+Text: "Call", font-size 17px, color #1B392E, left margin after icon 8px.
+Services List
+Title: "Services", bold, font-size 21px, color #1A1A1A, 24px below address.
+List Items: 4 items, vertical stack, each row height 32px, 11px vertical space between rows.
+Service: Left-aligned, font-size 18px, color #222, weight 500.
+Price: Right-aligned, font-size 18px, color #222, weight 400.
+Spacing: 54px between service name and price.
+Photos Section
+Title: "Photos from the Salon", bold, font-size 19px, color #1A1A1A, 24px below services list.
+Photo Carousel Row:
+Horizontal Scroll, 4 images visible.
+Image Size: 72px x 72px, Border Radius: 16px.
+Spacing: 13px between images, first image 20px left margin.
+Bottom Spacing: 27px below image row.
+Component X/Y position (px) Width (px) Height (px) Border Radius (px) Shadow
+Header 0 / 0 428 111 0 None
+Main Card 0 / 111 428 646 32 (top only) 0,7,22,0.19
+Salon Image 0 / 111 428 196 32 (top only) None
+Salon Title 18 / 313 - 27 - None
+Address & Star 18 / 342 - 17 - None
+Call Button 306 / 326 102 42 12 0,2,8,0.09
+Services Title 18 / 377 - 21 - None
+Services Row 18 / 408 392 32 0 None
+Photos Title 18 / 545 - 19 - None
+Salon Photos 18 / 570 72 72 16 None
+Colors
+Header/Call Icon: #213527
+Main Card: #FAF6EC
+Title: #1A1A1A
+Body Text: #3F4143 / #222
+Service Price: #222
+Call Button: #F5F4EF
+Star: #FEBC45
+Shadows
+Card: #000, 22px blur, 7px y-offset, 0.19 opacity.
+Call Button: #000, 8px blur, 2px y-offset, 0.09 opacity.
+Typography
+Serif font for logo, weight instructions as above.
+All lists and titles exact size and spacing.
+Section labels bold.
+Spacing & Geometry Reference Table
+⁂
+Additional
+All dimensions, spacing, colors, typography, icons, shadows, border radii must match the
+provided reference image exactly. 1
+All SVG icons and images should be custom and styled precisely to the image proportions.
+No approximation; achieve perfect recreation for every visual aspect.
+
+
+
+3. MARKETPLACE
+
+Here is an ultra-precise, pixel-perfect prompt for implementing your marketplace page in React
+Native, based exactly on the reference image:
+Screen Dimensions:
+This is my market place page . Be exact and very
+detailed with each and every dimension to match
+reference image , be very exact about space
+distance , border radius,shadows, card height and
+width , each and every component
+positioning,icons , background colors , text
+placement etc
+Marketplace Page — Exact Reference Implementation
+iPhone 13 reference 390pt × 844pt, 428px × 926px 3x).
+Header Section
+Background: Deep green (#213527.
+Height: 116px (from screen top to base of green area, including status bar).
+Logo Leaf & SANOVA
+Centered horizontally and vertically.
+Leaf icon SVG: width 34px, height 20px, 15px from top of green bar.
+"SANOVA" text below leaf: uppercase serif, font-size 26px, white, letter-spacing 2px,
+7px margin under icon.
+Main Marketplace Card
+Container Background: Very light cream (#FAF6EC.
+Position: Directly below green header, seamless join.
+Width: 100% 428px.
+Height: 722px (extends down to top of navigation bar).
+Border Radius: Top corners only, 28px.
+No outer shadow on card, flat background.
+Search Bar
+Position: Top of card, 26px from card top edge.
+Width: 376px 88% of container).
+Height: 52px.
+Background: White (#FFF).
+Corner Radius: 26px (fully pill-shaped).
+Shadow: Soft: y-offset 2px, blur 9px, #000, opacity 0.08.
+Icon: Black magnifier, SVG 24px × 24px, left-aligned, 18px from bar edge, vertically
+centered.
+Text: "Search", font-size 20px, color #353535, font-weight 400, left margin after icon:
+10px.
+Beauty Products Title
+Position: 28px below search bar.
+Text: "Beauty Products", left-aligned, 28px from left card edge.
+Font-size: 21px, font-weight 700, color #222.
+Product Grid Section
+Product Cards:
+Grid: 2 columns.
+Card Size: 163px width × 132px height.
+Background: White (#FFF).
+Corner Radius: 18px.
+Shadow: Soft, #000, blur 10px, y-offset 3px, opacity 0.09.
+Horizontal Spacing: 16px gap between cards, 28px left/right padding.
+Vertical Spacing: 22px between rows.
+Top Margin: 22px below section title.
+Card Content:
+Product Icon/SVG Centered horizontally, 38px wide × 62px tall, 20px top margin
+inside card.Has no background color 
+Product Title: Centered, font-size 16px, font-weight 600, color #222, 14px below icon.
+Product Price: Centered, font-size 14px, color #545454, 3px below product name.
+Component X/Y pos (px) Width (px) Height (px) Border Radius (px) Shadow
+Header (green) 0 / 0 428 116 0 None
+Main Card 0 / 116 428 722 28 (top only) None
+Search Bar 26 / 26 376 52 26 0,2,9,0.08
+Section Title 28 / 104 - 21 - None
+Product Card 28 / 147 163 132 18 0,3,10,0.09
+Product Icon 72 / 167 38 62 - None
+Product Name 72 / 229 - 16 - None
+Product Price 72 / 248 - 14 - None
+This prompt ensures an exact, production-level recreation of the marketplace page in React
+Native, with every element, spacing, and style precisely aligned to the reference.
+⁂
+Colors
+Header: #213527
+Main Card: #FAF6EC
+Section Title: #222
+Search Bar: #FFF
+Search Text: #353535
+Product Card BG #FFF
+Product Name: #222
+Price: #545454
+Typography
+Serif font for SANOVA.
+All other content/system sans, weights and sizes as detailed.
+Spacing & Geometry Table
+Additional Notes
+All dimensions, spacing, radii, shadows, placement, icons, colors, and text weights must
+match reference exactly. 1
+Use custom SVGs/icons for products and search magnifier, sizing and style as shown.
+No approximations allowed. Do not include anything outside the visible reference area.
+
+
+4. Product page 
+
+Here is an ultra-detailed, precision-focused prompt to generate a React Native screen that
+exactly mimics the provided product detail page, specifying all spacing, border radii,
+dimensions, and colors:
+Screen size:
+Whenever I click a product from marketplace or
+saloon or maps or anywhere it should look exactly
+like this. Be exact and very detailed with each and
+every dimension to match reference image , be
+very exact about space distance , border
+radius,shadows, card height and width , each and
+every component positioning,icons , background
+color
+Product Detail Page — Pixel-Perfect Prompt
+Base on iPhone 13 reference 390pt × 844pt, 428px × 926px 3x).
+Header Section
+Background: Deep green (#213527.
+Height: 112px (from screen top to start of product card background, including status bar).
+Back Arrow Icon: Left-aligned, 26px from left screen edge, top margin 23px (from the top
+of green bar), size 2222px, white SVG, vertically centered.
+Logo Leaf & SANOVA Centered horizontally, leaf SVG width 36px, height 22px, 18px from
+top;
+"SANOVA", uppercase serif, size 25px, white, letter-spacing 2px, 6px margin below logo.
+Main Product Card
+Container background: Very light cream (#FAF6EC.
+Position: Immediately below green header.
+Width: 100% 428px.
+Height: 656px (covers everything above tab bar).
+Border Radius: Top corners only, 26px radius.
+No outer shadow on card, perfectly flat.
+Product Image & Title Row
+Product Image: Bottle SVG/icon, left aligned, 47px from left card edge, 37px from card top,
+size 98px tall × 56px wide.
+Title row height: 111px.
+Product Title: "Moisturizing Shampoo"
+Top aligned to image, left margin 144px
+Font-size 28px, font-weight 700, color #232323, max 2 lines, line-height 34px.
+Price & Salon Text
+Price: Below title, font-size 19px, color #404040, weight 500, 8px below title.
+Salon Name: "Gustav Salon" (weight 600, color #232323, font-size 18px), and address
+"Frederiks Alle 28" (font-size 16px, color #656565, left-aligned with title, 7px between
+name and address.
+"Køb nu" Buy Now) Button
+Center aligned: Horizontal center of card, 34px below address text.
+Width: 334px. Height: 53px.
+Background: Soft warm beige (#F5F0DF.
+Border Radius: 27px (fully pill-shaped).
+No border, flat.
+Text: "Køb nu" (bold, font-size 20px, color #232323, letter-spacing 1px).
+"Andere produkter du vil synes om" Related Products)
+Title: Left-aligned, 28px above row, 30px from card left edge, font-size 17px, bold, color
+#1A1A1A.
+Product Row: Horizontal scroll list/cards.
+Card size: 121px width × 142px height.
+Background: White (#FFF).
+Corner radius: 18px.
+Shadow: Soft, #000, blur 12px, y-offset 2px, opacity 0.09.
+Spacing: 17px between cards, first card 27px left margin.
+Card Content:
+Product SVG centered top, 44px tall, 21px top margin inside card.
+Product Title: 14px bold, color #1A1A1A, center aligned, 16px below image.
+Component X/Y pos (px) Width (px) Height (px) Border Radius (px) Shadow
+Header (green) 0 / 0 428 112 0 None
+Main Card 0 / 112 428 656 26 (top only) None
+Product Image 47 / 37 56 98 - None
+Title row 144 / 37 - 111 - None
+Price 144 / 71 - 19 - None
+Salon/Address 144 / 98 - 18,16 - None
+Buy Button 47 / 168 334 53 27 None
+Related Title 30 / 243 - 17 - None
+Card (related) 27 / 274 121 142 18 0,2,12,0.09
+Product Price: 16px, #6A6A6A, 5px below title.
+Colors
+Header/Back/Icon: #213527
+Main Card: #FAF6EC
+Buttons: #F5F0DF
+Product Card BG #FFF
+Primary Text: #232323
+Secondary Text: #656565, #6A6A6A
+Price: #404040
+Typography
+Serif font for SANOVA, weights and sizes as described.
+Poppins or system sans for all content/body, weights/sizes as above.
+Caps for "Køb nu" button.
+Spacing & Geometry Table
+Additional Notes
+All dimensions, positioning, shadows, icons, radii, colors, font weights, and spacing must
+
+
+4. URGENT SCREEN
+
+Here is an exact, highly detailed prompt for creating a pixel-perfect React Native urgent
+bookings page based on your reference image:
+Screen Dimensions:
+This is my urgent page . Be exact and very detailed
+with each and every dimension to match
+reference image , be very exact about space
+distance , border radius,shadows, card height and
+width , each and every component
+positioning,icons , background colors , text
+placement etc
+Urgent Page — Dimensionally Exact Reference Implementation
+iPhone 13 reference 390pt × 844pt, 428px × 926px 3x).
+Header Section
+Background: Deep green (#213527.
+Height: 113px (from screen top to base of green header, including status bar).
+Logo Leaf & SANOVA
+Positioned center-top.
+Leaf SVG: width 34px, height 20px, 14px top space (from screen edge).
+"SANOVA" below: uppercase serif, font-size 26px, letter-spacing 2px, color #FFF, 7px
+below leaf icon.
+Main Card Urgent Times Container)
+Background: Very pale cream (#FAF6EC.
+Border Radius: Top corners only, 28px.
+Width: 100% 428px.
+Height: 726px (down to top of navigation bar).
+Position: Immediately below header, seamless join.
+Search Bar
+Position: 26px from card top/screen edge.
+Width: 375px.
+Height: 52px.
+Background: White (#FFF).
+Corner Radius: 26px (fully pill-shaped).
+Shadow: Soft, y-offset 2px, blur 9px, #000, opacity 0.08.
+Icon: Black magnifier, SVG, 2222px, left-aligned, 18px inside bar.
+Text: "Search", font-size 19px, color #32343A, font-weight 400, left margin after icon:
+11px.
+Available Times Section
+Section Title: "Available Times"
+23px below search bar.
+Left-aligned, 30px left padding.
+Font-size 22px, font-weight 700, color #232323.
+Booking Cards
+Container: Vertical list, 17px spacing between cards.
+Card Size: Width 364px, Height 96px.
+Card BG #FFF.
+Corner Radius: 18px.
+Shadow: Soft, y-offset 3px, blur 11px, #000, opacity 0.09.
+Horizontal Padding: 32px left/right padding from card border.
+Content Placement:
+Service Title: Top left, font-size 18px, weight 700, color #232323, 18px from card top,
+19px from left.
+Salon Name: Below title, font-size 15px, color #484848, weight 400, 8px gap from the
+title.
+Location/Distance Row: Pin icon SVG (black), size 1515px, followed by distance text
+(font-size 15px, color #747474, 8px below salon name.
+Time Badge: Right-aligned, vertically centered.
+Size: 101px x 44px.
+Background: #F5F3E6.
+Corner radius: 14px.
+Shadow: none.
+Component X/Y pos (px) Width (px) Height (px) Border Radius (px) Shadow
+Header (green) 0 / 0 428 113 0 None
+Main Card 0 / 113 428 726 28 (top only) None
+Search Bar 26 / 26 375 52 26 0,2,9,0.08
+Section Title 30 / 104 - 22 - None
+Booking Card 32 / 136 364 96 18 0,3,11,0.09
+Time Badge 245 / 162 101 44 14 None
+Icons/text rows per above - see above - None
+This prompt ensures precise reproduction of your urgent times screen in React Native, with
+exact measurements and styling.
+⁂
+Text: time (e.g., "1000 AM"), center aligned, font-size 17px, color #232323, font-
+weight 600.
+Colors
+Header: #213527
+Main Card: #FAF6EC
+Search Bar: #FFF
+Available Title: #232323
+Booking Card BG #FFF
+Time Badge: #F5F3E6
+Booking Card Text: #232323, #484848, #747474
+Typography
+Serif font for SANOVA
+All content/system sans, weights and sizes as above
+Spacing & Geometry Table
+Additional Notes
+All radii, shadows, colors, icons, type sizes, placements must match the reference exactly.
+
+
+5. Service page 
+
+Here is a pixel-perfect, rigorously detailed prompt for implementing the service detail page
+displayed after selecting a service from the urgent page, matching the attached image in every
+visual, spatial, and styling aspect:
+Screen Dimensions:
+Whenever I click a service from urgent page . It
+should take me to this service page attached
+image . Be exact and very detailed with each and
+every dimension to match reference image , be
+very exact about space distance , border
+radius,shadows, card height and width, text
+spacing and placement and every other
+component styling
+Service Detail Page — Exact Implementation Reference
+iPhone 13 390pt × 844pt, 428px × 926px 3x).
+Header Section
+Background: Deep green (#213527.
+Height: 115px (includes status bar and green header).
+Logo Leaf & SANOVA
+Centered horizontally and vertically.
+Leaf SVG: width 38px, height 21px, 13px top space from screen edge.
+"SANOVA" below leaf icon: uppercase serif, font-size 26px, letter-spacing 2px, color
+#FFF, 7px below leaf icon.
+Service Image Section
+Image: Full width, occupies 198px from header base downward.
+Corner Radius: Top left and top right only, 28px.
+No shadow or border on image.
+No spacing between header and image (seamless join).
+Main Card Area
+Container background: Very light cream (#FAF6EC.
+Corner Radius: Top corners only, 28px.
+Height: 531px (from image base to top of navigation).
+Width: 100% 428px.
+No shadow on card.
+Service Info Block
+Service Title: Centered, "Classic Manicure"
+Top margin: 38px from base of service image.
+Font-size 27px, font-weight 600, color #223527.
+Max 2 lines, line-height 31px.
+Below title: Centered, "Gustav Salon"
+Font-size 19px, font-weight 500, color #223527.
+Top margin: 8px below title.
+Time and Price row: Horizontal, wide margin.
+Left: "Today, 1100 AM" (font-size 17px, color #515145, font-weight 500.
+Right: "200 kr" (font-size 17px, color #515145, font-weight 500.
+Vertical position: 14px below salon name.
+Address Section
+Icon-Line Row:
+Address icon: Pin location SVG, black, 18px.
+Text: "Frederiks Alle 28" (font-size 17px, color #515145.
+Left margin: 38px from card left edge (icon flush), 13px between icon and text.
+Vertical position: 16px below time/price row.
+Divider: None below address.
+Directions Button
+Position: Centered horizontally, 31px below address.
+Width: 324px.
+Height: 53px.
+Background: #F5F3E6.
+Corner Radius: 21px.
+No shadow.
+Component X/Y pos (px) Width (px) Height (px) Border Radius (px) Shadow
+Header (green) 0 / 0 428 115 0 None
+Service Image 0 / 115 428 198 28 (top only) None
+Main Card 0 / 313 428 531 28 (top only) None
+Service Title center/351 - 27 - None
+Salon Name center/386 - 19 - None
+Time/Price Row 38/413 332 17 - None
+Address Row 38/443 332 17 - None
+Directions Button 52/490 324 53 21 None
+Book Now Button 52/570 324 53 21 None
+Text: "Directions", centered, font-size 19px, color #223527, font-weight 600.
+"Book Now" Button
+Position: Centered horizontally, 26px below Directions button.
+Width: 324px.
+Height: 53px.
+Background: Deep green (#213527.
+Corner Radius: 21px.
+Shadow: None.
+Text: "Book Now", centered, font-size 20px, color #FFF, font-weight 700.
+Colors
+Header: #213527
+Main Card: #FAF6EC
+Directions Button: #F5F3E6
+Primary Text: #223527
+Secondary Text: #515145
+Book Button: #213527
+Typography
+Serif font for logo/title, sans for body.
+Font weights/sizes as detailed above.
+Spacing & Geometry Reference Table
+This guarantees a perfect, reference-accurate React Native detail page for the service after
+tapping an urgent card.
+⁂
+Additional Notes
+All dimensions, spacings, border radii, colors, typography, icons, and button arrangements
+must match the reference image exactly. 1
+All SVGs for icons (leaf, location) should precisely match.
+No approximation—implement each detail as seen in the screenshot.
+
+
+
+6. BOOKING PAGE 
+
+Here is a pixel-perfect, rigorously detailed prompt for implementing the service detail page
+displayed after selecting a service from the urgent page, matching the attached image in every
+visual, spatial, and styling aspect:
+Screen Dimensions:
+Whenever I click a service from urgent page . It
+should take me to this service page attached
+image . Be exact and very detailed with each and
+every dimension to match reference image , be
+very exact about space distance , border
+radius,shadows, card height and width, text
+spacing and placement and every other
+component styling
+Service Detail Page — Exact Implementation Reference
+iPhone 13 390pt × 844pt, 428px × 926px 3x).
+Header Section
+Background: Deep green (#213527.
+Height: 115px (includes status bar and green header).
+Logo Leaf & SANOVA
+Centered horizontally and vertically.
+Leaf SVG: width 38px, height 21px, 13px top space from screen edge.
+"SANOVA" below leaf icon: uppercase serif, font-size 26px, letter-spacing 2px, color
+#FFF, 7px below leaf icon.
+Service Image Section
+Image: Full width, occupies 198px from header base downward.
+Corner Radius: Top left and top right only, 28px.
+No shadow or border on image.
+No spacing between header and image (seamless join).
+Main Card Area
+Container background: Very light cream (#FAF6EC.
+Corner Radius: Top corners only, 28px.
+Height: 531px (from image base to top of navigation).
+Width: 100% 428px.
+No shadow on card.
+Service Info Block
+Service Title: Centered, "Classic Manicure"
+Top margin: 38px from base of service image.
+Font-size 27px, font-weight 600, color #223527.
+Max 2 lines, line-height 31px.
+Below title: Centered, "Gustav Salon"
+Font-size 19px, font-weight 500, color #223527.
+Top margin: 8px below title.
+Time and Price row: Horizontal, wide margin.
+Left: "Today, 1100 AM" (font-size 17px, color #515145, font-weight 500.
+Right: "200 kr" (font-size 17px, color #515145, font-weight 500.
+Vertical position: 14px below salon name.
+Address Section
+Icon-Line Row:
+Address icon: Pin location SVG, black, 18px.
+Text: "Frederiks Alle 28" (font-size 17px, color #515145.
+Left margin: 38px from card left edge (icon flush), 13px between icon and text.
+Vertical position: 16px below time/price row.
+Divider: None below address.
+Directions Button
+Position: Centered horizontally, 31px below address.
+Width: 324px.
+Height: 53px.
+Background: #F5F3E6.
+Corner Radius: 21px.
+No shadow.
+Component X/Y pos (px) Width (px) Height (px) Border Radius (px) Shadow
+Header (green) 0 / 0 428 115 0 None
+Service Image 0 / 115 428 198 28 (top only) None
+Main Card 0 / 313 428 531 28 (top only) None
+Service Title center/351 - 27 - None
+Salon Name center/386 - 19 - None
+Time/Price Row 38/413 332 17 - None
+Address Row 38/443 332 17 - None
+Directions Button 52/490 324 53 21 None
+Book Now Button 52/570 324 53 21 None
+Text: "Directions", centered, font-size 19px, color #223527, font-weight 600.
+"Book Now" Button
+Position: Centered horizontally, 26px below Directions button.
+Width: 324px.
+Height: 53px.
+Background: Deep green (#213527.
+Corner Radius: 21px.
+Shadow: None.
+Text: "Book Now", centered, font-size 20px, color #FFF, font-weight 700.
+Colors
+Header: #213527
+Main Card: #FAF6EC
+Directions Button: #F5F3E6
+Primary Text: #223527
+Secondary Text: #515145
+Book Button: #213527
+Typography
+Serif font for logo/title, sans for body.
+Font weights/sizes as detailed above.
+Spacing & Geometry Reference Table
+This guarantees a perfect, reference-accurate React Native detail page for the service after
+tapping an urgent card.
+⁂
+Additional Notes
+All dimensions, spacings, border radii, colors, typography, icons, and button arrangements
+must match the reference image exactly. 1
+All SVGs for icons (leaf, location) should precisely match.
+
+
+7. BOOKING FLOW
+
+
+Here is an exact, step-by-step, pixel-perfect prompt for the booking flow screens shown in your
+attachments. Every element, dimension, spacing, border radius, shadow, and font is defined
+precisely according to the references.
+Device Size: iPhone 13 390pt × 844pt, 428px × 926px 3x).
+When I continue to book I should be taken to the
+steps on the screens attached . Whenever I click a
+service from urgent page . It should take me to this
+service page attached image . Be exact and very
+detailed with each and every dimension to match
+reference image , be very exact about space
+distance , border radius,shadows, card height and
+width, text spacing and placement and every other
+component styling
+Booking Flow — Pixel Perfect Details
+Step 1 Book Page Screenshot 1, left)
+Header
+Deep green (#213527, height: 115px including status bar.
+Leaf SVG centered horizontally (width: 36px, height: 22px, margin-top: 13px).
+"SANOVA" centered below leaf, uppercase serif, font-size: 25px, #FFF, letter-spacing:
+2px, margin-top: 6px under logo.
+Main Card Background: Very light cream (#FAF6EC, top corners radius: 28px, no shadow.
+Starts immediately after header.
+Content:
+Section Title: "Book", font-size: 27px, font-weight: 700, color: #223527, margin-top:
+34px from top of main card, left-aligned 34px.
+Service name: "Classic Manicure", font-size: 19px, font-weight: 600, color: #223527,
+margin-top: 16px.
+Date Section Title: "Date and Time", font-size: 18px, color: #626463, margin-top: 22px.
+Date Chip: width: 308px, height: 54px, border-radius: 15px, background #FFF. Place at
+18px from left edge, 16px below section title. Horizontal layout with arrow icon (right-
+aligned, 16px from edge).
+Chip text: "April 25, 1100 AM", font-size: 17px, color #235327, font-weight: 400.
+Continue Button:
+Width: 344px, height: 51px, pill-shaped radius: 25px. Centered horizontally,
+background: #163A24, color: #FFF, font-size: 20px, font-weight: 600.
+Place at bottom, margin-bottom: 36px from bottom safe area.
+Step 2 Payment Method Selection Screenshot 1, right)
+Header: Same as previous (dimensions, color, logo, spacing).
+Main Card: Very light cream (#FAF6EC, top corners radius: 28px, no shadow.
+Content:
+Title: "Payment Method", font-size: 25px, font-weight: 700, color: #223527, left-aligned
+34px, margin-top 38px.
+Payment Options: Each row is 66px high, 26px radius, white (#FFF) background, soft
+shadow 0,3,13,0.08. Margin-top: 32px after payment method title, and 20px between
+options.
+Option 1 "Credit or Debit Card" left, VISA logo right, font-size: 18px, color
+#223527.
+Option 2 "Apple Pay" left, Apple Pay logo right, font-size 18px, color #223527.
+Option 3 "MobilePay" left, MobilePay logo right, font-size 18px, color #223527.
+Pay Now Button: Centered, width: 344px, height: 51px, pill-shaped (radius 25px),
+background #163A24, color: #FFF, font-size 20px, font-weight 600, margin-bottom
+40px from safe area.
+Step 3 Pay/Hold Option Selection Screenshot 2
+Header: Identical spec as above.
+Main Card: Very light cream (#FAF6EC, top corners radius 28px, no shadow.
+Content:
+Title: "Payment", margin-top 38px, left-aligned 34px, font-size 25px, font-weight 700,
+color #223527.
+Payment Option Cards: Each 97px high, 26px radius, white (#FFF) background, soft
+shadow 0,3,13,0.07.
+Option 1
+Title: "Pay half now, half after", font-size 19px, font-weight 700, color #223527.
+Component X/Y Position Width
+(px)
+Height
+(px)
+Border Radius
+(px) Shadow
+Header (green) 0 / 0 428 115 0 None
+Main Card 0 / 115 428 varies 28 (top only) None
+Section Title 34 / varies - varies 0 None
+Option Buttons 34 / varies 308344 516697 2625 0,3,13,0.08
+Payment Chips 18 / varies 308 54 15 None
+Payment Radio
+Circle right/center 23 23 12 None
+Description: "You agree to pay 175 kr now and forfeit this amount if you don't
+show up.", font-size: 16px, color #4E504F, font-weight 400.
+Checkmark circle: right-aligned, diameter 23px, filled #163A24 when active,
+white with border #163A24 when inactive.
+Option 2
+Title: "Pay full amount", font-size 19px, font-weight 700, color #223527.
+Description: "Cancel by [date/time] and get a full refund.", font-size 16px, color
+#4E504F, font-weight 400.
+22px vertical space between options.
+Continue Button: Centered, width: 344px, height: 51px, pill-shaped radius 25px,
+background #F1EBD1, color #223527, font-size 20px, font-weight 600, margin-bottom
+34px from bottom.
+Colors
+Header: #213527
+Main Card: #FAF6EC
+Primary Accent: #163A24
+Option Button: #FFF
+Light Beige Button: #F1EBD1
+Section Titles: #223527
+Secondary Text: #626463, #4E504F
+Typography
+Serif for SANOVA/title, sans for body.
+Font weights/sizes as shown per screen.
+Spacing & Geometry Table
+Component X/Y Position Width
+(px)
+Height
+(px)
+Border Radius
+(px) Shadow
+Action Button center/bottom 344 51 25 None /
+Option
+All placement, sizing, radii, shadow, color, font, and layout MUST match the reference images
+exactly. No approximations or excluded elements. Every detail should be matched pixel-for-pixel
+as visible in reference.
+
+
+8. REVIEW PAGE
+
+Here is a pixel-perfect, precisely detailed prompt for implementing the reviews page shown in
+the reference image. Every dimension, space, border radius, shadow, icon size, text alignment,
+and color is defined for a true production-grade React Native result.
+Device Size: iPhone 13 390pt × 844pt, 428px × 926px 3x)
+Once I complete payment I should be taken to this
+reviews page . Whenever I click a service from
+urgent page . It should take me to this service
+page attached image . Be exact and very detailed
+with each and every dimension to match
+reference image , be very exact about space
+distance , border radius,shadows, card height and
+width, text spacing and placement and every other
+component styling
+Reviews Page — Exact Reference Implementation
+Header
+Background: Deep green (#213527, height: 114px (including status bar).
+Logo: Leaf SVG centered (width: 34px, height: 19px, 14px from top screen edge).
+"SANOVA" centered below leaf, uppercase serif, font-size 25px, #FFF, letter-spacing 2px,
+8px margin below logo.
+Main Card/Container
+Background: Very light cream (#FAF6EC.
+Corner Radius: Top corners only, 27px.
+Width: 100% 428px.
+No outer shadow, seamless join below header.
+Content Structure & Dimensions
+Title
+Text: "Hvordan var din oplevelse?"
+Font-size: 25px, font-weight 800, color #223527.
+Top Margin: 36px from top of card.
+Left-aligned: 34px from left card edge.
+Appointment Card
+Background: White (#FFF).
+Border Radius: 17px.
+Shadow: y-offset 3px, blur 13px, #000, opacity 0.08.
+Width: 352px.
+Height: 85px.
+Margin: 24px below title, centered horizontally.
+Content:
+Circle Avatar: "G", green background (#223527, white letter, size 39px.
+Salon Name: "Gustav Salon", left-aligned, font-size 18px, font-weight 700, color
+#223527, 13px to right of avatar.
+Service Name: "Classic Manicure", font-size 15px, color #223527, weight 500, 4px
+below salon name.
+Appointment Date: "24. april 2024 kl. 11.00", font-size 14px, color #626463, weight
+400, 4px below service name.
+Rating Section
+Star Row:
+Positioned 23px below appointment card.
+Star Icons: five, horizontally centered, each width 37px, color #C6B282.
+Labels: under each star, font-size 13px, color #726E66, weight 600, margin-top 8px,
+spaced 4px below each star. Labels: "Dårlig", "Okay", "God", "Meget god",
+"Fantastisk".
+Comment Section
+Section Title: "Har du lyst til at uddybe?", font-size 18px, weight 700, color #223527,
+margin-top 32px.
+Text Input: Placeholder "Valgfrit", width 352px, height 46px, background #FFF, border
+radius 14px, no shadow, centered horizontally, font-size 16px, color #626463. Margin-top
+Element Color
+Header/Logo #213527
+Card BG #FAF6EC
+Main Titles #223527
+Stars #C6B282
+Rating Labels #726E66
+Appointment Card BG #FFF
+Button BG #163A24
+Button Text #FFF
+Avatar BG #223527
+Avatar Text #FFF
+15px after section title.
+Photo Upload
+Upload Zone: Outlined rectangle, dash border, width 127px, height 50px, border radius
+11px, border color #C6B282, 28px below comment input.
+Camera Icon: SVG, centered, 26px.
+Text: "Del et billede af resultatet", font-size 15px, color #223527, weight 500, below
+icon, centered.
+Submit Button
+Button: "Send anmeldelse", width: 346px, height: 53px, background: #163A24, color:
+#FFF, font-size 20px, font-weight 700, border-radius 25px, centered horizontally. 38px
+below photo upload field.
+Skip Option
+Text: "Spring over", centered, font-size 18px, color #223527, font-weight 600, 12px below
+send button.
+Colors
+Typography
+Serif for logo, bold sans for everything else.
+All weights, sizes, and margin distances as above.
+Component X/Y pos (px) Width (px) Height (px) Border Radius (px) Shadow
+Header (green) 0 / 0 428 114 0 None
+Main Card 0 / 114 428 varies 27 (top only) None
+Title 34 / 150 - 25 0 None
+Appointment Card center/186 352 85 17 0,3,13,0.08
+Stars center/295 375 37 0 None
+Rating Labels center/340 375 13 0 None
+Comment Title 34/385 - 18 0 None
+Text Input center/410 352 46 14 None
+Upload Zone center/458 127 50 11 dash border
+Send Button center/530 346 53 25 None
+Skip Text center/595 - 18 0 None
+All placement, sizing, radii, shadows, colors, icon sizes, text weights,
+
+
+9 . PROFILE SCREEN
+
+Here is a pixel-perfect, ultra-detailed prompt for your profile (new booking) page, precisely
+matching every dimension, spacing, border radius, shadow, input placement, and style as in the
+reference image. A fully functional Firebase logout button is included.
+Device Size: iPhone 13 390pt × 844pt, 428px × 926px 3x)
+This is a profile page . Also add a log out button
+that is functioninal with firebase . Whenever I click
+a service from urgent page . It should take me to
+this service page attached image . Be exact and
+very detailed with each and every dimension to
+match reference image , be very exact about
+space distance , border radius,shadows, card
+height and width, text spacing and placement and
+every other component styling
+Profile/New Booking Page — Exact Reference Implementation
+Header
+Background: Deep green (#213527, height: 114px including status bar.
+Logo: Leaf SVG centered (width: 34px, height: 19px, 14px from top screen edge).
+"SANOVA" centered below leaf, uppercase serif, font-size 25px, #FFF, letter-spacing 2px,
+8px spacing below logo.
+Cancel Button: Upper right, font-size 17px, color #FFF, font-weight 600, 26px from right
+edge, 27px from top edge — tap to close or navigate back.
+Main Card/Container
+Background: Very light cream (#FAF6EC.
+Corner Radius: Top corners only, 27px.
+Width: 100% 428px.
+No outer shadow, seamless join below header.
+Content Structure & Dimensions
+Page Title
+Text: "New Booking"
+Font-size: 25px, font-weight 800, color #223527.
+Top Margin: 36px from top of card.
+Left-aligned: 34px from left card edge.
+Form Fields Section
+Label: "Client", font-size 16px, font-weight 600, color #223527, 29px below page title, left-
+aligned 34px.
+Text Field:
+Value: "Emily Carter"
+Width: 360px, height: 44px
+Background: White (#FFF)
+Border radius: 10px, no visible shadow, left-aligned 34px, margin-top 8px below label
+Font-size: 17px, color #223527
+Label: "Phone number", font-size 16px, font-weight 600, color #223527, 18px margin below
+previous input, left-aligned 34px.
+Text Field: "45 12345678", same styling and dimensions as above
+Label: "Service", font-size 16px, font-weight 600, color #223527, 18px margin below
+previous input, left-aligned 34px.
+Text Field: "Women's Haircut", same styling and dimensions as above
+Label: "Date & Time", font-size 16px, font-weight 600, color #223527, 18px margin below
+previous input, left-aligned 34px.
+Text Field: "May 7, 2024 at 200 PM", same styling and dimensions as above
+Add Booking Button
+Button: "Add Booking", width: 352px, height: 51px, background: #163A24, color: #FFF,
+font-size 20px, font-weight 700, border-radius 22px, centered horizontally, 32px margin
+above navigation bar.
+import { getAuth, signOut } from "firebase/auth";
+const handleLogout = () => {
+const auth = getAuth();
+signOut(auth);
+};
+Attach this function to onPress for the Log Out button.
+Element Color
+Header/Logo #213527
+Card BG #FAF6EC
+Main Titles #223527
+Inputs BG #FFF
+Input Text #223527
+Booking Button BG #163A24
+Booking Button Text #FFF
+Log Out Button BG #F1EBD1
+Log Out Button Text #163A24
+Cancel Text #FFF
+Component X/Y pos (px) Width (px) Height (px) Border Radius (px) Shadow
+Header (green) 0 / 0 428 114 0 None
+Main Card 0 / 114 428 varies 27 (top only) None
+Page Title 34 / 150 - 25 0 None
+Log Out Button Firebase Functional)
+Button: "Log Out", width: 352px, height: 51px, background: #F1EBD1, color: #163A24, font-
+size 20px, font-weight 700, border-radius 22px, centered horizontally, 16px below "Add
+Booking" button.
+Functionality: When tapped, call:
+Colors
+Typography
+Serif for logo, bold sans-serif for headings/inputs/buttons.
+All font weights, sizes, and margin distances as above.
+Spacing & Geometry Table
+Component X/Y pos (px) Width (px) Height (px) Border Radius (px) Shadow
+Input Fields 34 / varies 360 44 10 None
+Add Booking Button center/bottom 352 51 22 None
+Log Out Button center/bottom 352 51 22 None
+Every radius, shadow, color, font, size, spacing, input, and button function must match the
+reference image exactly. The log out button must perform a firebase signOut. Do not mention
+any faces or blurred image features.
+,

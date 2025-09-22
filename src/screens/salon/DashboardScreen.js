@@ -1,184 +1,118 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ScrollView, 
-  Animated, 
-  StatusBar, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Animated,
+  StatusBar,
   Dimensions,
   Alert,
   Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
-import { 
-  typography, 
-  spacing, 
-  shadows, 
-  borderRadius, 
-  premiumComponents 
-} from '../../theme/premiumStyles';
 import realtimeServiceInstance from '../../services/realtimeService';
 import notificationServiceInstance from '../../services/notificationService';
+import { authService } from '../../services/firebaseService';
 
 const { width, height } = Dimensions.get('window');
 
 export default function DashboardScreen({ navigation }) {
   const [realtimeBookings, setRealtimeBookings] = useState([]);
   const [realtimeReviews, setRealtimeReviews] = useState([]);
-  const [todayRevenue, setTodayRevenue] = useState(250);
-  const [weekRevenue, setWeekRevenue] = useState(1100);
-  const [monthRevenue, setMonthRevenue] = useState(4200);
+  const [todayRevenue, setTodayRevenue] = useState(1250);
+  const [weekRevenue, setWeekRevenue] = useState(5200);
+  const [monthRevenue, setMonthRevenue] = useState(18400);
 
-  // Animation controller
-  // Removed animation controller
+  // Animated values for smooth entrance animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
 
-  // Animated values
-  const headerAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(-30),
-  }).current;
-
-  const welcomeAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(20),
-  }).current;
-
-  const bookingsAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(30),
-    scale: new Animated.Value(0.95),
-  }).current;
-
-  const revenueAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(30),
-    scale: new Animated.Value(0.95),
-  }).current;
-
-  const buttonsAnimatedValues = useRef({
-    opacity: new Animated.Value(0),
-    translateY: new Animated.Value(40),
-  }).current;
-
+  // Logout function
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await authService.signOut();
+              console.log('Salon owner logged out');
+              navigation.navigate('Login');
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
   const upcomingBookings = [
     {
       id: 1,
-      customer: 'Klara Nielsen',
-      service: "Women's Haircut & Style",
-      time: '14:00',
-      avatar: '👩',
+      customer: 'Emma Nielsen',
+      service: 'Classic Manicure',
+      time: '11:00',
       status: 'confirmed',
-      duration: '1h 30min',
+      price: '350 kr',
     },
     {
       id: 2,
-      customer: 'Erik Andersen',
-      service: 'Men\'s Cut & Beard Trim',
+      customer: 'Lars Hansen',
+      service: 'Men\'s Haircut',
+      time: '14:30',
+      status: 'confirmed',
+      price: '450 kr',
+    },
+    {
+      id: 3,
+      customer: 'Sofia Andersen',
+      service: 'Hair Color Treatment',
       time: '16:00',
-      avatar: '👨',
       status: 'pending',
-      duration: '45min',
+      price: '800 kr',
     },
   ];
 
   useEffect(() => {
-    StatusBar.setBarStyle('dark-content');
+    StatusBar.setBarStyle('light-content');
     
     // Start entrance animations
-    startEntranceAnimations();
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
     
     // Initialize real-time monitoring
     initializeRealtimeServices();
 
     return () => {
-      // Cleanup animations if needed
       // Stop real-time monitoring when component unmounts
       realtimeServiceInstance.stopSalonMonitoring('salon_1');
     };
   }, []);
 
-  const startEntranceAnimations = () => {
-    // Start animations directly with proper timing
-    Animated.stagger(200, [
-      // Header animation
-      Animated.parallel([
-        Animated.timing(headerAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(headerAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Welcome animation
-      Animated.parallel([
-        Animated.timing(welcomeAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(welcomeAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Bookings animation
-      Animated.parallel([
-        Animated.timing(bookingsAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(bookingsAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(bookingsAnimatedValues.scale, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Revenue animation
-      Animated.parallel([
-        Animated.timing(revenueAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(revenueAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(revenueAnimatedValues.scale, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Buttons animation
-      Animated.parallel([
-        Animated.timing(buttonsAnimatedValues.opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonsAnimatedValues.translateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
+  // Format currency
+  const formatCurrency = (amount) => {
+    return `${amount.toLocaleString()} kr`;
   };
 
   const initializeRealtimeServices = async () => {
@@ -234,581 +168,469 @@ export default function DashboardScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background.primary} />
-      
-      {/* Premium Animated Header */}
-      <Animated.View 
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor="#213527" />
+
+      {/* Header - Deep green (#213527) - Same as other screens */}
+      <Animated.View
         style={[
           styles.header,
           {
-            opacity: headerAnimatedValues.opacity,
-            transform: [{ translateY: headerAnimatedValues.translateY }],
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
           }
         ]}
       >
-        <View style={styles.headerContent}>
-          <View style={styles.logoContainer}>
-            <Image source={require('../../../assets/icon.png')} style={styles.logoImage} />
-          </View>
+        {/* Logo Leaf & SANOVA - Centered horizontally and vertically */}
+        <View style={styles.logoContainer}>
+          {/* Logo - Same dimensions as other screens */}
+          <Image 
+            source={require('../../../assets/logo.png')}
+            style={styles.logoIcon}
+            resizeMode="contain"
+          />
+          {/* SANOVA text - Same styling as other screens */}
           <Text style={styles.headerTitle}>SANOVA</Text>
-          <Text style={styles.headerSubtitle}>Salon Dashboard</Text>
         </View>
-        <TouchableOpacity style={styles.profileButton} activeOpacity={0.8}>
-          <Ionicons name="person-circle-outline" size={32} color={colors.primary} />
+        
+        {/* Logout Button - Top right */}
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={handleLogout}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="log-out-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </Animated.View>
-      
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Premium Animated Welcome Section */}
-        <Animated.View 
-          style={[
-            styles.welcomeSection,
-            {
-              opacity: welcomeAnimatedValues.opacity,
-              transform: [{ translateY: welcomeAnimatedValues.translateY }],
-            }
-          ]}
-        >
-          <Text style={styles.welcomeText}>Hello, Glamorous Salon</Text>
-          <Text style={styles.dateText}>Tuesday, May 7 • {new Date().getFullYear()}</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{realtimeBookings.length || upcomingBookings.length}</Text>
-              <Text style={styles.statLabel}>Today's Bookings</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{realtimeReviews.length || 12}</Text>
-              <Text style={styles.statLabel}>Total Reviews</Text>
-            </View>
-          </View>
-        </Animated.View>
 
-        {/* Premium Animated Bookings Section */}
-        <Animated.View 
-          style={[
-            styles.upcomingBookings,
-            {
-              opacity: bookingsAnimatedValues.opacity,
-              transform: [
-                { translateY: bookingsAnimatedValues.translateY },
-                { scale: bookingsAnimatedValues.scale }
-              ],
-            }
-          ]}
-        >
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Today's Appointments</Text>
-            <TouchableOpacity 
-              style={styles.viewAllButton}
-              onPress={() => navigation.navigate('Bookings')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.viewAllText}>View All</Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
-            </TouchableOpacity>
+      {/* Main Card - Very light cream (#FAF6EC) */}
+      <Animated.View
+        style={[
+          styles.mainCard,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          }
+        ]}
+      >
+        {/* Content Section */}
+        <View style={styles.contentSection}>
+          {/* Welcome Section - "Dashboard", salon name, date */}
+          <View style={styles.welcomeSection}>
+            <Text style={styles.sectionTitle}>Dashboard</Text>
+            <Text style={styles.salonName}>Gustav Salon</Text>
+            <Text style={styles.dateText}>Today • {new Date().toLocaleDateString('da-DK', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}</Text>
           </View>
-          
-          {upcomingBookings.map((booking, index) => (
-            <TouchableOpacity 
-              key={booking.id} 
-              style={styles.bookingCard}
-              onPress={() => navigation.navigate('BookingDetail', { booking })}
-              activeOpacity={0.9}
-            >
-              <View style={styles.bookingLeft}>
-                <View style={styles.avatarContainer}>
-                  <Text style={styles.avatar}>{booking.avatar}</Text>
-                </View>
+
+          {/* Today's Revenue Card */}
+          <View style={styles.revenueCard}>
+            <View style={styles.revenueHeader}>
+              <View>
+                <Text style={styles.revenueLabel}>Today's Revenue</Text>
+                <Text style={styles.revenueAmount}>{formatCurrency(todayRevenue)}</Text>
+              </View>
+              <View style={styles.trendIcon}>
+                <Ionicons name="trending-up" size={24} color="#22C55E" />
+              </View>
+            </View>
+            <View style={styles.revenueDetails}>
+              <View style={styles.revenueDetailItem}>
+                <Text style={styles.revenueDetailLabel}>This Week</Text>
+                <Text style={styles.revenueDetailValue}>{formatCurrency(weekRevenue)}</Text>
+              </View>
+              <View style={styles.revenueDetailItem}>
+                <Text style={styles.revenueDetailLabel}>This Month</Text>
+                <Text style={styles.revenueDetailValue}>{formatCurrency(monthRevenue)}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Upcoming Bookings Section */}
+          <View style={styles.bookingsSection}>
+            <View style={styles.bookingsHeader}>
+              <Text style={styles.bookingsTitle}>Upcoming Bookings</Text>
+              <TouchableOpacity 
+                style={styles.viewAllButton}
+                onPress={() => navigation.navigate('Bookings')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.viewAllText}>View All</Text>
+                <Ionicons name="chevron-forward" size={16} color="#223527" />
+              </TouchableOpacity>
+            </View>
+            
+            {upcomingBookings.map((booking, index) => (
+              <View key={booking.id} style={styles.bookingCard}>
                 <View style={styles.bookingInfo}>
                   <Text style={styles.customerName}>{booking.customer}</Text>
                   <Text style={styles.serviceName}>{booking.service}</Text>
-                  <Text style={styles.bookingDuration}>{booking.duration}</Text>
+                  <View style={styles.bookingDetails}>
+                    <Text style={styles.bookingTime}>{booking.time}</Text>
+                    <Text style={styles.bookingPrice}>{booking.price}</Text>
+                  </View>
                 </View>
-              </View>
-              <View style={styles.bookingRight}>
-                <Text style={styles.bookingTime}>{booking.time}</Text>
                 <View style={[
-                  styles.statusBadge, 
+                  styles.statusBadge,
                   booking.status === 'confirmed' ? styles.confirmedBadge : styles.pendingBadge
                 ]}>
                   <Text style={[
                     styles.statusText,
                     booking.status === 'confirmed' ? styles.confirmedText : styles.pendingText
                   ]}>
-                    {booking.status.toUpperCase()}
+                    {booking.status}
                   </Text>
                 </View>
               </View>
-            </TouchableOpacity>
-          ))}
-          
-          <View style={styles.bookingFooter}>
-            <Ionicons name="calendar-outline" size={16} color={colors.text.secondary} />
-            <Text style={styles.bookingFooterText}>
-              {upcomingBookings.length} appointments scheduled for today
-            </Text>
+            ))}
           </View>
-        </Animated.View>
 
-        {/* Premium Animated Revenue Section */}
-        <Animated.View 
-          style={[
-            styles.revenueSection,
-            {
-              opacity: revenueAnimatedValues.opacity,
-              transform: [
-                { translateY: revenueAnimatedValues.translateY },
-                { scale: revenueAnimatedValues.scale }
-              ],
-            }
-          ]}
-        >
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Revenue Analytics</Text>
+          {/* Quick Action Buttons */}
+          <View style={styles.actionButtonsSection}>
             <TouchableOpacity 
-              style={styles.viewAllButton}
-              onPress={() => navigation.navigate('Payments')}
-              activeOpacity={0.8}
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('NewBooking')}
+              activeOpacity={0.9}
             >
-              <Text style={styles.viewAllText}>View Details</Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+              <Ionicons name="calendar-outline" size={22} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>Create Booking</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('Products')}
+              activeOpacity={0.9}
+            >
+              <Ionicons name="storefront-outline" size={22} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>Manage Products</Text>
             </TouchableOpacity>
           </View>
-          
-          <View style={styles.revenueCard}>
-            <View style={styles.revenueHeader}>
-              <View>
-                <Text style={styles.revenueLabel}>Today's Revenue</Text>
-                <Text style={styles.revenueAmount}>${todayRevenue}</Text>
-              </View>
-              <View style={styles.revenueIcon}>
-                <Ionicons name="trending-up" size={24} color={colors.accent} />
-              </View>
-            </View>
-            <View style={styles.revenueProgress}>
-              <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: '65%' }]} />
-              </View>
-              <Text style={styles.progressText}>65% of weekly goal</Text>
-            </View>
-          </View>
+        </View>
+      </Animated.View>
+    </ScrollView>
 
-          <View style={styles.revenueStats}>
-            <View style={styles.revenueStatCard}>
-              <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-              <Text style={styles.statValue}>${weekRevenue}</Text>
-              <Text style={styles.statLabel}>This Week</Text>
-              <Text style={styles.statChange}>+12%</Text>
-            </View>
-            <View style={styles.revenueStatCard}>
-              <Ionicons name="calendar" size={20} color={colors.primary} />
-              <Text style={styles.statValue}>${monthRevenue}</Text>
-              <Text style={styles.statLabel}>This Month</Text>
-              <Text style={styles.statChange}>+8%</Text>
-            </View>
-          </View>
-
-          <View style={styles.productsRevenue}>
-            <View style={styles.productsHeader}>
-              <Ionicons name="business-outline" size={20} color={colors.text.secondary} />
-              <Text style={styles.productsLabel}>Product Sales</Text>
-            </View>
-            <Text style={styles.productsAmount}>$45</Text>
-            <Text style={styles.productsNote}>Click & collect orders fulfilled</Text>
-          </View>
-        </Animated.View>
-
-        {/* Premium Animated Action Buttons */}
-        <Animated.View 
-          style={[
-            styles.actionButtons,
-            {
-              opacity: buttonsAnimatedValues.opacity,
-              transform: [{ translateY: buttonsAnimatedValues.translateY }],
-            }
-          ]}
-        >
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => handleActionPress('new_booking', 'NewBooking')}
-            activeOpacity={0.9}
-          >
-            <View style={styles.actionButtonIcon}>
-              <Ionicons name="calendar-outline" size={24} color={colors.background.white} />
-            </View>
-            <Text style={styles.actionButtonText}>New Booking</Text>
-            <Text style={styles.actionButtonSubtext}>Schedule appointment</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => handleActionPress('new_product', 'NewProduct')}
-            activeOpacity={0.9}
-          >
-            <View style={styles.actionButtonIcon}>
-              <Ionicons name="add-circle-outline" size={24} color={colors.background.white} />
-            </View>
-            <Text style={styles.actionButtonText}>Add Product</Text>
-            <Text style={styles.actionButtonSubtext}>Manage inventory</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => handleActionPress('services', 'Services')}
-            activeOpacity={0.9}
-          >
-            <View style={styles.actionButtonIcon}>
-              <Ionicons name="cut-outline" size={24} color={colors.background.white} />
-            </View>
-            <Text style={styles.actionButtonText}>Services</Text>
-            <Text style={styles.actionButtonSubtext}>Manage offerings</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </ScrollView>
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...premiumComponents.screenContainer,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xxxl,
-    paddingBottom: spacing.lg,
-    backgroundColor: colors.background.primary,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
-  },
-  headerContent: {
     flex: 1,
+    backgroundColor: '#FAF6EC', // Exact cream background
+  },
+
+  // Header - Deep green (#213527) - Same as other screens
+  header: {
+    backgroundColor: '#213527', // Exact deep green color
+    height: 115, // Same height as other screens
+    justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative', // For logout button positioning
   },
   logoContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(38, 52, 40, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.sm,
-    ...shadows.card,
+  },
+  logoIcon: {
+    width: 80,
+    height: 50,
+    marginBottom: 6, // Same spacing as other screens
   },
   headerTitle: {
-    ...typography.title2,
-    color: colors.primary,
-    fontFamily: 'serif',
+    fontSize: 25, // Same as other screens
+    fontFamily: 'System',
+    fontWeight: 'bold',
+    color: '#FFFFFF',
     letterSpacing: 2,
     textTransform: 'uppercase',
-    marginBottom: spacing.xs,
+    textAlign: 'center',
   },
-  headerSubtitle: {
-    ...typography.caption,
-    color: colors.text.secondary,
+  logoutButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
-  profileButton: {
-    padding: spacing.sm,
+
+  // Main Card - Very light cream (#FAF6EC)
+  mainCard: {
+    backgroundColor: '#FAF6EC', // Very light cream
+    borderTopLeftRadius: 28, // Top corners only, same as other screens
+    borderTopRightRadius: 28,
+    width: '100%',
+    flex: 1,
+    paddingHorizontal: 26, // 26px from left/right
+    paddingTop: 38, // 38px margin-top
   },
-  content: {
+
+  // Content Section
+  contentSection: {
     flex: 1,
   },
-  scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxxl,
-  },
+
+  // Welcome Section
   welcomeSection: {
-    marginBottom: spacing.xl,
-    paddingTop: spacing.lg,
+    marginBottom: 32,
   },
-  welcomeText: {
-    ...typography.title1,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  dateText: {
-    ...typography.body,
-    color: colors.text.secondary,
-    marginBottom: spacing.lg,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: colors.background.white,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    ...shadows.card,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    ...typography.title2,
-    color: colors.primary,
-    fontWeight: '700',
-    marginBottom: spacing.xs,
-  },
-  statLabel: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
-  upcomingBookings: {
-    marginBottom: spacing.xl,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
+  
+  // Section Title - "Dashboard", 25px, weight 700, #223527
   sectionTitle: {
-    ...typography.title3,
-    color: colors.text.primary,
+    fontSize: 25, // 25px
+    fontWeight: '700', // Weight 700
+    color: '#223527', // #223527
+    marginBottom: 8,
   },
-  viewAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
+
+  // Salon name - "Gustav Salon", 19px, weight 600, #223527
+  salonName: {
+    fontSize: 19, // 19px
+    fontWeight: '600', // Weight 600
+    color: '#223527', // #223527
+    marginBottom: 6,
   },
-  viewAllText: {
-    ...typography.captionMedium,
-    color: colors.primary,
+
+  // Date text - 16px, #626463
+  dateText: {
+    fontSize: 16, // 16px
+    color: '#626463', // #626463
   },
-  bookingCard: {
-    ...premiumComponents.elevatedCard,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-    backgroundColor: colors.background.white,
-  },
-  bookingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  bookingRight: {
-    alignItems: 'flex-end',
-  },
-  avatarContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: colors.background.secondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-    ...shadows.card,
-  },
-  avatar: {
-    fontSize: 24,
-  },
-  bookingInfo: {
-    flex: 1,
-  },
-  customerName: {
-    ...typography.bodyMedium,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  serviceName: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    marginBottom: spacing.xs,
-  },
-  bookingDuration: {
-    ...typography.small,
-    color: colors.text.secondary,
-    fontStyle: 'italic',
-  },
-  bookingTime: {
-    ...typography.bodyMedium,
-    color: colors.text.primary,
-    fontWeight: '600',
-    marginBottom: spacing.sm,
-  },
-  statusBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-  },
-  confirmedBadge: {
-    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-  },
-  pendingBadge: {
-    backgroundColor: 'rgba(251, 191, 36, 0.1)',
-  },
-  statusText: {
-    ...typography.small,
-    fontWeight: '600',
-  },
-  confirmedText: {
-    color: '#22c55e',
-  },
-  pendingText: {
-    color: '#fbbf24',
-  },
-  bookingFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: spacing.md,
-    gap: spacing.sm,
-  },
-  bookingFooterText: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
-  revenueSection: {
-    marginBottom: spacing.xl,
-  },
+
+  // Revenue Card - White background, 18px radius
   revenueCard: {
-    ...premiumComponents.floatingCard,
-    backgroundColor: colors.background.white,
-    marginBottom: spacing.lg,
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 18, // 18px radius
+    padding: 24, // 24px internal padding
+    marginBottom: 28, // 28px below revenue card
+    elevation: 3,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
   },
+
+  // Revenue header
   revenueHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: spacing.lg,
+    marginBottom: 20,
   },
+
+  // Revenue label - "Today's Revenue", 16px, #626463
   revenueLabel: {
-    ...typography.captionMedium,
-    color: colors.text.secondary,
-    marginBottom: spacing.sm,
+    fontSize: 16, // 16px
+    color: '#626463', // #626463
+    marginBottom: 8,
   },
+
+  // Revenue amount - "1,250 kr", 28px, weight 700, #223527
   revenueAmount: {
-    ...typography.display,
-    color: colors.text.primary,
-    fontWeight: '700',
+    fontSize: 28, // 28px
+    fontWeight: '700', // Weight 700
+    color: '#223527', // #223527
   },
-  revenueIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(212, 185, 143, 0.1)',
+
+  // Trend icon container
+  trendIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.card,
   },
-  revenueProgress: {
-    marginTop: spacing.md,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: colors.background.secondary,
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: spacing.sm,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.accent,
-    borderRadius: 3,
-  },
-  progressText: {
-    ...typography.small,
-    color: colors.text.secondary,
-  },
-  revenueStats: {
+
+  // Revenue details section
+  revenueDetails: {
     flexDirection: 'row',
-    marginBottom: spacing.lg,
-    gap: spacing.md,
+    justifyContent: 'space-between',
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
   },
-  revenueStatCard: {
+
+  // Revenue detail item
+  revenueDetailItem: {
+    alignItems: 'center',
+  },
+
+  // Revenue detail label - "This Week", 14px, #626463
+  revenueDetailLabel: {
+    fontSize: 14, // 14px
+    color: '#626463', // #626463
+    marginBottom: 6,
+  },
+
+  // Revenue detail value - "5,200 kr", 18px, weight 600, #223527
+  revenueDetailValue: {
+    fontSize: 18, // 18px
+    fontWeight: '600', // Weight 600
+    color: '#223527', // #223527
+  },
+
+  // Bookings Section
+  bookingsSection: {
+    marginBottom: 32,
+  },
+
+  // Bookings header
+  bookingsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  // Bookings title - "Upcoming Bookings", 20px, weight 600, #223527
+  bookingsTitle: {
+    fontSize: 20, // 20px
+    fontWeight: '600', // Weight 600
+    color: '#223527', // #223527
+  },
+
+  // View all button
+  viewAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  // View all text - "View All", 16px, #223527
+  viewAllText: {
+    fontSize: 16, // 16px
+    color: '#223527', // #223527
+    marginRight: 4,
+  },
+
+  // Booking Card - White background, 15px radius
+  bookingCard: {
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 15, // 15px radius
+    padding: 18, // 18px internal padding
+    marginBottom: 12, // 12px between booking cards
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+  },
+
+  // Booking info - Left side content
+  bookingInfo: {
     flex: 1,
-    ...premiumComponents.premiumCard,
-    backgroundColor: colors.background.white,
-    alignItems: 'center',
-    padding: spacing.lg,
   },
-  statValue: {
-    ...typography.title3,
-    color: colors.text.primary,
-    fontWeight: '700',
-    marginTop: spacing.sm,
-    marginBottom: spacing.xs,
+
+  // Customer name - "Emma Nielsen", 17px, weight 600, #223527
+  customerName: {
+    fontSize: 17, // 17px
+    fontWeight: '600', // Weight 600
+    color: '#223527', // #223527
+    marginBottom: 4,
   },
-  statLabel: {
-    ...typography.small,
-    color: colors.text.secondary,
-    marginBottom: spacing.xs,
+
+  // Service name - "Classic Manicure", 15px, #626463
+  serviceName: {
+    fontSize: 15, // 15px
+    color: '#626463', // #626463
+    marginBottom: 8,
   },
-  statChange: {
-    ...typography.small,
-    color: '#22c55e',
-    fontWeight: '600',
-  },
-  productsRevenue: {
-    ...premiumComponents.premiumCard,
-    backgroundColor: colors.background.white,
-  },
-  productsHeader: {
+
+  // Booking details - Time and price row
+  bookingDetails: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.sm,
-    gap: spacing.sm,
   },
-  productsLabel: {
-    ...typography.captionMedium,
-    color: colors.text.secondary,
+
+  // Booking time - "11:00", 14px, #223527
+  bookingTime: {
+    fontSize: 14, // 14px
+    color: '#223527', // #223527
+    marginRight: 12,
   },
-  productsAmount: {
-    ...typography.title3,
-    color: colors.text.primary,
-    fontWeight: '700',
-    marginBottom: spacing.xs,
+
+  // Booking price - "350 kr", 14px, weight 500, #223527
+  bookingPrice: {
+    fontSize: 14, // 14px
+    fontWeight: '500', // Weight 500
+    color: '#223527', // #223527
   },
-  productsNote: {
-    ...typography.small,
-    color: colors.text.secondary,
-    fontStyle: 'italic',
+
+  // Status badge - Right side, rounded
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
-  actionButtons: {
-    gap: spacing.md,
-    marginTop: spacing.lg,
+
+  // Confirmed badge - Green background
+  confirmedBadge: {
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
   },
+
+  // Pending badge - Orange background
+  pendingBadge: {
+    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+  },
+
+  // Status text - 12px, weight 500
+  statusText: {
+    fontSize: 12, // 12px
+    fontWeight: '500', // Weight 500
+    textTransform: 'capitalize',
+  },
+
+  // Confirmed text - Green color
+  confirmedText: {
+    color: '#22C55E',
+  },
+
+  // Pending text - Orange color
+  pendingText: {
+    color: '#FBBF24',
+  },
+
+  // Action Buttons Section
+  actionButtonsSection: {
+    gap: 16,
+    marginTop: 20,
+    marginBottom: 40,
+  },
+
+  // Action Button - Green background, 18px radius
   actionButton: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
+    backgroundColor: '#213527', // Deep green background
+    borderRadius: 18, // 18px radius
+    padding: 20, // 20px internal padding
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    ...shadows.elevated,
-  },
-  actionButtonIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.md,
+    elevation: 4,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
   },
+
+  // Action button text - "Create Booking", #FFF, 18px, weight 600
   actionButtonText: {
-    ...typography.bodyMedium,
-    color: colors.background.white,
-    fontWeight: '600',
-    marginBottom: spacing.xs,
-  },
-  actionButtonSubtext: {
-    ...typography.small,
-    color: colors.background.white,
-    opacity: 0.8,
-  },
-  
-  logoImage: {
-    width: 24,
-    height: 24,
+    fontSize: 18, // 18px
+    fontWeight: '600', // Weight 600
+    color: '#FFFFFF', // #FFF
+    marginLeft: 12, // 12px left margin from icon
   },
 });

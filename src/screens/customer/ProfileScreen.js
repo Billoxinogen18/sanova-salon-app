@@ -9,10 +9,12 @@ import {
   Dimensions,
   ScrollView,
   Image,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { authService } from '../../services/firebaseService';
 
 const { width } = Dimensions.get('window');
 
@@ -63,7 +65,7 @@ export default function ProfileScreen({ navigation, route }) {
         navigation.navigate('EditPhone');
         break;
       case 'notifications':
-        navigation.navigate('Notifications');
+        Alert.alert('Notifications', 'Notification settings will be available soon!');
         break;
       case 'favorites':
         navigation.navigate('FavoriteSalons');
@@ -109,208 +111,283 @@ export default function ProfileScreen({ navigation, route }) {
     },
   ];
 
-  return (
-    <View style={styles.container}>
-      {/* App Bar - Deep forest green, 74px height, rounded top corners */}
-      <View style={styles.appBar}>
-        <StatusBar barStyle="light-content" backgroundColor={colors.deepForestGreen} />
-        
-        {/* SANOVA Logo */}
-        <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/icon.png')} style={styles.logoImage} />
-          <Text style={styles.logoText}>SANOVA</Text>
-        </View>
-      </View>
+  const handleLogout = async () => {
+    // Touch feedback animation
+    Animated.sequence([
+      Animated.timing(buttonScale, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(buttonScale, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+    
+    try {
+      // Handle Firebase logout
+      await authService.signOut();
+      console.log('User logged out');
+      navigation.navigate('Login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
-      {/* Main Content Card - White, top corners radius 24px, flush to screen edges */}
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor="#213527" />
+      
+      {/* Header - Deep green (#213527) - Same as other screens */}
       <Animated.View 
         style={[
-          styles.contentCard,
+          styles.header,
           {
             opacity: fadeAnim,
             transform: [{ translateY: slideAnim }],
-          },
+          }
         ]}
       >
-        {/* Header - "My Account", flush left, Inter bold, 25px */}
-        <Text style={styles.header}>My Account</Text>
-
-        {/* Phone Info Block - Light cream background, radius 16px */}
-        <View style={styles.phoneInfoCard}>
-          <Text style={styles.phoneLabel}>Phone Number</Text>
-          <Text style={styles.phoneNumber}>+45 20 12 34 56</Text>
+        {/* Logo Leaf & SANOVA - Centered horizontally and vertically */}
+        <View style={styles.logoContainer}>
+          {/* Logo - Same dimensions as other screens */}
+          <Image 
+            source={require('../../../assets/logo.png')}
+            style={styles.logoIcon}
+            resizeMode="contain"
+          />
+          {/* SANOVA text - Same styling as other screens */}
+          <Text style={styles.headerTitle}>SANOVA</Text>
         </View>
+      </Animated.View>
 
-        {/* Navigation Options List */}
-        <View style={styles.navigationList}>
+      {/* Main Card - Very light cream (#FAF6EC) */}
+      <Animated.View 
+        style={[
+          styles.mainCard,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          }
+        ]}
+      >
+        {/* Content Section */}
+        <View style={styles.contentSection}>
+          {/* Title - "My Account", 25px, weight 700, #223527, 38px margin-top */}
+          <Text style={styles.sectionTitle}>My Account</Text>
+          
+          {/* Phone Number Card - 375px width, 66px height, white background, 18px radius */}
+          <View style={styles.phoneCard}>
+            <View style={styles.phoneInfo}>
+              <Text style={styles.phoneLabel}>Phone Number</Text>
+              <Text style={styles.phoneNumber}>+45 20 12 34 56</Text>
+            </View>
+            {/* Edit icon - right side, 20px */}
+            <TouchableOpacity onPress={() => handleOptionPress('edit')} activeOpacity={0.8}>
+              <Ionicons name="create-outline" size={20} color="#626463" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Navigation Options - Each 54px height, white background, 18px radius */}
           {navigationOptions.map((option, index) => (
             <TouchableOpacity
               key={option.id}
               style={[
-                styles.navigationRow,
-                index < navigationOptions.length - 1 && styles.navigationRowWithDivider,
+                styles.navigationOption,
+                index === 0 && styles.firstNavigationOption, // 26px margin-top after phone card
               ]}
               onPress={() => handleOptionPress(option.id)}
               activeOpacity={0.8}
             >
-              <View style={styles.rowContent}>
-                {/* Icon - Left-most, vector SVG, pure black, 22px */}
+              <View style={styles.optionContent}>
+                {/* Icon - Left side, 20px */}
                 <Ionicons 
                   name={option.icon} 
-                  size={22} 
-                  color={colors.darkGreen} 
-                  style={styles.rowIcon} 
+                  size={20} 
+                  color="#626463" 
+                  style={styles.optionIcon} 
                 />
-                
-                {/* Label - Left-aligned, Inter medium, 17px */}
-                <Text style={styles.rowLabel}>{option.label}</Text>
-                
-                {/* Right Arrow - Vector chevron, flush right */}
+                {/* Label - "My Bookings", etc., 18px, #223527 */}
+                <Text style={styles.optionLabel}>{option.label}</Text>
+                {/* Arrow - Right side, 16px */}
                 <Ionicons 
                   name="chevron-forward" 
-                  size={17} 
-                  color={colors.darkGreen} 
-                  style={styles.chevronIcon} 
+                  size={16} 
+                  color="#626463" 
                 />
               </View>
             </TouchableOpacity>
           ))}
+          
+          {/* Logout Button - 26px below last navigation option, 344px width, 51px height */}
+          <Animated.View 
+            style={[
+              styles.logoutButtonContainer,
+              { transform: [{ scale: buttonScale }] }
+            ]}
+          >
+            <TouchableOpacity 
+              style={styles.logoutButton}
+              onPress={handleLogout}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.logoutButtonText}>Logout</Text>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
       </Animated.View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.warmCream, // Soft, warm cream background
+    backgroundColor: '#FAF6EC', // Exact cream background
   },
   
-  // App Bar - Deep forest green, 74px height, rounded top corners
-  appBar: {
-    height: 74,
-    backgroundColor: colors.deepForestGreen,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 20,
-  },
-  
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  
-  logoImage: {
-    width: 24,
-    height: 24,
-    marginRight: 8,
-  },
-  
-  logoText: {
-    ...typography.logo,
-    fontSize: 28,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-    color: colors.white,
-  },
-  
-  // Main Content Card - White, top corners radius 24px, flush to screen edges
-  contentCard: {
-    flex: 1,
-    backgroundColor: colors.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 24,
-    paddingTop: 24, // 24px margin-top from top of card/container
-  },
-  
-  // Header - Inter bold, 25px, flush left
+  // Header - Deep green (#213527) - Same as other screens
   header: {
-    fontFamily: 'Inter',
-    fontSize: 25,
+    backgroundColor: '#213527', // Exact deep green color
+    height: 115, // Same height as other screens
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoIcon: {
+    width: 36,
+    height: 22,
+    marginBottom: 6, // Same spacing as other screens
+  },
+  headerTitle: {
+    fontSize: 25, // Same as other screens
+    fontFamily: 'System',
     fontWeight: 'bold',
-    color: colors.darkGreen,
-    marginTop: 24,
+    color: '#FFFFFF',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
   
-  // Phone Info Block - Light cream background, radius 16px
-  phoneInfoCard: {
-    backgroundColor: colors.lightCream, // #F8F6EC
-    borderRadius: 16,
-    paddingHorizontal: 22, // 22px left/right
-    paddingVertical: 16, // 16px top/bottom
-    marginTop: 18, // 18px margin-top below header
-    shadowColor: colors.deepForestGreen,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
+  // Main Card - Very light cream (#FAF6EC)
+  mainCard: {
+    backgroundColor: '#FAF6EC', // Very light cream
+    borderTopLeftRadius: 28, // Top corners only, same as other screens
+    borderTopRightRadius: 28,
+    width: '100%',
+    flex: 1,
+    paddingHorizontal: 26, // 26px from left/right
+    paddingTop: 38, // 38px margin-top
   },
   
-  // Phone Label - Inter regular, 15px
-  phoneLabel: {
-    fontFamily: 'Inter',
-    fontSize: 15,
-    fontWeight: '400',
-    color: colors.mutedGreen, // #6A7463
-    marginBottom: 2,
-  },
-  
-  // Phone Number - Inter bold, 19px
-  phoneNumber: {
-    fontFamily: 'Inter',
-    fontSize: 19,
-    fontWeight: 'bold',
-    color: colors.darkGreen,
-  },
-  
-  // Navigation Options List
-  navigationList: {
-    marginTop: 22, // 22px margin-top below phone card
+  // Content Section
+  contentSection: {
     flex: 1,
   },
   
-  // Navigation Row - 56px height, width 100% of card
-  navigationRow: {
-    height: 56,
-    width: '100%',
-    backgroundColor: colors.lightCream, // #F8F6EC
-    justifyContent: 'center',
-    minHeight: 48, // Minimum touch target
+  // Title - "My Account", 25px, weight 700, #223527, 38px margin-top
+  sectionTitle: {
+    fontSize: 25, // 25px
+    fontWeight: '700', // Weight 700
+    color: '#223527', // #223527
+    marginBottom: 32, // 32px below title for phone card
   },
   
-  navigationRowWithDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.dividerGray, // #EBE6DC, 1px, 14% opacity
-  },
-  
-  rowContent: {
+  // Phone Number Card - 375px width, 66px height, white background, 18px radius
+  phoneCard: {
+    width: 375, // 375px width
+    height: 66, // 66px height
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 18, // 18px radius
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18, // 18px left margin from edge
+    justifyContent: 'space-between',
+    paddingHorizontal: 20, // 20px internal horizontal padding
+    alignSelf: 'center',
+    elevation: 3,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 11,
+    marginBottom: 26, // 26px margin-top after phone card
+  },
+  
+  // Phone info - Left side content
+  phoneInfo: {
     flex: 1,
   },
   
-  // Row Icon - Left-most, vector SVG, pure black, 22px
-  rowIcon: {
-    marginRight: 22, // 22px spacing from icon
+  // Phone label - "Phone Number", 15px, #626463
+  phoneLabel: {
+    fontSize: 15, // 15px
+    color: '#626463', // #626463
+    marginBottom: 3, // 3px below label
   },
   
-  // Row Label - Left-aligned, Inter medium, 17px
-  rowLabel: {
-    fontFamily: 'Inter',
-    fontSize: 17,
+  // Phone number - "+45 20 12 34 56", 18px, weight 600, #223527
+  phoneNumber: {
+    fontSize: 18, // 18px
+    fontWeight: '600', // Weight 600
+    color: '#223527', // #223527
+  },
+  
+  // Navigation Options - Each 54px height, white background, 18px radius
+  navigationOption: {
+    height: 54, // 54px height
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 18, // 18px radius
+    justifyContent: 'center',
+    marginBottom: 14, // 14px between options
+    elevation: 3,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 11,
+  },
+  
+  // First navigation option - 26px margin-top after phone card
+  firstNavigationOption: {
+    // Already handled by phoneCard marginBottom
+  },
+  
+  // Option content - Internal row layout
+  optionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20, // 20px internal horizontal padding
+  },
+  
+  // Option icon - Left side, 20px
+  optionIcon: {
+    marginRight: 16, // 16px right margin from icon
+  },
+  
+  // Option label - "My Bookings", etc., 18px, #223527
+  optionLabel: {
+    fontSize: 18, // 18px
+    color: '#223527', // #223527
     fontWeight: '500',
-    color: colors.darkGreen,
     flex: 1,
   },
   
-  // Chevron Icon - Vector chevron, flush right, 24px right margin
-  chevronIcon: {
-    marginRight: 24, // 24px right margin
+  // Logout Button Container - 26px below last navigation option
+  logoutButtonContainer: {
+    alignItems: 'center',
+    marginTop: 26, // 26px below last navigation option
+    paddingBottom: 40, // 40px margin-bottom from safe area
+  },
+  
+  // Logout Button - 344px width, 51px height, #F1EBD1 background
+  logoutButton: {
+    width: 344, // 344px width
+    height: 51, // 51px height
+    backgroundColor: '#F1EBD1', // #F1EBD1 background (warm beige)
+    borderRadius: 25, // Pill-shaped radius 25px
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  // Logout button text - "Logout", #223527, 20px, weight 600
+  logoutButtonText: {
+    fontSize: 20, // 20px
+    color: '#223527', // #223527
+    fontWeight: '600', // Weight 600
   },
 });

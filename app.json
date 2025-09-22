@@ -18,8 +18,8 @@
       "package": "com.sanova.salonapp",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/applogo.png",
-        "backgroundColor": "#263428"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#213527"
       },
       "config": {
         "googleMaps": {
@@ -33,7 +33,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F8F6EC"
+      "backgroundColor": "#FAF6EC"
     },
     "extra": {
       "eas": {

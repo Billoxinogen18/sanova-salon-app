@@ -8,7 +8,7 @@ import { authService, firestoreService } from './src/services/firebaseService';
 // Import app types
 import CustomerApp from './src/CustomerApp';
 import SalonOwnerApp from './src/SalonOwnerApp';
-import WelcomeScreen from './src/screens/WelcomeScreenEnhanced';
+import WelcomeScreen from './src/screens/WelcomeScreen';
 import LoginScreen from './src/screens/LoginScreenPremium';
 import SignUpScreen from './src/screens/SignUpScreenPremium';
 

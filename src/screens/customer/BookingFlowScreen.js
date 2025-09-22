@@ -8,7 +8,8 @@ import {
   Animated, 
   StatusBar, 
   Dimensions,
-  Alert 
+  Alert,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
@@ -278,274 +279,221 @@ export default function BookingFlowScreen({ navigation, route }) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header with dark green background exactly as in design */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Book</Text>
-        <View style={styles.placeholder} />
-      </View>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor="#213527" />
       
-      <Animated.ScrollView 
-        style={[styles.content, { opacity: fadeAnim }]}
-        showsVerticalScrollIndicator={false}
+      {/* Header - Deep green (#213527) - 115px height */}
+      <Animated.View 
+        style={[
+          styles.header,
+          {
+            opacity: headerAnimatedValues.opacity,
+            transform: [{ translateY: headerAnimatedValues.translateY }],
+          }
+        ]}
       >
-        {/* Service Info Card - exactly as shown in design */}
-        <View style={styles.serviceCard}>
-          <Text style={styles.serviceTitle}>Book</Text>
-          <View style={styles.serviceInfo}>
-            <Text style={styles.serviceName}>{bookingService.name || 'Service Name'}</Text>
-            <Text style={styles.serviceDetails}>
-              Dato og tid: {selectedDate} kl. {selectedTime}
-            </Text>
-            <Text style={styles.serviceDuration}>Varighed: {bookingService.duration || '45 min'}</Text>
-            <Text style={styles.servicePrice}>{bookingService.price || 'Price'}</Text>
-          </View>
+        {/* Logo Leaf & SANOVA - Centered horizontally and vertically */}
+        <View style={styles.logoContainer}>
+          {/* Logo - 36px width, 22px height, 13px from top */}
+          <Image 
+            source={require('../../../assets/logo.png')}
+            style={styles.logoIcon}
+            resizeMode="contain"
+          />
+          {/* SANOVA text - 25px, uppercase serif, white, letter-spacing 2px, 6px margin below logo */}
+          <Text style={styles.headerTitle}>SANOVA</Text>
+        </View>
+      </Animated.View>
+      
+      {/* Main Card Background - Very light cream (#FAF6EC) */}
+      <Animated.View 
+        style={[
+          styles.mainCard,
+          {
+            opacity: serviceCardAnimatedValues.opacity,
+            transform: [
+              { translateY: serviceCardAnimatedValues.translateY },
+              { scale: serviceCardAnimatedValues.scale }
+            ],
+          }
+        ]}
+      >
+        {/* Content Section */}
+        <View style={styles.contentSection}>
+          {/* Section Title - "Book", 27px, weight 700, #223527, 34px from top of main card */}
+          <Text style={styles.sectionTitle}>Book</Text>
+          {/* Service name - "Classic Manicure", 19px, weight 600, #223527, 16px below */}
+          <Text style={styles.serviceName}>{bookingService.name || 'Classic Manicure'}</Text>
+          
+          {/* Date Section Title - "Date and Time", 18px, #626463, 22px below */}
+          <Text style={styles.dateTimeTitle}>Date and Time</Text>
+          
+          {/* Date Chip - 308px width, 54px height, 15px radius, white background */}
+          <Animated.View
+            style={[
+              styles.dateChipContainer,
+              {
+                opacity: dateSelectionAnimatedValues.opacity,
+                transform: [{ translateY: dateSelectionAnimatedValues.translateY }],
+              }
+            ]}
+          >
+            <TouchableOpacity style={styles.dateChip} activeOpacity={0.8}>
+              {/* Chip text - "April 25, 11:00 AM", 17px, #235327, weight 400 */}
+              <Text style={styles.dateChipText}>April 25, 11:00 AM</Text>
+              {/* Arrow icon - right-aligned, 16px from edge */}
+              <Ionicons name="chevron-forward" size={20} color="#235327" />
+            </TouchableOpacity>
+          </Animated.View>
         </View>
 
-        {/* Date Selection - exactly as shown in design */}
-        <View style={styles.selectionSection}>
-          <Text style={styles.sectionTitle}>Vælg dato</Text>
-          <View style={styles.dateGrid}>
-            {availableDates.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.dateCard,
-                  selectedDate === item.date && styles.selectedCard
-                ]}
-                onPress={() => handleDateSelect(item.date)}
-                activeOpacity={0.8}
-              >
-                <Text style={[
-                  styles.dateText,
-                  selectedDate === item.date && styles.selectedText
-                ]}>
-                  {item.date}
-                </Text>
-                <Text style={[
-                  styles.dayText,
-                  selectedDate === item.date && styles.selectedText
-                ]}>
-                  {item.day}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Time Selection - exactly as shown in design */}
-        <View style={styles.selectionSection}>
-          <Text style={styles.sectionTitle}>Vælg tid</Text>
-          <View style={styles.timeGrid}>
-            {availableTimes.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.timeCard,
-                  selectedTime === item.time && styles.selectedCard
-                ]}
-                onPress={() => handleTimeSelect(item.time)}
-                activeOpacity={0.8}
-              >
-                <Text style={[
-                  styles.timeText,
-                  selectedTime === item.time && styles.selectedText
-                ]}>
-                  {item.time}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      </Animated.ScrollView>
-
-      {/* Continue Button - exactly as shown in design */}
-      <View style={styles.continueButtonContainer}>
-        <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+        {/* Continue Button - Bottom, 36px margin-bottom from bottom safe area */}
+        <Animated.View 
+          style={[
+            styles.continueButtonContainer,
+            {
+              opacity: buttonAnimatedValues.opacity,
+              transform: [
+                { translateY: buttonAnimatedValues.translateY },
+                { scale: buttonAnimatedValues.scale }
+              ],
+            }
+          ]}
+        >
           <TouchableOpacity 
             style={styles.continueButton}
             onPress={handleContinue}
             activeOpacity={0.9}
           >
-            <Text style={styles.continueButtonText}>Fortsæt</Text>
+            <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
         </Animated.View>
-      </View>
-    </View>
+      </Animated.View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.primary,
+    backgroundColor: '#FAF6EC', // Exact cream background
   },
+  
+  // Header - Deep green (#213527) - 115px height
   header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+    backgroundColor: '#213527', // Exact deep green color
+    height: 115, // 115px height including status bar
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoIcon: {
+    width: 36,
+    height: 22,
+    marginBottom: 6, // 6px margin below logo
+  },
+  headerTitle: {
+    fontSize: 25, // 25px
+    fontFamily: 'System', // Uppercase serif
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    letterSpacing: 2, // 2px letter spacing
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  
+  // Main Card Background - Very light cream (#FAF6EC)
+  mainCard: {
+    backgroundColor: '#FAF6EC', // Very light cream
+    borderTopLeftRadius: 28, // Top corners only
+    borderTopRightRadius: 28,
+    width: '100%',
+    minHeight: 650, // Ensure enough height
+    paddingHorizontal: 34, // 34px from left card edge
+    paddingTop: 34, // 34px from top of main card
+  },
+  
+  // Content Section
+  contentSection: {
+    flex: 1,
+  },
+  
+  // Section Title - "Book", 27px, weight 700, #223527, 34px from top of main card
+  sectionTitle: {
+    fontSize: 27, // 27px
+    fontWeight: '700', // Weight 700
+    color: '#223527', // #223527
+    marginBottom: 16, // 16px below
+  },
+  
+  // Service name - "Classic Manicure", 19px, weight 600, #223527, 16px below
+  serviceName: {
+    fontSize: 19, // 19px
+    fontWeight: '600', // Weight 600
+    color: '#223527', // #223527
+    marginBottom: 22, // 22px below
+  },
+  
+  // Date Section Title - "Date and Time", 18px, #626463, 22px below
+  dateTimeTitle: {
+    fontSize: 18, // 18px
+    color: '#626463', // #626463
+    marginBottom: 16, // 16px below section title
+  },
+  
+  // Date Chip Container
+  dateChipContainer: {
+    alignSelf: 'flex-start',
+    marginBottom: 200, // Space before continue button
+  },
+  
+  // Date Chip - 308px width, 54px height, 15px radius, white background
+  dateChip: {
+    width: 308, // 308px width
+    height: 54, // 54px height
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 15, // 15px border radius
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomLeftRadius: 16, // 16dp radius as specified
-    borderBottomRightRadius: 16, // 16dp radius as specified
-    overflow: 'hidden', // Make corner radius visible
+    paddingHorizontal: 18, // 18px from left edge
+    elevation: 1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
-  backButton: {
-    padding: 8,
+  
+  // Chip text - "April 25, 11:00 AM", 17px, #235327, weight 400
+  dateChipText: {
+    fontSize: 17, // 17px
+    color: '#235327', // #235327
+    fontWeight: '400', // Weight 400
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text.white,
-    flex: 1,
-    textAlign: 'center',
-    fontFamily: 'serif',
-    letterSpacing: 2, // +2 letter spacing as specified
-    textTransform: 'uppercase',
-  },
-  placeholder: {
-    width: 40,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-    backgroundColor: colors.background.primary,
-    borderTopLeftRadius: 16, // 16dp radius as specified
-    borderTopRightRadius: 16, // 16dp radius as specified
-    marginTop: -16, // Overlap with header to create seamless curve
-    overflow: 'hidden', // Make corner radius visible
-  },
-  serviceCard: {
-    backgroundColor: colors.background.card, // Lighter cream shade for cards
-    borderRadius: 12,
-    padding: 20,
-    marginTop: 20,
-    marginBottom: 24,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  serviceTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.text.primary,
-    marginBottom: 16,
-  },
-  serviceInfo: {
-    gap: 8,
-  },
-  serviceName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text.primary,
-  },
-  serviceDetails: {
-    fontSize: 14,
-    color: colors.text.secondary,
-  },
-  serviceDuration: {
-    fontSize: 14,
-    color: colors.text.secondary,
-  },
-  servicePrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.text.primary,
-  },
-  selectionSection: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text.primary,
-    marginBottom: 16,
-  },
-  dateGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  dateCard: {
-    backgroundColor: colors.background.card, // Lighter cream shade for cards
-    borderRadius: 12,
-    padding: 16,
-    width: '47%',
-    alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  selectedCard: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  dateText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text.primary,
-    marginBottom: 4,
-  },
-  dayText: {
-    fontSize: 14,
-    color: colors.text.secondary,
-  },
-  selectedText: {
-    color: colors.text.white,
-  },
-  timeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  timeCard: {
-    backgroundColor: colors.background.card, // Lighter cream shade for cards
-    borderRadius: 12,
-    padding: 16,
-    width: '22%',
-    alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  timeText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text.primary,
-  },
+  
+  // Continue Button - Bottom, 36px margin-bottom from bottom safe area
   continueButtonContainer: {
-    padding: 20,
-    backgroundColor: colors.background.primary,
-  },
-  continueButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 16,
-    borderRadius: 25,
     alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingBottom: 36, // 36px margin-bottom from bottom safe area
   },
+  
+  // Continue Button - 344px width, 51px height, pill-shaped radius 25px, #163A24 background
+  continueButton: {
+    width: 344, // 344px width
+    height: 51, // 51px height
+    backgroundColor: '#163A24', // #163A24 background
+    borderRadius: 25, // Pill-shaped radius 25px
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  // Continue button text - "Continue", #FFF, 20px, weight 600
   continueButtonText: {
-    color: colors.text.white,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 20, // 20px
+    color: '#FFFFFF', // #FFF
+    fontWeight: '600', // Weight 600
   },
 });

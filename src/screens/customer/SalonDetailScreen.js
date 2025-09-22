@@ -91,61 +91,87 @@ export default function SalonDetailScreen({ navigation, route }) {
     require('../../../assets/manicure.png'),
   ];
 
-  return (
-    <View style={styles.container}>
-      {/* App Bar - Deep forest green, 76px height, rounded top corners */}
-      <View style={styles.appBar}>
-        <StatusBar barStyle="light-content" backgroundColor={colors.deepForestGreen} />
-        
-        {/* SANOVA Logo */}
-        <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/icon.png')} style={styles.logoImage} />
-          <Text style={styles.logoText}>SANOVA</Text>
-        </View>
-      </View>
+  // Helper function to get salon images based on specifications
+  const getSalonImage = () => {
+    const salonName = salonData.name || '';
+    if (salonName.toLowerCase().includes('barber') || salonName.toLowerCase().includes('men')) {
+      return require('../../../assets/barber.png');
+    }
+    return require('../../../assets/saloon.png'); // Default salon image
+  };
 
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor="#213527" />
+      
+      {/* Header Section - Deep green (#213527) - 111px height */}
       <Animated.View 
         style={[
-          styles.content,
+          styles.header,
           {
             opacity: fadeAnim,
             transform: [{ translateY: slideAnim }],
-          },
+          }
         ]}
       >
-        {/* Hero Image - Full width, 30px top radius, 168px height */}
-        <View style={styles.heroImageContainer}>
-          <Image source={heroImage} style={styles.heroImage} />
+        {/* Logo Leaf & SANOVA - Centered horizontally and vertically */}
+        <View style={styles.logoContainer}>
+          {/* Leaf SVG - 38px width, 21px height, 16px from top header edge */}
+          {/* Logo - Same dimensions as other screens */}
+          <Image 
+            source={require('../../../assets/logo.png')}
+            style={styles.logoIcon}
+            resizeMode="contain"
+          />
+          {/* SANOVA text - 26px, uppercase serif, white, letter-spacing 2px, 8px below icon */}
+          <Text style={styles.headerTitle}>SANOVA</Text>
+        </View>
+      </Animated.View>
+      
+      {/* Main Card Salon Details - Cream (#FAF6EC) */}
+      <Animated.View 
+        style={[
+          styles.mainCard,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          }
+        ]}
+      >
+        {/* Salon Image Section - Full width, 196px height, top corners 32px radius */}
+        <View style={styles.salonImageSection}>
+          <Image source={getSalonImage()} style={styles.salonImage} resizeMode="cover" />
         </View>
 
-        {/* Main Salon Card Section - White background */}
-        <View style={styles.salonCard}>
-          {/* Salon Details Block */}
+        {/* Salon Title Row - 22px below image */}
+        <View style={styles.salonTitleRow}>
           <View style={styles.salonDetailsBlock}>
-            {/* Salon Name - Playfair Display or Inter, bold, 24px */}
-            <Text style={styles.salonName}>{salonData.name}</Text>
-            
-            {/* Salon Address - Inter, regular, 15px */}
-            <Text style={styles.salonAddress}>{salonData.address}</Text>
-            
-            {/* Rating - Star icon with rating value */}
+            {/* Title - "Gustav Salon", left-aligned, 27px, weight 700, #1A1A1A */}
+            <Text style={styles.salonName}>{salonData.name || 'Gustav Salon'}</Text>
+            {/* Address Row - "Frederiks Allé 28", 17px, weight 400, #3F4143, 7px below title */}
+            <Text style={styles.salonAddress}>{salonData.address || 'Frederiks Allé 28'}</Text>
+            {/* Star Rating - star icon 18px, #FEBC45, rating value 4,8, 15px, #6A6A6A */}
             <View style={styles.ratingContainer}>
-              <Ionicons name="star" size={14} color={colors.gold} style={styles.starIcon} />
-              <Text style={styles.ratingText}>{salonData.rating}</Text>
+              <Ionicons name="star" size={18} color="#FEBC45" style={styles.starIcon} />
+              <Text style={styles.ratingText}>{salonData.rating || '4,8'}</Text>
             </View>
           </View>
 
-          {/* Call Button - Top right in main card */}
-          <TouchableOpacity style={styles.callButton} onPress={handleCall}>
-            <Ionicons name="call" size={16} color={colors.darkGreen} style={styles.callIcon} />
-            <Text style={styles.callText}>Call</Text>
-          </TouchableOpacity>
+          {/* Call Button - Right-aligned, 102x42px, #F5F4EF background, 12px radius */}
+          <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+            <TouchableOpacity style={styles.callButton} onPress={handleCall}>
+              <Ionicons name="call" size={24} color="#1B392E" style={styles.callIcon} />
+              <Text style={styles.callText}>Call</Text>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
 
-        {/* Services List Block */}
+        {/* Services List - 24px below address */}
         <View style={styles.servicesSection}>
+          {/* Title - "Services", bold, 21px, #1A1A1A */}
           <Text style={styles.servicesHeader}>Services</Text>
           
+          {/* List Items - 4 items, vertical stack, 32px row height, 11px vertical space between rows */}
           {salonData.services.map((service, index) => (
             <TouchableOpacity
               key={index}
@@ -153,16 +179,20 @@ export default function SalonDetailScreen({ navigation, route }) {
               onPress={() => handleBookService(service)}
               activeOpacity={0.8}
             >
+              {/* Service - Left-aligned, 18px, #222, weight 500 */}
               <Text style={styles.serviceName}>{service.name}</Text>
+              {/* Price - Right-aligned, 18px, #222, weight 400 */}
               <Text style={styles.servicePrice}>{service.price}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Photos Section */}
+        {/* Photos Section - 24px below services list */}
         <View style={styles.photosSection}>
+          {/* Title - "Photos from the Salon", bold, 19px, #1A1A1A */}
           <Text style={styles.photosHeader}>Photos from the Salon</Text>
           
+          {/* Photo Carousel Row - Horizontal Scroll, 4 images visible, 72x72px, 16px radius, 13px between images */}
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
@@ -170,105 +200,84 @@ export default function SalonDetailScreen({ navigation, route }) {
             contentContainerStyle={styles.photosContainer}
           >
             {photos.map((photo, index) => (
-              <View key={index} style={styles.photoCard}>
+              <View key={index} style={[styles.photoCard, index === 0 && styles.firstPhotoCard]}>
                 <Image source={photo} style={styles.photoImage} />
               </View>
             ))}
           </ScrollView>
         </View>
       </Animated.View>
-
-      {/* Navigation Bar - Fixed height 63px, deep forest green */}
-      <View style={styles.navigationBar}>
-        <TouchableOpacity style={[styles.navItem, styles.activeNavItem]}>
-          <Ionicons name="map" size={30} color={colors.white} />
-          <Text style={styles.navLabel}>Map</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="storefront" size={24} color={colors.white} />
-          <Text style={styles.navLabel}>Marketplace</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="flash" size={24} color={colors.white} />
-          <Text style={styles.navLabel}>Urgent</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="calendar" size={24} color={colors.white} />
-          <Text style={styles.navLabel}>Bookings</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.warmCream, // Warm cream background
+    backgroundColor: '#FAF6EC', // Exact cream background
   },
   
-  // App Bar - Deep forest green, 76px height, rounded top corners
-  appBar: {
-    height: 76,
-    backgroundColor: colors.deepForestGreen,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+  // Header Section - Deep green (#213527) - 111px height
+  header: {
+    backgroundColor: '#213527', // Exact deep green color
+    height: 111, // Exact height from screen top to base of green area, including status bar
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 20,
   },
-  
   logoContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  
-  logoImage: {
-    width: 24,
-    height: 24,
-    marginRight: 8,
+  logoIcon: {
+    width: 38,
+    height: 21,
+    marginBottom: 8, // 8px below icon
   },
-  
-  logoText: {
-    ...typography.logo,
-    fontSize: 28,
+  headerTitle: {
+    fontSize: 26, // Exact 26px
+    fontFamily: 'System', // Uppercase serif
     fontWeight: 'bold',
-    letterSpacing: 2,
-    color: colors.white,
+    color: '#FFFFFF',
+    letterSpacing: 2, // 2px letter spacing
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
   
-  content: {
-    flex: 1,
+  // Main Card Salon Details - Cream (#FAF6EC)
+  mainCard: {
+    backgroundColor: '#FAF6EC', // Very light cream
+    width: '100%', // 428px (100% safe area)
+    height: 646, // 646px from header bottom to above tab navigator
+    borderTopLeftRadius: 32, // Top corners only, 32px radius
+    borderTopRightRadius: 32,
+    overflow: 'hidden',
+    elevation: 7,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 7 },
+    shadowOpacity: 0.19,
+    shadowRadius: 22,
   },
   
-  // Hero Image - Full width, 30px top radius, 168px height
-  heroImageContainer: {
-    width: '100%',
-    height: 168,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+  // Salon Image Section - Full width, 196px height, top corners 32px radius
+  salonImageSection: {
+    width: '100%', // Full width 428px
+    height: 196, // 196px height
+    borderTopLeftRadius: 32, // Top left and right
+    borderTopRightRadius: 32,
     overflow: 'hidden',
   },
-  
-  heroImage: {
+  salonImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   
-  // Main Salon Card Section - White background
-  salonCard: {
-    backgroundColor: colors.white,
-    paddingHorizontal: 25, // 25px page side padding
-    paddingTop: 22, // 22px margin-top below image
-    paddingBottom: 20,
+  // Salon Title Row - 22px below image
+  salonTitleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    paddingHorizontal: 18, // 18px from left and right
+    paddingTop: 22, // 22px below image
   },
   
   // Salon Details Block
@@ -276,22 +285,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   
-  // Salon Name - Playfair Display or Inter, bold, 24px
+  // Title - "Gustav Salon", left-aligned, 27px, weight 700, #1A1A1A
   salonName: {
-    fontFamily: 'Inter',
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.darkGreen,
-    marginBottom: 4,
+    fontSize: 27, // 27px
+    fontWeight: '700', // Weight 700
+    color: '#1A1A1A', // #1A1A1A
+    marginBottom: 7, // 7px below title
   },
   
-  // Salon Address - Inter, regular, 15px
+  // Address Row - "Frederiks Allé 28", 17px, weight 400, #3F4143, 7px below title
   salonAddress: {
-    fontFamily: 'Inter',
-    fontSize: 15,
-    fontWeight: '400',
-    color: colors.mutedGreen, // #22311F
-    marginBottom: 8,
+    fontSize: 17, // 17px
+    fontWeight: '400', // Weight 400
+    color: '#3F4143', // #3F4143
+    marginBottom: 4, // Small gap before rating
   },
   
   // Rating Container
@@ -300,160 +307,120 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   
-  // Star Icon - Gold, 14px wide, elevates 1px above address baseline
+  // Star Icon - 18px, #FEBC45
   starIcon: {
-    marginRight: 4,
+    marginRight: 6, // Space before rating text
   },
   
-  // Rating Text - Small bold font, gold color
+  // Rating Text - 15px, #6A6A6A
   ratingText: {
-    fontFamily: 'Inter',
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: colors.gold,
+    fontSize: 15, // 15px
+    color: '#6A6A6A', // #6A6A6A
   },
   
-  // Call Button - Top right in main card
+  // Call Button - Right-aligned, 102x42px, #F5F4EF background, 12px radius
   callButton: {
-    height: 38,
-    width: 82,
-    backgroundColor: colors.paleIvory, // #EFEEDF
-    borderRadius: 16,
+    width: 102, // 102px width
+    height: 42, // 42px height
+    backgroundColor: '#F5F4EF', // #F5F4EF background
+    borderRadius: 12, // 12px border radius
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.deepForestGreen,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 7,
     elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.09,
+    shadowRadius: 8,
   },
   
+  // Call icon - phone, 24px, #1B392E, 18px left margin in button
   callIcon: {
-    marginRight: 8,
+    marginRight: 8, // 8px left margin after icon
   },
   
+  // Call text - "Call", 17px, #1B392E
   callText: {
-    fontFamily: 'Inter',
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.darkGreen,
+    fontSize: 17, // 17px
+    color: '#1B392E', // #1B392E
   },
   
-  // Services List Block
+  // Services List - 24px below address
   servicesSection: {
-    backgroundColor: colors.white,
-    paddingHorizontal: 25,
-    paddingTop: 23, // 23px margin-top below address/call row
-    paddingBottom: 20,
+    paddingHorizontal: 18, // 18px from left
+    paddingTop: 24, // 24px below address
   },
   
-  // Services Header - Inter, bold, 20px
+  // Title - "Services", bold, 21px, #1A1A1A
   servicesHeader: {
-    fontFamily: 'Inter',
-    fontSize: 20,
+    fontSize: 21, // 21px
     fontWeight: 'bold',
-    color: colors.darkGreen,
-    marginBottom: 11, // 11px top margin below Services header
+    color: '#1A1A1A', // #1A1A1A
+    marginBottom: 12, // Space below services header
   },
   
-  // Service Row
+  // Service Row - 32px row height, 11px vertical space between rows
   serviceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 6, // 6px between rows
-    minHeight: 48, // Minimum touch target
+    height: 32, // 32px row height
+    marginBottom: 11, // 11px vertical space between rows
   },
   
-  // Service Name - Inter, regular, 16px
+  // Service - Left-aligned, 18px, #222, weight 500
   serviceName: {
-    fontFamily: 'Inter',
-    fontSize: 16,
-    fontWeight: '400',
-    color: colors.darkGreen,
+    fontSize: 18, // 18px
+    color: '#222222', // #222
+    fontWeight: '500', // Weight 500
   },
   
-  // Service Price - Inter bold, 16px, right-aligned
+  // Price - Right-aligned, 18px, #222, weight 400
   servicePrice: {
-    fontFamily: 'Inter',
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.mutedGreen, // #6B7D46
+    fontSize: 18, // 18px
+    color: '#222222', // #222
+    fontWeight: '400', // Weight 400
   },
   
-  // Photos Section
+  // Photos Section - 24px below services list
   photosSection: {
-    backgroundColor: colors.white,
-    paddingHorizontal: 25,
-    paddingTop: 22, // 22px margin above
-    paddingBottom: 20,
+    paddingHorizontal: 18, // 18px from left
+    paddingTop: 24, // 24px below services list
+    paddingBottom: 27, // 27px below image row
   },
   
-  // Photos Header - Inter, bold, 18px
+  // Title - "Photos from the Salon", bold, 19px, #1A1A1A
   photosHeader: {
-    fontFamily: 'Inter',
-    fontSize: 18,
+    fontSize: 19, // 19px
     fontWeight: 'bold',
-    color: colors.darkGreen,
-    marginBottom: 8, // 8px below for clear separation
+    color: '#1A1A1A', // #1A1A1A
+    marginBottom: 12, // Space below title
   },
   
   photosScrollView: {
-    marginTop: 8,
+    // No additional styling needed
   },
   
   photosContainer: {
-    paddingRight: 25,
+    paddingRight: 18, // Padding for last item
   },
   
-  // Photo Card - 70px square, 14px radius
+  // Photo Card - 72x72px, 16px radius, 13px between images
   photoCard: {
-    width: 70,
-    height: 70,
-    backgroundColor: colors.white,
-    borderRadius: 14,
-    marginRight: 12, // 12px horizontal between images
-    shadowColor: colors.deepForestGreen,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    width: 72, // 72px width
+    height: 72, // 72px height
+    borderRadius: 16, // 16px border radius
+    marginRight: 13, // 13px between images
+    overflow: 'hidden',
+  },
+  
+  // First photo card - 20px left margin
+  firstPhotoCard: {
+    marginLeft: 20, // 20px left margin
   },
   
   photoImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 14,
-  },
-  
-  // Navigation Bar - Fixed height 63px, deep forest green
-  navigationBar: {
-    height: 63,
-    backgroundColor: colors.deepForestGreen,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingTop: 8,
-  },
-  
-  navItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 48,
-    minHeight: 48,
-  },
-  
-  activeNavItem: {
-    // Active state styling if needed
-  },
-  
-  navLabel: {
-    fontFamily: 'Inter',
-    fontSize: 12,
-    color: colors.white,
-    marginTop: 2,
   },
 });

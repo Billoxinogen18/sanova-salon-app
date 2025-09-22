@@ -179,10 +179,10 @@ export default function UrgentScreen({ navigation }) {
   });
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor="#213527" />
       
-      {/* Premium Animated Header */}
+      {/* Header Section - Deep green (#213527) - 113px height */}
       <Animated.View 
         style={[
           styles.header,
@@ -192,15 +192,22 @@ export default function UrgentScreen({ navigation }) {
           }
         ]}
       >
+        {/* Logo Leaf & SANOVA - Positioned center-top */}
         <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/icon.png')} style={styles.logoImage} />
+          {/* Leaf SVG - 34px width, 20px height, 14px top space */}
+          <Image 
+            source={require('../../../assets/logo.png')}
+            style={styles.logoIcon}
+            resizeMode="contain"
+          />
+          {/* SANOVA text - 26px, uppercase serif, white, letter-spacing 2px, 7px below leaf icon */}
+          <Text style={styles.headerTitle}>SANOVA</Text>
         </View>
-        <Text style={styles.headerTitle}>SANOVA</Text>
-        <Text style={styles.headerSubtitle}>Find urgent appointments</Text>
       </Animated.View>
       
-      <View style={styles.content}>
-        {/* Premium Animated Search Bar */}
+      {/* Main Card (Urgent Times Container) - Very pale cream (#FAF6EC) */}
+      <View style={styles.urgentCard}>
+        {/* Search Bar - 26px from card top/screen edge, 375px width, 52px height */}
         <Animated.View 
           style={[
             styles.searchContainer,
@@ -219,15 +226,18 @@ export default function UrgentScreen({ navigation }) {
               { borderColor: searchBorderColor }
             ]}
           >
+            {/* Black magnifier icon - 22x22px, left-aligned, 18px inside bar */}
             <Ionicons 
               name="search" 
-              size={20} 
-              color={searchFocused ? colors.primary : colors.text.secondary} 
+              size={22} 
+              color="#000000" 
+              style={styles.searchIcon}
             />
+            {/* Search text - "Search", 19px, #32343A, 11px left margin after icon */}
             <TextInput
               style={styles.searchInput}
-              placeholder="Search urgent appointments..."
-              placeholderTextColor={colors.text.secondary}
+              placeholder="Search"
+              placeholderTextColor="#32343A"
               value={searchText}
               onChangeText={setSearchText}
               onFocus={handleSearchFocus}
@@ -239,13 +249,13 @@ export default function UrgentScreen({ navigation }) {
                 style={styles.clearButton}
                 activeOpacity={0.7}
               >
-                <Ionicons name="close-circle" size={20} color={colors.text.secondary} />
+                <Ionicons name="close-circle" size={20} color="#32343A" />
               </TouchableOpacity>
             )}
           </Animated.View>
         </Animated.View>
 
-        {/* Premium Animated Section Title */}
+        {/* Available Times Section - 23px below search bar */}
         <Animated.View
           style={[
             styles.titleContainer,
@@ -256,13 +266,13 @@ export default function UrgentScreen({ navigation }) {
           ]}
         >
           <Text style={styles.sectionTitle}>Available Times</Text>
-          <Text style={styles.sectionSubtitle}>Book your urgent appointment now</Text>
         </Animated.View>
         
-        {/* Premium Animated Appointments List */}
+        {/* Booking Cards - Vertical list, 17px spacing between cards */}
         <ScrollView 
           style={styles.appointmentsContainer}
           showsVerticalScrollIndicator={false}
+          scrollEnabled={false}
         >
           {availableTimes.map((item, index) => {
             const animatedValues = appointmentsAnimatedValues[index] || {
@@ -291,13 +301,24 @@ export default function UrgentScreen({ navigation }) {
                   activeOpacity={0.9}
                 >
                   <View style={styles.appointmentInfo}>
+                    {/* Service Title - 18px from card top, 19px from left, 18px weight 700, #232323 */}
                     <Text style={styles.serviceName}>{item.service}</Text>
+                    {/* Salon Name - 8px gap from title, 15px, #484848, weight 400 */}
                     <Text style={styles.salonName}>{item.salon}</Text>
-                    <Text style={styles.distance}>{item.distance}</Text>
+                    {/* Location/Distance Row - Pin icon + distance, 8px below salon name */}
+                    <View style={styles.locationRow}>
+                      <Ionicons 
+                        name="location-outline" 
+                        size={15} 
+                        color="#000000" 
+                        style={styles.pinIcon}
+                      />
+                      <Text style={styles.distance}>{item.distance}</Text>
+                    </View>
                   </View>
-                  <View style={styles.timeInfo}>
+                  {/* Time Badge - Right-aligned, vertically centered, 101x44px, #F5F3E6 background */}
+                  <View style={styles.timeBadge}>
                     <Text style={styles.timeText}>{item.time}</Text>
-                    <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
                   </View>
                 </TouchableOpacity>
               </Animated.View>
@@ -305,138 +326,171 @@ export default function UrgentScreen({ navigation }) {
           })}
         </ScrollView>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...premiumComponents.screenContainer,
+    flex: 1,
+    backgroundColor: '#FAF6EC', // Exact cream background
   },
+  
+  // Header Section - Deep green (#213527) - 113px height
   header: {
-    backgroundColor: colors.primary,
-    paddingTop: spacing.xxxl + 20,
-    paddingBottom: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    backgroundColor: '#213527', // Exact deep green color
+    height: 113, // Exact height from screen top to base of green header, including status bar
+    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomLeftRadius: borderRadius.lg,
-    borderBottomRightRadius: borderRadius.lg,
-    ...shadows.elevated,
   },
   logoContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.sm,
-    ...shadows.card,
+  },
+  logoIcon: {
+    width: 80,
+    height: 50,
+    marginBottom: 7, // 7px below leaf icon
   },
   headerTitle: {
-    ...typography.title2,
-    color: colors.background.white,
-    fontFamily: 'serif',
-    letterSpacing: 2,
+    fontSize: 26, // Exact 26px
+    fontFamily: 'System', // Uppercase serif
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    letterSpacing: 2, // 2px letter spacing
     textTransform: 'uppercase',
-    marginBottom: spacing.xs,
+    textAlign: 'center',
   },
-  headerSubtitle: {
-    ...typography.caption,
-    color: colors.background.white,
-    opacity: 0.8,
+  
+  // Main Card (Urgent Times Container) - Very pale cream (#FAF6EC)
+  urgentCard: {
+    backgroundColor: '#FAF6EC', // Very pale cream
+    width: '100%', // 428px (100% safe area)
+    height: 726, // Down to top of navigation bar
+    borderTopLeftRadius: 28, // Top corners only
+    borderTopRightRadius: 28,
+    paddingHorizontal: 26, // Global padding for content
+    paddingTop: 26, // 26px from card top/screen edge
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-    backgroundColor: colors.background.primary,
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
-    marginTop: -borderRadius.lg,
-    paddingTop: spacing.xl,
-  },
+  
+  // Search Bar - 375px width, 52px height
   searchContainer: {
-    marginBottom: spacing.xl,
+    alignSelf: 'center',
+    width: 375, // Exact 375px width
+    marginBottom: 23, // 23px below search bar
   },
   searchBar: {
+    width: '100%',
+    height: 52, // Exact height
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 26, // Fully pill-shaped
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background.white,
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderWidth: 2,
-    borderColor: colors.border.primary,
-    ...shadows.card,
+    paddingHorizontal: 18, // 18px inside bar
+    elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 9,
+  },
+  searchIcon: {
+    marginRight: 11, // 11px left margin after icon
   },
   searchInput: {
     flex: 1,
-    marginLeft: spacing.sm,
-    ...typography.body,
-    color: colors.text.primary,
+    fontSize: 19, // 19px font size
+    color: '#32343A', // Color #32343A
+    fontWeight: '400',
   },
   clearButton: {
-    padding: spacing.xs,
-  },
-  titleContainer: {
-    marginBottom: spacing.xl,
-  },
-  sectionTitle: {
-    ...typography.title2,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  sectionSubtitle: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    opacity: 0.8,
-  },
-  appointmentsContainer: {
-    flex: 1,
-    paddingBottom: spacing.xxxl,
-  },
-  appointmentCardContainer: {
-    marginBottom: spacing.lg,
-  },
-  appointmentCard: {
-    ...premiumComponents.premiumCard,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.lg,
-    backgroundColor: colors.background.white,
-    ...shadows.elevated,
-  },
-  appointmentInfo: {
-    flex: 1,
-  },
-  serviceName: {
-    ...typography.title3,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  salonName: {
-    ...typography.body,
-    color: colors.text.secondary,
-    marginBottom: spacing.xs,
-  },
-  distance: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
-  timeInfo: {
-    alignItems: 'flex-end',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  timeText: {
-    ...typography.title3,
-    color: colors.text.primary,
+    padding: 4,
   },
   
-  logoImage: {
-    width: 24,
-    height: 24,
+  // Available Times Section - 23px below search bar, 30px left padding
+  titleContainer: {
+    marginBottom: 17, // 17px spacing between cards
+    marginLeft: 4, // 30px left padding (26px + 4px)
+  },
+  sectionTitle: {
+    fontSize: 22, // 22px
+    fontWeight: '700', // Bold
+    color: '#232323', // #232323
+  },
+  
+  // Booking Cards - Container, vertical list, 17px spacing between cards
+  appointmentsContainer: {
+    flex: 1,
+    paddingBottom: 50, // Extra padding to avoid cutoff
+  },
+  appointmentCardContainer: {
+    marginBottom: 17, // 17px spacing between cards
+    alignSelf: 'center',
+  },
+  appointmentCard: {
+    width: 364, // 364px width
+    height: 96, // 96px height
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 18, // 18px corner radius
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 19, // 19px from left horizontal padding
+    elevation: 3,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.09,
+    shadowRadius: 11,
+  },
+  
+  // Content Placement
+  appointmentInfo: {
+    flex: 1,
+    paddingVertical: 18, // 18px from card top
+  },
+  
+  // Service Title - 18px weight 700, #232323, 18px from card top, 19px from left
+  serviceName: {
+    fontSize: 18, // 18px
+    fontWeight: '700', // Weight 700
+    color: '#232323', // #232323
+    marginBottom: 8, // 8px gap from title
+  },
+  
+  // Salon Name - 15px, #484848, weight 400, 8px gap from title
+  salonName: {
+    fontSize: 15, // 15px
+    color: '#484848', // #484848
+    fontWeight: '400', // Weight 400
+    marginBottom: 8, // 8px below salon name
+  },
+  
+  // Location/Distance Row - Pin icon + distance text
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  pinIcon: {
+    marginRight: 4, // Small spacing between icon and text
+  },
+  distance: {
+    fontSize: 15, // 15px
+    color: '#747474', // #747474
+  },
+  
+  // Time Badge - Right-aligned, vertically centered, 101x44px, #F5F3E6 background
+  timeBadge: {
+    width: 101, // 101px width
+    height: 44, // 44px height
+    backgroundColor: '#F5F3E6', // #F5F3E6 background
+    borderRadius: 14, // 14px corner radius
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  // Time text - center aligned, 17px, #232323, weight 600
+  timeText: {
+    fontSize: 17, // 17px
+    color: '#232323', // #232323
+    fontWeight: '600', // Weight 600
+    textAlign: 'center',
   },
 });

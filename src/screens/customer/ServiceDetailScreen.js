@@ -157,11 +157,22 @@ export default function ServiceDetailScreen({ navigation, route }) {
     Linking.openURL(`tel:${phoneNumber}`);
   };
 
+  // Helper function to get service images based on specifications
+  const getServiceImage = () => {
+    const serviceName = service.name || service.service || '';
+    if (serviceName.toLowerCase().includes('manicure')) {
+      return require('../../../assets/manicure.png');
+    } else if (serviceName.toLowerCase().includes('haircut')) {
+      return require('../../../assets/haircut.png');
+    }
+    return require('../../../assets/haircut.png'); // Default
+  };
+
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor="#213527" />
       
-      {/* Premium Animated Header */}
+      {/* Header Section - Deep green (#213527) - 115px height */}
       <Animated.View 
         style={[
           styles.header,
@@ -171,436 +182,282 @@ export default function ServiceDetailScreen({ navigation, route }) {
           }
         ]}
       >
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.background.white} />
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
+        {/* Logo Leaf & SANOVA - Centered horizontally and vertically */}
+        <View style={styles.logoContainer}>
+          {/* Leaf SVG - 38px width, 21px height, 13px top space */}
+          <Image 
+            source={require('../../../assets/logo.png')}
+            style={styles.logoIcon}
+            resizeMode="contain"
+          />
+          {/* SANOVA text - 26px, uppercase serif, white, letter-spacing 2px, 7px below leaf icon */}
           <Text style={styles.headerTitle}>SANOVA</Text>
         </View>
-        <TouchableOpacity onPress={handleCall} style={styles.callButton}>
-          <Ionicons name="call" size={20} color={colors.background.white} />
-        </TouchableOpacity>
       </Animated.View>
       
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-      >
-        {/* Premium Hero Image */}
-        <Animated.View 
-          style={[
-            styles.imageContainer,
-            {
-              opacity: imageAnimatedValues.opacity,
-              transform: [{ scale: imageAnimatedValues.scale }],
-            }
-          ]}
-        >
-          <View style={styles.imageWrapper}>
-            <View style={styles.serviceImage}>
-              <View style={styles.imagePlaceholder}>
-                <Ionicons name="cut" size={60} color={colors.text.secondary} />
-                <Text style={styles.imageText}>Professional Haircut</Text>
-              </View>
-            </View>
-            
-            {/* Favorite Button */}
-            <TouchableOpacity 
-              style={styles.favoriteButton}
-              onPress={handleFavorite}
-              activeOpacity={0.8}
-            >
-              <Animated.View style={{ transform: [{ scale: favoriteScale }] }}>
-                <Ionicons 
-                  name={isFavorite ? "heart" : "heart-outline"} 
-                  size={24} 
-                  color={isFavorite ? "#FF6B6B" : colors.background.white} 
-                />
-              </Animated.View>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-
-        {/* Premium Content */}
-        <Animated.View 
-          style={[
-            styles.detailsContainer,
-            {
-              opacity: contentAnimatedValues.opacity,
-              transform: [{ translateY: contentAnimatedValues.translateY }],
-            }
-          ]}
-        >
-          {/* Service Header */}
-          <View style={styles.serviceHeader}>
-            <View style={styles.serviceTitleContainer}>
-              <Text style={styles.serviceName}>{service.name || 'Service Name'}</Text>
-              <Text style={styles.salonName}>{service.salon || 'Salon Name'}</Text>
-            </View>
-            <View style={styles.priceContainer}>
-              <Text style={styles.price}>{service.price || 'Price'}</Text>
-              <Text style={styles.duration}>{service.duration || 'Duration'}</Text>
-            </View>
-          </View>
-
-          {/* Rating and Reviews */}
-          <View style={styles.ratingContainer}>
-            <View style={styles.ratingStars}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Ionicons 
-                  key={star}
-                  name={star <= Math.floor(service.rating || 0) ? "star" : "star-outline"} 
-                  size={16} 
-                  color="#FFD700" 
-                />
-              ))}
-            </View>
-            <Text style={styles.ratingText}>{service.rating || 0} ({service.reviews || 0} reviews)</Text>
-          </View>
-
-          {/* Service Info Cards */}
-          <View style={styles.infoCards}>
-            <View style={styles.infoCard}>
-              <Ionicons name="time-outline" size={20} color={colors.primary} />
-              <Text style={styles.infoText}>{service.date || 'Date'}</Text>
-            </View>
-            <View style={styles.infoCard}>
-              <Ionicons name="location-outline" size={20} color={colors.primary} />
-              <Text style={styles.infoText}>{service.address || 'Address'}</Text>
-            </View>
-          </View>
-
-          {/* Description */}
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.descriptionTitle}>About This Service</Text>
-            <Text style={styles.description}>
-              {showFullDescription ? (service.description || 'No description available') : ((service.description && service.description.length > 100) ? service.description.substring(0, 100) + '...' : (service.description || 'No description available'))}
-            </Text>
-            <TouchableOpacity 
-              onPress={() => setShowFullDescription(!showFullDescription)}
-              style={styles.readMoreButton}
-            >
-              <Text style={styles.readMoreText}>
-                {showFullDescription ? 'Read Less' : 'Read More'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Services Included */}
-          <View style={styles.servicesContainer}>
-            <Text style={styles.sectionTitle}>Services Included</Text>
-            {(service.services || []).map((item, index) => (
-              <View key={index} style={styles.serviceItem}>
-                <Ionicons name="checkmark-circle" size={16} color={colors.primary} />
-                <Text style={styles.serviceItemText}>{item}</Text>
-              </View>
-            ))}
-          </View>
-
-          {/* Amenities */}
-          <View style={styles.amenitiesContainer}>
-            <Text style={styles.sectionTitle}>Amenities</Text>
-            <View style={styles.amenitiesGrid}>
-              {(service.amenities || []).map((item, index) => (
-                <View key={index} style={styles.amenityItem}>
-                  <Ionicons name="checkmark" size={14} color={colors.primary} />
-                  <Text style={styles.amenityText}>{item}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        </Animated.View>
-      </ScrollView>
-
-      {/* Premium Action Buttons */}
+      {/* Service Image Section - Full width, 198px from header base downward */}
       <Animated.View 
         style={[
-          styles.actionButtonsContainer,
+          styles.serviceImageSection,
           {
-            opacity: buttonAnimatedValues.opacity,
-            transform: [
-              { translateY: buttonAnimatedValues.translateY },
-              { scale: buttonAnimatedValues.scale }
-            ],
+            opacity: imageAnimatedValues.opacity,
+            transform: [{ scale: imageAnimatedValues.scale }],
           }
         ]}
       >
-        <TouchableOpacity 
-          style={styles.directionsButton}
-          onPress={handleDirections}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="navigate" size={20} color={colors.primary} />
-          <Text style={styles.directionsButtonText}>Directions</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.bookButton}
-          onPress={handleBookNow}
-          activeOpacity={0.9}
-        >
-          <Text style={styles.bookButtonText}>Book Now</Text>
-          <Ionicons name="arrow-forward" size={20} color={colors.background.white} />
-        </TouchableOpacity>
+        <Image 
+          source={getServiceImage()} 
+          style={styles.serviceImage}
+          resizeMode="cover"
+        />
       </Animated.View>
-    </View>
+
+      {/* Main Card Area - Very light cream (#FAF6EC) */}
+      <Animated.View 
+        style={[
+          styles.mainCard,
+          {
+            opacity: contentAnimatedValues.opacity,
+            transform: [{ translateY: contentAnimatedValues.translateY }],
+          }
+        ]}
+      >
+        {/* Service Info Block */}
+        <View style={styles.serviceInfoBlock}>
+          {/* Service Title - Centered, "Classic Manicure", 38px from base of service image */}
+          <Text style={styles.serviceName}>
+            {service.name || service.service || 'Classic Manicure'}
+          </Text>
+          {/* Below title - Centered, "Gustav Salon", 8px below title */}
+          <Text style={styles.salonName}>
+            {service.salon || 'Gustav Salon'}
+          </Text>
+          {/* Time and Price row - Horizontal, wide margin, 14px below salon name */}
+          <View style={styles.timePriceRow}>
+            <Text style={styles.timeText}>
+              {service.date || 'Today, 11:00 AM'}
+            </Text>
+            <Text style={styles.priceText}>
+              {service.price || '200 kr'}
+            </Text>
+          </View>
+        </View>
+
+        {/* Address Section - 16px below time/price row */}
+        <View style={styles.addressSection}>
+          <View style={styles.addressRow}>
+            {/* Address icon - Pin location SVG, black, 18px */}
+            <Ionicons 
+              name="location-outline" 
+              size={18} 
+              color="#000000" 
+              style={styles.addressIcon}
+            />
+            {/* Address text - 13px between icon and text */}
+            <Text style={styles.addressText}>
+              {service.address || 'Frederiks Alle 28'}
+            </Text>
+          </View>
+        </View>
+
+        {/* Action Buttons Container */}
+        <Animated.View 
+          style={[
+            styles.actionButtonsContainer,
+            {
+              opacity: buttonAnimatedValues.opacity,
+              transform: [
+                { translateY: buttonAnimatedValues.translateY },
+                { scale: buttonAnimatedValues.scale }
+              ],
+            }
+          ]}
+        >
+          {/* Directions Button - Centered horizontally, 31px below address */}
+          <TouchableOpacity 
+            style={styles.directionsButton}
+            onPress={handleDirections}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.directionsButtonText}>Directions</Text>
+          </TouchableOpacity>
+          
+          {/* "Book Now" Button - 26px below Directions button */}
+          <TouchableOpacity 
+            style={styles.bookButton}
+            onPress={handleBookNow}
+            activeOpacity={0.9}
+          >
+            <Text style={styles.bookButtonText}>Book Now</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...premiumComponents.screenContainer,
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: spacing.xxxl + 20,
-    paddingBottom: spacing.lg,
-    paddingHorizontal: spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    ...shadows.elevated,
-  },
-  backButton: {
-    padding: spacing.sm,
-    borderRadius: borderRadius.round,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  headerCenter: {
     flex: 1,
+    backgroundColor: '#FAF6EC', // Exact cream background
+  },
+  
+  // Header Section - Deep green (#213527) - 115px height
+  header: {
+    backgroundColor: '#213527', // Exact deep green color
+    height: 115, // Exact height includes status bar and green header
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoIcon: {
+    width: 80,
+    height: 50,
+    marginBottom: 7, // 7px below leaf icon
   },
   headerTitle: {
-    ...typography.title2,
-    color: colors.background.white,
-    fontFamily: 'serif',
-    letterSpacing: 2,
+    fontSize: 26, // Exact 26px
+    fontFamily: 'System', // Uppercase serif
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    letterSpacing: 2, // 2px letter spacing
     textTransform: 'uppercase',
+    textAlign: 'center',
   },
-  callButton: {
-    padding: spacing.sm,
-    borderRadius: borderRadius.round,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  content: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  imageContainer: {
-    height: 280,
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.lg,
-    borderRadius: borderRadius.xl,
+  
+  // Service Image Section - Full width, 198px from header base downward
+  serviceImageSection: {
+    width: '100%', // Full width
+    height: 198, // 198px from header base downward
+    borderTopLeftRadius: 28, // Top left and top right only
+    borderTopRightRadius: 28,
     overflow: 'hidden',
-    ...shadows.floating,
-  },
-  imageWrapper: {
-    flex: 1,
-    position: 'relative',
   },
   serviceImage: {
-    flex: 1,
-    backgroundColor: colors.background.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: '100%',
+    height: '100%',
   },
-  imagePlaceholder: {
-    alignItems: 'center',
-    padding: spacing.xl,
+  
+  // Main Card Area - Very light cream (#FAF6EC)
+  mainCard: {
+    backgroundColor: '#FAF6EC', // Very light cream
+    borderTopLeftRadius: 28, // Top corners only
+    borderTopRightRadius: 28,
+    width: '100%', // 428px (100%)
+    height: 531, // 531px from image base to top of navigation
+    paddingHorizontal: 38, // 38px from card left edge
   },
-  imageText: {
-    ...typography.body,
-    color: colors.text.secondary,
+  
+  // Service Info Block
+  serviceInfoBlock: {
+    alignItems: 'center',
+    marginTop: 38, // 38px from base of service image
+  },
+  
+  // Service Title - Centered, 27px, weight 600, #223527
+  serviceName: {
+    fontSize: 27, // 27px
+    fontWeight: '600', // Weight 600
+    color: '#223527', // #223527
     textAlign: 'center',
-    marginTop: spacing.sm,
+    marginBottom: 8, // 8px below title
+    lineHeight: 31, // Line height 31px
+    maxWidth: '100%',
   },
-  favoriteButton: {
-    position: 'absolute',
-    top: spacing.md,
-    right: spacing.md,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadows.card,
+  
+  // Salon Name - Centered, 19px, weight 500, #223527, 8px below title
+  salonName: {
+    fontSize: 19, // 19px
+    fontWeight: '500', // Weight 500
+    color: '#223527', // #223527
+    textAlign: 'center',
+    marginBottom: 14, // 14px below salon name
   },
-  detailsContainer: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xxxl + 100, // Extra padding for action buttons
-  },
-  serviceHeader: {
+  
+  // Time and Price row - Horizontal, wide margin, 14px below salon name
+  timePriceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.lg,
+    width: '100%',
+    marginBottom: 16, // 16px below time/price row
   },
-  serviceTitleContainer: {
-    flex: 1,
+  
+  // Time - Left side, 17px, #515145, weight 500
+  timeText: {
+    fontSize: 17, // 17px
+    color: '#515145', // #515145
+    fontWeight: '500', // Weight 500
   },
-  serviceName: {
-    ...typography.title1,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
+  
+  // Price - Right side, 17px, #515145, weight 500
+  priceText: {
+    fontSize: 17, // 17px
+    color: '#515145', // #515145
+    fontWeight: '500', // Weight 500
   },
-  salonName: {
-    ...typography.title3,
-    color: colors.text.secondary,
+  
+  // Address Section - 16px below time/price row
+  addressSection: {
+    marginBottom: 31, // 31px below address for directions button
   },
-  priceContainer: {
-    alignItems: 'flex-end',
-  },
-  price: {
-    ...typography.title2,
-    color: colors.primary,
-    fontWeight: '700',
-  },
-  duration: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    marginTop: spacing.xs,
-  },
-  ratingContainer: {
+  addressRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.lg,
   },
-  ratingStars: {
-    flexDirection: 'row',
-    marginRight: spacing.sm,
+  
+  // Address icon - Pin location SVG, black, 18px
+  addressIcon: {
+    marginRight: 13, // 13px between icon and text
   },
-  ratingText: {
-    ...typography.caption,
-    color: colors.text.secondary,
+  
+  // Address text - 17px, #515145
+  addressText: {
+    fontSize: 17, // 17px
+    color: '#515145', // #515145
   },
-  infoCards: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  infoCard: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.background.white,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    ...shadows.card,
-  },
-  infoText: {
-    ...typography.caption,
-    color: colors.text.primary,
-    marginLeft: spacing.sm,
-    flex: 1,
-  },
-  descriptionContainer: {
-    marginBottom: spacing.xl,
-  },
-  descriptionTitle: {
-    ...typography.title3,
-    color: colors.text.primary,
-    marginBottom: spacing.md,
-  },
-  description: {
-    ...typography.body,
-    color: colors.text.secondary,
-    lineHeight: 22,
-    marginBottom: spacing.sm,
-  },
-  readMoreButton: {
-    alignSelf: 'flex-start',
-  },
-  readMoreText: {
-    ...typography.caption,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  servicesContainer: {
-    marginBottom: spacing.xl,
-  },
-  sectionTitle: {
-    ...typography.title3,
-    color: colors.text.primary,
-    marginBottom: spacing.md,
-  },
-  serviceItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  serviceItemText: {
-    ...typography.body,
-    color: colors.text.primary,
-    marginLeft: spacing.sm,
-  },
-  amenitiesContainer: {
-    marginBottom: spacing.xl,
-  },
-  amenitiesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  amenityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.background.white,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    ...shadows.card,
-  },
-  amenityText: {
-    ...typography.caption,
-    color: colors.text.primary,
-    marginLeft: spacing.xs,
-  },
+  
+  // Action Buttons Container
   actionButtonsContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    padding: spacing.lg,
-    backgroundColor: colors.background.primary,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.light,
-    gap: spacing.md,
+    alignItems: 'center',
   },
+  
+  // Directions Button - Centered horizontally, 31px below address, 324px width, 53px height
   directionsButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    width: 324, // 324px width
+    height: 53, // 53px height
+    backgroundColor: '#F5F3E6', // #F5F3E6 background
+    borderRadius: 21, // 21px corner radius
     justifyContent: 'center',
-    backgroundColor: colors.background.white,
-    paddingVertical: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    ...shadows.card,
+    alignItems: 'center',
+    marginBottom: 26, // 26px below directions button
   },
+  
+  // Directions button text - 19px, #223527, weight 600
   directionsButtonText: {
-    ...typography.bodyMedium,
-    color: colors.primary,
-    fontWeight: '600',
-    marginLeft: spacing.sm,
+    fontSize: 19, // 19px
+    color: '#223527', // #223527
+    fontWeight: '600', // Weight 600
+    textAlign: 'center',
   },
+  
+  // "Book Now" Button - 26px below Directions button, 324px width, 53px height
   bookButton: {
-    flex: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
+    width: 324, // 324px width
+    height: 53, // 53px height
+    backgroundColor: '#213527', // Deep green #213527
+    borderRadius: 21, // 21px corner radius
     justifyContent: 'center',
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.lg,
-    borderRadius: borderRadius.lg,
-    ...shadows.elevated,
+    alignItems: 'center',
   },
+  
+  // Book Now button text - 20px, #FFF, weight 700
   bookButtonText: {
-    ...typography.bodyMedium,
-    color: colors.background.white,
-    fontWeight: '600',
-    marginRight: spacing.sm,
+    fontSize: 20, // 20px
+    color: '#FFFFFF', // #FFF
+    fontWeight: '700', // Weight 700
+    textAlign: 'center',
   },
 });

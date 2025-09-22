@@ -28,6 +28,8 @@ import ReviewScreen from './screens/customer/ReviewScreen';
 import PaymentSuccessScreen from './screens/customer/PaymentSuccessScreen';
 import BookingHistoryScreen from './screens/customer/BookingHistoryScreen';
 import PaymentHistoryScreen from './screens/customer/PaymentHistoryScreen';
+import FavoriteSalonsScreen from './screens/customer/FavoriteSalonsScreen';
+import EditPhoneScreen from './screens/customer/EditPhoneScreen';
 
 // Import New Booking Flow Screens
 import DateTimeSelectionScreen from './screens/customer/DateTimeSelectionScreen';
@@ -143,12 +145,12 @@ function CustomTabBar({ state, descriptors, navigation }) {
               <Animated.View style={[premiumTabBarStyles.tabContent, animatedStyle]}>
                 <Ionicons 
                   name={iconName} 
-                  size={20} 
-                  color={isFocused ? colors.background.white : 'rgba(255,255,255,0.6)'} 
+                  size={22} // 22px icon size
+                  color={isFocused ? '#FFFFFF' : 'rgba(255,255,255,0.7)'} 
                 />
                 <Text style={[
                   premiumTabBarStyles.tabLabel,
-                  { color: isFocused ? colors.background.white : 'rgba(255,255,255,0.6)' }
+                  { color: isFocused ? '#FFFFFF' : 'rgba(255,255,255,0.7)' }
                 ]}>
                   {label}
                 </Text>
@@ -293,11 +295,25 @@ export default function CustomerApp() {
           ...pageTransitions.slideFromRight,
         }}
       />
+      <Stack.Screen 
+        name="FavoriteSalons" 
+        component={FavoriteSalonsScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
+      <Stack.Screen 
+        name="EditPhone" 
+        component={EditPhoneScreen}
+        options={{
+          ...pageTransitions.slideFromRight,
+        }}
+      />
     </Stack.Navigator>
   );
 }
 
-// Premium Tab Bar Styles
+// Premium Tab Bar Styles - Exact design specifications
 const premiumTabBarStyles = {
   container: {
     position: 'absolute',
@@ -305,42 +321,47 @@ const premiumTabBarStyles = {
     left: 0,
     right: 0,
     backgroundColor: 'transparent',
-    paddingBottom: 0, // Remove bottom padding to prevent content overlap
+    paddingBottom: 0, // Remove padding to touch bottom
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: colors.primary,
-    marginHorizontal: spacing.md, // Reduce horizontal margin
-    marginBottom: spacing.sm, // Reduce bottom margin
-    borderRadius: borderRadius.xl,
-    paddingVertical: spacing.xs, // Reduce vertical padding
-    paddingHorizontal: spacing.xs,
-    ...shadows.floating,
+    backgroundColor: '#213527', // Exact deep green color
+    height: 70, // 70px height for tab bar
+    borderTopLeftRadius: 24, // Top corners only
+    borderTopRightRadius: 24,
+    paddingTop: 12, // 12px top padding
+    paddingHorizontal: 20, // 20px horizontal padding
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    paddingVertical: spacing.xs, // Reduce padding
-    borderRadius: borderRadius.lg,
+    paddingVertical: 8,
+    borderRadius: 12,
   },
   tabBackground: {
     position: 'absolute',
     top: 0,
-    left: 0,
-    right: 0,
+    left: 4,
+    right: 4,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: borderRadius.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)', // Active background
+    borderRadius: 12,
   },
   tabContent: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabLabel: {
-    fontSize: 10, // Smaller font size
-    marginTop: 2, // Reduce margin
-    fontWeight: '600',
+    fontSize: 11, // 11px font size
+    marginTop: 4, // 4px margin top
+    fontWeight: '500',
+    textAlign: 'center',
   },
 };

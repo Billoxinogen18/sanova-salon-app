@@ -10,10 +10,12 @@ import {
   Platform,
   StatusBar,
   Dimensions,
+  SafeAreaView,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { authService, firestoreService } from '../services/firebaseService';
-import { colors } from '../theme/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -96,265 +98,318 @@ export default function LoginScreenPremium({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+    <LinearGradient
+      colors={['#194123', '#19572C']} // Exact gradient colors from specs
+      style={styles.container}
+    >
+      <StatusBar barStyle="light-content" backgroundColor="#194123" />
       
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>🌿</Text>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          {/* Brand Header Section - 48px from top */}
+          <View style={styles.brandHeader}>
+            {/* Leaf icon - 48x48px */}
+            <Image 
+              source={require('../../assets/logo.png')}
+              style={styles.logoIcon}
+              resizeMode="contain"
+            />
+            {/* SANOVA text - 32px, bold, white, 2px letter spacing */}
             <Text style={styles.brandName}>SANOVA</Text>
-            <Text style={styles.tagline}>Premium Wellness</Text>
-          </View>
-        </View>
-
-        {/* User Type Selection */}
-        <View style={styles.userTypeContainer}>
-          <TouchableOpacity
-            style={[
-              styles.userTypeButton,
-              userType === 'customer' && styles.userTypeButtonActive
-            ]}
-            onPress={() => handleUserTypePress('customer')}
-          >
-            <Ionicons 
-              name="person" 
-              size={20} 
-              color={userType === 'customer' ? colors.white : colors.text.primary} 
-            />
-            <Text style={[
-              styles.userTypeText,
-              userType === 'customer' && styles.userTypeTextActive
-            ]}>Customer</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.userTypeButton,
-              userType === 'salon' && styles.userTypeButtonActive
-            ]}
-            onPress={() => handleUserTypePress('salon')}
-          >
-            <Ionicons 
-              name="business" 
-              size={20} 
-              color={userType === 'salon' ? colors.white : colors.text.primary} 
-            />
-            <Text style={[
-              styles.userTypeText,
-              userType === 'salon' && styles.userTypeTextActive
-            ]}>Salon Owner</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Form */}
-        <View style={styles.formContainer}>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Email address"
-              placeholderTextColor={colors.text.secondary}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+            {/* Subtitle - 16px, #C5DAC1, medium */}
+            <Text style={styles.brandSubtitle}>Premium Wellness</Text>
           </View>
 
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor={colors.text.secondary}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!isPasswordVisible}
-            />
+          {/* User Type Selector - Two buttons side by side */}
+          <View style={styles.userTypeSelector}>
             <TouchableOpacity
-              style={styles.eyeIcon}
-              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+              style={[
+                styles.userTypeButton,
+                userType === 'customer' && styles.userTypeButtonSelected
+              ]}
+              onPress={() => handleUserTypePress('customer')}
             >
-              <Ionicons
-                name={isPasswordVisible ? 'eye-off' : 'eye'}
-                size={20}
-                color={colors.text.secondary}
+              <Ionicons 
+                name="person-outline" 
+                size={20} 
+                color="#FFFFFF" 
+                style={styles.userTypeIcon}
               />
+              <Text style={[
+                styles.userTypeText,
+                userType === 'customer' && styles.userTypeTextSelected
+              ]}>CUSTOMER</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.userTypeButton,
+                userType === 'salon' && styles.userTypeButtonSelected
+              ]}
+              onPress={() => handleUserTypePress('salon')}
+            >
+              <Ionicons 
+                name="business-outline" 
+                size={20} 
+                color="#FFFFFF" 
+                style={styles.userTypeIcon}
+              />
+              <Text style={[
+                styles.userTypeText,
+                userType === 'salon' && styles.userTypeTextSelected
+              ]}>SALON OWNER</Text>
             </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.loginButton, isLoading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={isLoading}
-          >
-            <Text style={styles.loginButtonText}>
-              {isLoading ? 'Signing In...' : 'Sign In'}
-            </Text>
-          </TouchableOpacity>
+          {/* Input Fields - 88% screen width, 50px height */}
+          <View style={styles.inputFieldsContainer}>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Email address"
+                placeholderTextColor="#B3B8BB"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
 
-          <TouchableOpacity
-            style={styles.googleButton}
-            onPress={handleGoogleSignIn}
-            disabled={isLoading}
-          >
-            <Ionicons name="logo-google" size={20} color={colors.text.primary} />
-            <Text style={styles.googleButtonText}>Continue with Google</Text>
-          </TouchableOpacity>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Password"
+                placeholderTextColor="#B3B8BB"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!isPasswordVisible}
+              />
+              <TouchableOpacity
+                style={styles.eyeIconButton}
+                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+              >
+                <Ionicons
+                  name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                  size={22}
+                  color="#98A89B"
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
 
-          <TouchableOpacity
-            style={styles.signUpLink}
-            onPress={() => navigation.navigate('SignUp')}
-          >
-            <Text style={styles.signUpText}>
-              Don't have an account? <Text style={styles.signUpTextBold}>Sign Up</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-    </View>
+          {/* Action Buttons */}
+          <View style={styles.actionsContainer}>
+            {/* Sign In Button - 72% width, 50px height, white bg */}
+            <TouchableOpacity
+              style={[styles.signInButton, isLoading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              <Text style={styles.signInButtonText}>
+                {isLoading ? 'Signing In...' : 'Sign In'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Create Account Button - Same styling */}
+            <TouchableOpacity
+              style={styles.createAccountButton}
+              onPress={() => navigation.navigate('SignUp')}
+            >
+              <Text style={styles.createAccountButtonText}>Create Account</Text>
+            </TouchableOpacity>
+
+            {/* Continue with Google Button - Google G logo + text */}
+            <TouchableOpacity
+              style={styles.googleSignInButton}
+              onPress={handleGoogleSignIn}
+              disabled={isLoading}
+            >
+              <Ionicons name="logo-google" size={22} color="#1C3A25" style={styles.googleIcon} />
+              <Text style={styles.googleButtonText}>Continue with Google</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primary,
+  },
+  safeArea: {
+    flex: 1,
   },
   keyboardAvoidingView: {
     flex: 1,
+    paddingHorizontal: 24, // Global horizontal padding
   },
-  header: {
+
+  // Brand Header Section
+  brandHeader: {
     alignItems: 'center',
-    paddingTop: 60,
-    paddingBottom: 40,
+    marginTop: 48, // 48px from top
   },
-  logoContainer: {
-    alignItems: 'center',
-  },
-  logoText: {
-    fontSize: 40,
-    marginBottom: 8,
+  logoIcon: {
+    width: 48,
+    height: 48,
   },
   brandName: {
     fontSize: 32,
-    fontWeight: '600',
-    color: colors.white,
+    fontWeight: '700', // Bold
+    color: '#FFFFFF',
     letterSpacing: 2,
-    marginBottom: 4,
+    lineHeight: 40,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    marginTop: 8, // Below logo
   },
-  tagline: {
-    fontSize: 14,
-    color: colors.text.secondary,
-    opacity: 0.8,
+  brandSubtitle: {
+    fontSize: 16,
+    color: '#C5DAC1',
+    fontWeight: '500', // Medium
+    textAlign: 'center',
+    marginTop: 8,
   },
-  userTypeContainer: {
+
+  // User Type Selector
+  userTypeSelector: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
-    marginBottom: 40,
-    gap: 12,
+    marginTop: 24, // After brand header
+    gap: 12, // 12px spacing between buttons
   },
   userTypeButton: {
-    flex: 1,
+    flex: 1, // 48% each
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#324C38',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    gap: 8,
+    paddingHorizontal: 10,
+    gap: 10, // 10px padding between icon and text
   },
-  userTypeButtonActive: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
+  userTypeButtonSelected: {
+    backgroundColor: '#2C8A4C',
+    borderColor: 'transparent',
+  },
+  userTypeIcon: {
+    marginRight: 0,
   },
   userTypeText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.white,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#C5DAC1',
   },
-  userTypeTextActive: {
-    color: colors.white,
+  userTypeTextSelected: {
+    color: '#FFFFFF',
   },
-  formContainer: {
-    paddingHorizontal: 24,
-    marginBottom: 40,
+
+  // Input Fields
+  inputFieldsContainer: {
+    marginTop: 24, // After user type selector
+    gap: 18, // 18px between inputs
   },
-  inputContainer: {
+  inputWrapper: {
     position: 'relative',
-    marginBottom: 20,
   },
-  input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+  textInput: {
+    width: '100%', // 88% of screen width
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    paddingLeft: 18, // Left padding inside input
     fontSize: 16,
-    color: colors.text.primary,
-    borderWidth: 1,
-    borderColor: 'rgba(38, 52, 40, 0.1)',
+    color: '#224A2D',
+    borderWidth: 0, // No border
+    elevation: 2, // Box shadow
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
-  eyeIcon: {
+  eyeIconButton: {
     position: 'absolute',
-    right: 20,
-    top: 18,
+    right: 16,
+    top: 14,
+    width: 22,
+    height: 22,
   },
-  buttonContainer: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  loginButton: {
-    backgroundColor: colors.accent,
-    borderRadius: 12,
-    paddingVertical: 18,
+
+  // Action Buttons
+  actionsContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginTop: 28, // 28px after inputs
+    gap: 16, // 16px spacing between buttons
+  },
+  signInButton: {
+    width: '72%', // 72% of screen width
+    height: 50,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 25, // Pill shape
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2, // Subtle box shadow
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  signInButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1C3A25',
   },
   buttonDisabled: {
     opacity: 0.7,
   },
-  loginButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
+  createAccountButton: {
+    width: '72%',
+    height: 50,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
-  googleButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 12,
-    paddingVertical: 16,
+  createAccountButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1C3A25',
+  },
+  googleSignInButton: {
+    width: '72%',
+    height: 50,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 25,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(38, 52, 40, 0.1)',
-    gap: 12,
+    elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    gap: 10, // 10px between logo and text
+  },
+  googleIcon: {
+    marginRight: 0,
   },
   googleButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.text.primary,
-  },
-  signUpLink: {
-    alignItems: 'center',
-  },
-  signUpText: {
-    fontSize: 16,
-    color: colors.white,
-    opacity: 0.8,
-  },
-  signUpTextBold: {
-    fontWeight: '600',
-    color: colors.accent,
-    opacity: 1,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1C3A25',
   },
 });

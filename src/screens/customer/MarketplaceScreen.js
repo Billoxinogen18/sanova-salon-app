@@ -233,10 +233,15 @@ export default function MarketplaceScreen({ navigation }) {
           onPress={() => handleProductPress(item, index)}
           activeOpacity={0.9}
         >
-          <View style={[styles.productImageContainer, { backgroundColor: item.color }]}>
-            <Image source={item.image} style={styles.productImage} />
+          {/* Product Icon/SVG - Centered horizontally, 38px wide × 62px tall, 20px top margin, no background color */}
+          <View style={styles.productIconContainer}>
+            <Image source={item.image} style={styles.productIcon} />
           </View>
-          <Text style={styles.productName}>{item.name}</Text>
+          {/* Product Title - Centered, 16px, weight 600, #222, 14px below icon */}
+          <Text style={styles.productTitle} numberOfLines={1} ellipsizeMode="tail">
+            {item.name.length > 17 ? item.name.substring(0, 17) + '...' : item.name}
+          </Text>
+          {/* Product Price - Centered, 14px, #545454, 3px below product name */}
           <Text style={styles.productPrice}>{item.price}</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -249,10 +254,10 @@ export default function MarketplaceScreen({ navigation }) {
   });
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor="#213527" />
       
-      {/* Animated Header with premium design */}
+      {/* Header Section - Deep green (#213527) - 116px height */}
       <Animated.View 
         style={[
           styles.header,
@@ -262,14 +267,22 @@ export default function MarketplaceScreen({ navigation }) {
           }
         ]}
       >
+        {/* Logo Leaf & SANOVA - Centered horizontally and vertically */}
         <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/icon.png')} style={styles.logoImage} />
+          {/* Leaf icon SVG - 34px width, 20px height, 15px from top */}
+          <Image 
+            source={require('../../../assets/logo.png')}
+            style={styles.logoIcon}
+            resizeMode="contain"
+          />
+          {/* SANOVA text - 26px, uppercase serif, white, letter-spacing 2px, 7px margin under icon */}
+          <Text style={styles.headerTitle}>SANOVA</Text>
         </View>
-        <Text style={styles.headerTitle}>SANOVA</Text>
       </Animated.View>
       
-      <View style={styles.content}>
-        {/* Premium Animated Search Bar */}
+      {/* Main Marketplace Card - Very light cream (#FAF6EC) */}
+      <View style={styles.marketplaceCard}>
+        {/* Search Bar - 26px from card top edge, 376px width (88% of container), 52px height */}
         <Animated.View 
           style={[
             styles.searchContainer,
@@ -290,15 +303,18 @@ export default function MarketplaceScreen({ navigation }) {
               }
             ]}
           >
+            {/* Black magnifier icon - 24x24px, left-aligned, 18px from bar edge */}
             <Ionicons 
               name="search" 
-              size={20} 
-              color={searchFocused ? colors.primary : colors.text.secondary} 
+              size={24} 
+              color="#000000" 
+              style={styles.searchIcon}
             />
+            {/* Search text - "Search", 20px, #353535, 10px left margin after icon */}
             <TextInput
               style={styles.searchInput}
-              placeholder="Search beauty products..."
-              placeholderTextColor={colors.text.secondary}
+              placeholder="Search"
+              placeholderTextColor="#353535"
               value={searchText}
               onChangeText={setSearchText}
               onFocus={handleSearchFocus}
@@ -310,13 +326,13 @@ export default function MarketplaceScreen({ navigation }) {
                 style={styles.clearButton}
                 activeOpacity={0.7}
               >
-                <Ionicons name="close-circle" size={20} color={colors.text.secondary} />
+                <Ionicons name="close-circle" size={20} color="#353535" />
               </TouchableOpacity>
             )}
           </Animated.View>
         </Animated.View>
 
-        {/* Premium Animated Section Title */}
+        {/* Beauty Products Title - 28px below search bar, left-aligned, 28px from left card edge */}
         <Animated.View
           style={[
             styles.titleContainer,
@@ -327,10 +343,9 @@ export default function MarketplaceScreen({ navigation }) {
           ]}
         >
           <Text style={styles.sectionTitle}>Beauty Products</Text>
-          <Text style={styles.sectionSubtitle}>Discover premium beauty essentials</Text>
         </Animated.View>
         
-        {/* Premium Products Grid with Animations */}
+        {/* Product Grid Section - 2 columns, exact spacing and dimensions */}
         <FlatList
           data={beautyProducts}
           renderItem={renderProduct}
@@ -344,135 +359,154 @@ export default function MarketplaceScreen({ navigation }) {
           maxToRenderPerBatch={8}
           windowSize={10}
           scrollEventThrottle={16}
+          scrollEnabled={false} // Disable scroll since we're in ScrollView
         />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...premiumComponents.screenContainer,
+    flex: 1,
+    backgroundColor: '#FAF6EC', // Exact cream background
   },
+  
+  // Header Section - Deep green (#213527) - 116px height
   header: {
-    backgroundColor: colors.primary,
-    paddingTop: spacing.xxxl + 20,
-    paddingBottom: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    backgroundColor: '#213527', // Exact deep green color
+    height: 116, // Exact height from screen top to base of green area, including status bar
+    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomLeftRadius: borderRadius.lg,
-    borderBottomRightRadius: borderRadius.lg,
-    ...shadows.elevated,
   },
   logoContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.sm,
-    ...shadows.card,
+  },
+  logoIcon: {
+    width: 80,
+    height: 50,
+    marginBottom: 7, // 7px margin under icon
   },
   headerTitle: {
-    ...typography.title2,
-    color: colors.background.white,
-    fontFamily: 'serif',
-    letterSpacing: 2,
+    fontSize: 26, // Exact 26px
+    fontFamily: 'System', // Uppercase serif
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    letterSpacing: 2, // 2px letter spacing
     textTransform: 'uppercase',
+    textAlign: 'center',
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-    backgroundColor: colors.background.primary,
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
-    marginTop: -borderRadius.lg,
-    paddingTop: spacing.xl,
+  
+  // Main Marketplace Card - Very light cream (#FAF6EC)
+  marketplaceCard: {
+    backgroundColor: '#FAF6EC', // Very light cream
+    width: '100%', // 428px (100% safe area)
+    height: 722, // Extends down to top of navigation bar
+    borderTopLeftRadius: 28, // Top corners only
+    borderTopRightRadius: 28,
+    paddingHorizontal: 26, // Global padding for content
+    paddingTop: 26, // 26px from card top edge
   },
+  
+  // Search Bar - 376px width (88% of container), 52px height
   searchContainer: {
-    marginBottom: spacing.xl,
+    alignSelf: 'center',
+    width: '88%', // 376px (88% of container)
+    marginBottom: 28, // 28px below search bar
   },
   searchBar: {
+    width: '100%',
+    height: 52, // Exact height
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 26, // Fully pill-shaped
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background.white,
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderWidth: 2,
-    borderColor: colors.border.primary,
-    ...shadows.card,
+    paddingHorizontal: 18, // 18px from bar edge
+    elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 9,
+  },
+  searchIcon: {
+    marginRight: 10, // 10px left margin after icon
   },
   searchInput: {
     flex: 1,
-    marginLeft: spacing.sm,
-    ...typography.body,
-    color: colors.text.primary,
+    fontSize: 20, // 20px font size
+    color: '#353535', // Color #353535
+    fontWeight: '400',
   },
   clearButton: {
-    padding: spacing.xs,
+    padding: 4,
   },
+  
+  // Beauty Products Title - 28px from left card edge
   titleContainer: {
-    marginBottom: spacing.xl,
+    marginBottom: 22, // 22px below section title
+    marginLeft: 2, // 28px from left card edge (26px + 2px)
   },
   sectionTitle: {
-    ...typography.title2,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
+    fontSize: 21, // 21px
+    fontWeight: '700', // Bold
+    color: '#222222', // #222
   },
-  sectionSubtitle: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    opacity: 0.8,
-  },
+  
+  // Product Grid Section - 2 columns grid
   productsContainer: {
-    paddingBottom: spacing.xxxl,
+    paddingBottom: 50, // Extra padding to avoid cutoff
   },
   row: {
     justifyContent: 'space-between',
-    marginBottom: spacing.lg,
+    marginBottom: 22, // 22px between rows
+    paddingHorizontal: 2, // 28px left/right padding adjustment
   },
   productCardContainer: {
-    width: '48%',
+    width: '48%', // Approximate for 163px with 16px gap
   },
   productCard: {
-    ...premiumComponents.premiumCard,
+    width: 163, // 163px width
+    height: 132, // 132px height
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 18, // 18px corner radius
     alignItems: 'center',
-    padding: spacing.lg,
-    backgroundColor: colors.background.white,
-    borderRadius: borderRadius.lg,
-    ...shadows.elevated,
-  },
-  productImageContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    ...shadows.card,
-  },
-  productImage: {
-    width: 40,
-    height: 40,
-    resizeMode: 'contain',
-  },
-  productName: {
-    ...typography.captionMedium,
-    color: colors.text.primary,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-    lineHeight: 16,
-  },
-  productPrice: {
-    ...typography.bodyMedium,
-    color: colors.accent,
-    fontWeight: '700',
+    padding: 3, // 3dp inner padding
+    elevation: 3,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.09,
+    shadowRadius: 10,
+    paddingVertical: 20, // Top margin inside card
   },
   
-  logoImage: {
-    width: 24,
-    height: 24,
+  // Product Content - Centered horizontally, 38px wide × 62px tall, 20px top margin, no background color
+  productIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14, // 14px below icon
+    // No background color as specified
+  },
+  productIcon: {
+    width: 38, // 38px wide
+    height: 62, // 62px tall
+    resizeMode: 'contain',
+  },
+  
+  // Product Title - Centered, 16px, weight 600, #222, 14px below icon
+  productTitle: {
+    fontSize: 16, // 16px
+    fontWeight: '600', // Weight 600
+    color: '#222222', // #222
+    textAlign: 'center',
+    marginBottom: 3, // 3px below product name
+  },
+  
+  // Product Price - Centered, 14px, #545454, 3px below product name
+  productPrice: {
+    fontSize: 14, // 14px
+    color: '#545454', // #545454
+    textAlign: 'center',
   },
 });

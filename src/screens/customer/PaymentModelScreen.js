@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, globalStyles } from '../../theme/styles';
 import Header from '../../components/Header';
@@ -57,63 +57,105 @@ export default function PaymentModelScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      {/* Header with dark green background exactly as in design */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Payment</Text>
-      </View>
-      
-      <Animated.ScrollView 
-        style={[styles.content, { opacity: fadeAnim }]}
-        showsVerticalScrollIndicator={false}
+      {/* Header - Deep green (#213527) - Same as previous screens */}
+      <Animated.View 
+        style={[
+          styles.header,
+          { opacity: fadeAnim }
+        ]}
       >
-        {/* Payment Model Options - exactly as shown in design */}
-        <View style={styles.paymentOptions}>
-          {/* Pay half now, half after - Selected in design */}
+        {/* Logo Leaf & SANOVA - Centered horizontally and vertically */}
+        <View style={styles.logoContainer}>
+          {/* Logo - Same dimensions as previous screens */}
+          <Image 
+            source={require('../../../assets/logo.png')}
+            style={styles.logoIcon}
+            resizeMode="contain"
+          />
+          {/* SANOVA text - Same styling as previous screens */}
+          <Text style={styles.headerTitle}>SANOVA</Text>
+        </View>
+      </Animated.View>
+
+      {/* Main Card - Very light cream (#FAF6EC) */}
+      <Animated.View 
+        style={[
+          styles.mainCard,
+          { opacity: fadeAnim }
+        ]}
+      >
+        {/* Content Section */}
+        <View style={styles.contentSection}>
+          {/* Title - "Payment", 25px, weight 700, #223527, 38px margin-top */}
+          <Text style={styles.sectionTitle}>Payment</Text>
+          
+          {/* Payment Option Cards - Each 97px high, 26px radius, white background */}
+          
+          {/* Option 1 - "Pay half now, half after" */}
           <TouchableOpacity
-            style={styles.paymentOption}
+            style={[
+              styles.paymentOptionCard,
+              styles.firstPaymentOption, // 32px margin-top after title
+              selectedModel === 'split' && styles.selectedOptionCard
+            ]}
             onPress={() => handlePaymentOptionPress('split')}
             activeOpacity={0.8}
           >
             <View style={styles.optionContent}>
+              {/* Title - "Pay half now, half after", 19px, weight 700, #223527 */}
               <Text style={styles.optionTitle}>Pay half now, half after</Text>
+              {/* Description - "You agree to pay 175 kr now and forfeit this amount if you don't show up.", 16px, #4E504F, weight 400 */}
               <Text style={styles.optionDescription}>
-                You agree to pay 175 kr now and{'\n'}forfeit this amount if you don't show up.
+                You agree to pay 175 kr now and forfeit this amount if you don't show up.
               </Text>
             </View>
-            <Animated.View style={[
-              styles.radioButton, 
-              selectedModel === 'split' && styles.radioButtonSelected,
-              { transform: [{ scale: selectedModel === 'split' ? buttonScale : 1 }] }
+            {/* Checkmark circle - right-aligned, 23px diameter, filled #163A24 when active */}
+            <View style={[
+              styles.checkmarkCircle, 
+              selectedModel === 'split' && styles.checkmarkCircleActive
             ]}>
-              {selectedModel === 'split' && <Ionicons name="checkmark" size={16} color={colors.text.white} />}
-            </Animated.View>
+              {selectedModel === 'split' && (
+                <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+              )}
+            </View>
           </TouchableOpacity>
 
-          {/* Pay full amount */}
+          {/* Option 2 - "Pay full amount" - 22px vertical space between options */}
           <TouchableOpacity
-            style={styles.paymentOption}
+            style={[
+              styles.paymentOptionCard,
+              selectedModel === 'full' && styles.selectedOptionCard
+            ]}
             onPress={() => handlePaymentOptionPress('full')}
             activeOpacity={0.8}
           >
             <View style={styles.optionContent}>
+              {/* Title - "Pay full amount", 19px, weight 700, #223527 */}
               <Text style={styles.optionTitle}>Pay full amount</Text>
+              {/* Description - "Cancel by [date/time] and get a full refund.", 16px, #4E504F, weight 400 */}
               <Text style={styles.optionDescription}>
-                Cancel by [date/time] and{'\n'}get a full refund
+                Cancel by [date/time] and get a full refund.
               </Text>
             </View>
-            <Animated.View style={[
-              styles.radioButton, 
-              selectedModel === 'full' && styles.radioButtonSelected,
-              { transform: [{ scale: selectedModel === 'full' ? buttonScale : 1 }] }
+            {/* Checkmark circle - white with border #163A24 when inactive */}
+            <View style={[
+              styles.checkmarkCircle, 
+              selectedModel === 'full' && styles.checkmarkCircleActive
             ]}>
-              {selectedModel === 'full' && <View style={styles.radioButtonInner} />}
-            </Animated.View>
+              {selectedModel === 'full' && (
+                <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+              )}
+            </View>
           </TouchableOpacity>
         </View>
-      </Animated.ScrollView>
 
-      <View style={styles.continueButtonContainer}>
-        <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+        {/* Continue Button - Centered, 344px width, 51px height, #F1EBD1 background */}
+        <Animated.View 
+          style={[
+            styles.continueButtonContainer,
+            { transform: [{ scale: buttonScale }] }
+          ]}
+        >
           <TouchableOpacity 
             style={styles.continueButton}
             onPress={handlePayment}
@@ -122,7 +164,7 @@ export default function PaymentModelScreen({ navigation, route }) {
             <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
         </Animated.View>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -130,96 +172,151 @@ export default function PaymentModelScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.primary,
+    backgroundColor: '#FAF6EC', // Exact cream background
   },
+  
+  // Header - Deep green (#213527) - Same as previous screens
   header: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text.white,
-    textAlign: 'center',
-  },
-  content: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  paymentOptions: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-  },
-  paymentOption: {
-    backgroundColor: colors.background.white,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  optionContent: {
-    flex: 1,
-    marginRight: 16,
-  },
-  optionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text.primary,
-    marginBottom: 8,
-  },
-  optionDescription: {
-    fontSize: 14,
-    color: colors.text.secondary,
-    lineHeight: 20,
-  },
-  radioButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: colors.border.primary,
+    backgroundColor: '#213527', // Exact deep green color
+    height: 115, // Same height as previous screens
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background.white,
   },
-  radioButtonSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  radioButtonInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: colors.primary,
-  },
-  continueButtonContainer: {
-    padding: 20,
-    backgroundColor: colors.background.primary,
-  },
-  continueButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 16,
-    borderRadius: 25,
+  logoContainer: {
     alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    justifyContent: 'center',
   },
+  logoIcon: {
+    width: 36,
+    height: 22,
+    marginBottom: 6, // Same spacing as previous screens
+  },
+  headerTitle: {
+    fontSize: 25, // Same as previous screens
+    fontFamily: 'System',
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  
+  // Main Card - Very light cream (#FAF6EC)
+  mainCard: {
+    backgroundColor: '#FAF6EC', // Very light cream
+    borderTopLeftRadius: 28, // Top corners only, same as previous
+    borderTopRightRadius: 28,
+    width: '100%',
+    flex: 1,
+    paddingHorizontal: 34, // 34px from left/right
+    paddingTop: 38, // 38px margin-top
+  },
+  
+  // Content Section
+  contentSection: {
+    flex: 1,
+  },
+  
+  // Title - "Payment", 25px, weight 700, #223527, 38px margin-top
+  sectionTitle: {
+    fontSize: 25, // 25px
+    fontWeight: '700', // Weight 700
+    color: '#223527', // #223527
+    marginBottom: 32, // 32px margin-top after payment title
+  },
+  
+  // Payment Option Cards - Each 97px high, 26px radius, white background
+  paymentOptionCard: {
+    height: 97, // 97px high
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 26, // 26px radius
+    flexDirection: 'row',
+    alignItems: 'flex-start', // Align to top for multiline text
+    justifyContent: 'space-between',
+    paddingHorizontal: 22, // Internal horizontal padding
+    paddingVertical: 18, // Internal vertical padding
+    marginBottom: 22, // 22px vertical space between options
+    elevation: 3,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 13,
+  },
+  
+  // First payment option - 32px margin-top after title
+  firstPaymentOption: {
+    // Already handled by sectionTitle marginBottom
+  },
+  
+  // Selected option card state
+  selectedOptionCard: {
+    backgroundColor: '#F5F5F5', // Slightly different background when selected
+    borderWidth: 2,
+    borderColor: '#163A24',
+  },
+  
+  // Option content - Left side content
+  optionContent: {
+    flex: 1,
+    paddingRight: 16, // Space before checkmark
+  },
+  
+  // Option title - "Pay half now, half after", 19px, weight 700, #223527
+  optionTitle: {
+    fontSize: 19, // 19px
+    fontWeight: '700', // Weight 700
+    color: '#223527', // #223527
+    marginBottom: 6, // 6px below title
+  },
+  
+  // Option description - 16px, #4E504F, weight 400
+  optionDescription: {
+    fontSize: 16, // 16px
+    color: '#4E504F', // #4E504F
+    fontWeight: '400', // Weight 400
+    lineHeight: 22, // Better line height for multiline text
+  },
+  
+  // Checkmark circle - right-aligned, 23px diameter
+  checkmarkCircle: {
+    width: 23, // 23px diameter
+    height: 23,
+    borderRadius: 11.5, // Half of diameter for perfect circle
+    backgroundColor: '#FFFFFF', // White background when inactive
+    borderWidth: 2,
+    borderColor: '#163A24', // Border color #163A24
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2, // Slight adjustment to align with text
+  },
+  
+  // Checkmark circle active state - filled #163A24 when active
+  checkmarkCircleActive: {
+    backgroundColor: '#163A24', // #163A24 background when active
+    borderColor: '#163A24',
+  },
+  
+  // Continue Button Container - Centered, 42px margin-bottom from safe area
+  continueButtonContainer: {
+    alignItems: 'center',
+    paddingBottom: 42, // 42px margin-bottom from safe area
+    marginTop: 'auto', // Push to bottom
+  },
+  
+  // Continue Button - 344px width, 51px height, #F1EBD1 background
+  continueButton: {
+    width: 344, // 344px width
+    height: 51, // 51px height
+    backgroundColor: '#F1EBD1', // #F1EBD1 background (warm beige)
+    borderRadius: 25, // Pill-shaped radius 25px
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  // Continue button text - "Continue", #223527, 20px, weight 600
   continueButtonText: {
-    color: colors.text.white,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 20, // 20px
+    color: '#223527', // #223527
+    fontWeight: '600', // Weight 600
   },
 });

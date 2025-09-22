@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { globalStyles } from '../../theme/styles';
 import { firestoreService } from '../../services/firebaseService';
-import { auth } from '../../firebaseconfig';
+import { auth } from '../../../firebaseconfig';
 
 export default function BookingHistoryScreen({ navigation }) {
   const [bookings, setBookings] = useState([]);

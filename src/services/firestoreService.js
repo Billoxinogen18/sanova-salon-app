@@ -15,6 +15,54 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebaseconfig';
 
+// Users Service
+export const usersService = {
+  // Get user by ID
+  async getById(userId) {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', userId));
+      if (userDoc.exists()) {
+        return { id: userDoc.id, ...userDoc.data() };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting user by ID:', error);
+      throw error;
+    }
+  },
+
+  // Create or update user
+  async createOrUpdate(userId, userData) {
+    try {
+      const userRef = doc(db, 'users', userId);
+      const data = {
+        ...userData,
+        updatedAt: serverTimestamp()
+      };
+      await setDoc(userRef, data, { merge: true });
+      return { id: userId, ...data };
+    } catch (error) {
+      console.error('Error creating/updating user:', error);
+      throw error;
+    }
+  },
+
+  // Update user profile
+  async updateProfile(userId, profileData) {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        ...profileData,
+        updatedAt: serverTimestamp()
+      });
+      return true;
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
+};
+
 // Bookings Service
 export const bookingsService = {
   // Get all bookings for a user (customer or salon)

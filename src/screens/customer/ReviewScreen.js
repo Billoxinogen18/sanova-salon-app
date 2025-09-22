@@ -79,346 +79,375 @@ export default function ReviewScreen({ navigation, route }) {
   ];
 
   return (
-    <View style={styles.container}>
-      {/* App Bar - Deep forest green, 74px height, rounded top corners */}
-      <View style={styles.appBar}>
-        <StatusBar barStyle="light-content" backgroundColor={colors.deepForestGreen} />
-        
-        {/* SANOVA Logo */}
-        <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/icon.png')} style={styles.logoImage} />
-          <Text style={styles.logoText}>SANOVA</Text>
-        </View>
-      </View>
-
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor="#213527" />
+      
+      {/* Header - Deep green (#213527) - Same as other screens */}
       <Animated.View 
         style={[
-          styles.content,
+          styles.header,
           {
             opacity: fadeAnim,
             transform: [{ translateY: slideAnim }],
-          },
+          }
         ]}
       >
-        {/* Page Title - "Hvordan var din oplevelse?", flush left, Inter bold, 24px */}
-        <Text style={styles.pageTitle}>Hvordan var din oplevelse?</Text>
-
-        {/* Review Card - White, radius 16px, 92% width, centered horizontally */}
-        <View style={styles.reviewCard}>
-          {/* Profile Circle - Dark green avatar, white capital "G" */}
-          <View style={styles.profileCircle}>
-            <Text style={styles.profileInitial}>G</Text>
-          </View>
-
-          {/* Salon Details - Vertical stack beside avatar */}
-          <View style={styles.salonDetails}>
-            <Text style={styles.salonName}>Gustav Salon</Text>
-            <Text style={styles.serviceName}>Classic Manicure</Text>
-            <Text style={styles.appointmentTime}>24. april 2024 kl. 11.00</Text>
-          </View>
-        </View>
-
-        {/* Star Rating Component - Horizontal row, centered beneath review card */}
-        <View style={styles.starRatingContainer}>
-          {[1, 2, 3, 4, 5].map((star) => (
-            <TouchableOpacity
-              key={star}
-              style={styles.starContainer}
-              onPress={() => handleRatingSelect(star)}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name={star <= selectedRating ? 'star' : 'star-outline'}
-                size={32}
-                color={colors.gold}
-                style={styles.starIcon}
-              />
-              <Text style={styles.starLabel}>{ratingLabels[star - 1]}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Additional Feedback Section */}
-        <View style={styles.feedbackSection}>
-          <Text style={styles.feedbackPrompt}>Har du lyst til at uddybe?</Text>
-          
-          <TextInput
-            style={styles.feedbackInput}
-            placeholder="Valgfrit"
-            placeholderTextColor={colors.gray}
-            value={feedbackText}
-            onChangeText={setFeedbackText}
-            multiline
-            maxLength={500}
+        {/* Logo Leaf & SANOVA - Centered horizontally and vertically */}
+        <View style={styles.logoContainer}>
+          {/* Leaf SVG - Same dimensions as other screens */}
+          <Image 
+            source={require('../../../assets/logo.png')}
+            style={styles.logoIcon}
+            resizeMode="contain"
           />
+          {/* SANOVA text - Same styling as other screens */}
+          <Text style={styles.headerTitle}>SANOVA</Text>
+        </View>
+      </Animated.View>
+
+      {/* Main Card - Very light cream (#FAF6EC) */}
+      <Animated.View 
+        style={[
+          styles.mainCard,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          }
+        ]}
+      >
+        {/* Content Section */}
+        <View style={styles.contentSection}>
+          {/* Appointment Card - 375px width, 96px height, white background, 18px radius */}
+          <View style={styles.appointmentCard}>
+            {/* Profile circle - left side, 44px diameter, #2C5A3E background */}
+            <View style={styles.profileCircle}>
+              <Text style={styles.profileInitial}>G</Text>
+            </View>
+            
+            {/* Appointment info - right side of circle */}
+            <View style={styles.appointmentInfo}>
+              <Text style={styles.serviceName}>Classic Manicure</Text>
+              <Text style={styles.salonName}>Gustav Salon</Text>
+              <Text style={styles.dateTime}>24. april 2024 kl. 11.00</Text>
+            </View>
+          </View>
+
+          {/* 5-Star Rating System - Centered, 34px below appointment card */}
+          <View style={styles.ratingSection}>
+            <View style={styles.starsContainer}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity
+                  key={star}
+                  style={styles.starButton}
+                  onPress={() => handleRatingSelect(star)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name={star <= selectedRating ? 'star' : 'star-outline'}
+                    size={38} // 38px star size
+                    color="#FEBC45" // Gold color #FEBC45
+                    style={styles.starIcon}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            {/* Danish labels under stars - "Dårlig", "Okay", "God", "Meget god", "Fantastisk" */}
+            <View style={styles.labelsContainer}>
+              {ratingLabels.map((label, index) => (
+                <Text key={index} style={styles.ratingLabel}>{label}</Text>
+              ))}
+            </View>
+          </View>
+
+          {/* Comment Input Section - 26px below rating labels */}
+          <View style={styles.commentSection}>
+            <Text style={styles.commentPrompt}>Har du lyst til at uddybe?</Text>
+            <TextInput
+              style={styles.commentInput}
+              placeholder="Valgfrit"
+              placeholderTextColor="#626463"
+              value={feedbackText}
+              onChangeText={setFeedbackText}
+              multiline
+              maxLength={500}
+            />
+          </View>
+
+          {/* Photo Upload Section - 18px below comment input */}
+          <TouchableOpacity style={styles.photoSection} activeOpacity={0.8}>
+            <Ionicons name="camera" size={24} color="#626463" style={styles.cameraIcon} />
+            <Text style={styles.photoLabel}>Del et billede af resultatet</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Photo Upload Section */}
-        <TouchableOpacity style={styles.photoUploadSection} activeOpacity={0.8}>
-          <Ionicons name="camera" size={25} color={colors.lightGreen} style={styles.cameraIcon} />
-          <Text style={styles.photoUploadLabel}>Del et billede af resultatet</Text>
-        </TouchableOpacity>
+        {/* Bottom Action Buttons */}
+        <View style={styles.buttonsContainer}>
+          {/* Submit Button - 344px width, 51px height, #163A24 background */}
+          <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+            <TouchableOpacity 
+              style={styles.submitButton}
+              onPress={handleSubmitReview}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.submitButtonText}>Send anmeldelse</Text>
+            </TouchableOpacity>
+          </Animated.View>
 
-        {/* Action Buttons */}
-        <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-          <TouchableOpacity 
-            style={styles.submitButton}
-            onPress={handleSubmitReview}
-            activeOpacity={0.9}
-          >
-            <Text style={styles.submitButtonText}>Send anmeldelse</Text>
+          {/* Skip Button - 18px below submit button */}
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+            <Text style={styles.skipButtonText}>Spring over</Text>
           </TouchableOpacity>
-        </Animated.View>
-
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipButtonText}>Spring over</Text>
-        </TouchableOpacity>
+        </View>
       </Animated.View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.warmCream, // Warm cream background
+    backgroundColor: '#FAF6EC', // Exact cream background
   },
   
-  // App Bar - Deep forest green, 74px height, rounded top corners
-  appBar: {
-    height: 74,
-    backgroundColor: colors.deepForestGreen,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+  // Header - Deep green (#213527) - Same as other screens
+  header: {
+    backgroundColor: '#213527', // Exact deep green color
+    height: 115, // Same height as other screens
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 20,
   },
-  
   logoContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  
-  logoImage: {
-    width: 24,
-    height: 24,
-    marginRight: 8,
+  logoIcon: {
+    width: 80,
+    height: 50,
+    marginBottom: 6, // Same spacing as other screens
   },
-  
-  logoText: {
-    ...typography.logo,
-    fontSize: 26, // 26px as specified
+  headerTitle: {
+    fontSize: 25, // Same as other screens
+    fontFamily: 'System',
     fontWeight: 'bold',
+    color: '#FFFFFF',
     letterSpacing: 2,
-    color: colors.white,
-  },
-  
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-  },
-  
-  // Page Title - Inter bold, 24px, flush left
-  pageTitle: {
-    fontFamily: 'Inter',
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.darkGreen,
-    marginTop: 38, // 38px margin-top from app bar
-  },
-  
-  // Review Card - White, radius 16px, 92% width, centered horizontally
-  reviewCard: {
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    marginTop: 12, // 12px margin-top below header
-    width: '92%',
-    alignSelf: 'center',
-    paddingHorizontal: 22, // 22px left/right
-    paddingVertical: 18, // 18px top/bottom
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: colors.deepForestGreen,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.09,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  
-  // Profile Circle - Dark green avatar, radius 22px
-  profileCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.lightGreen, // #294C3B
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  
-  // Profile Initial - White capital "G", Inter bold, 19px
-  profileInitial: {
-    fontFamily: 'Inter',
-    fontSize: 19,
-    fontWeight: 'bold',
-    color: colors.white,
-  },
-  
-  // Salon Details - Vertical stack beside avatar
-  salonDetails: {
-    marginLeft: 12, // 12px left margin from avatar
-    flex: 1,
-  },
-  
-  // Salon Name - Inter bold, 17px, margin-bottom 3px
-  salonName: {
-    fontFamily: 'Inter',
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: colors.darkGreen,
-    marginBottom: 3,
-  },
-  
-  // Service Name - Inter regular, 16px, margin-bottom 3px
-  serviceName: {
-    fontFamily: 'Inter',
-    fontSize: 16,
-    fontWeight: '400',
-    color: colors.darkGreen,
-    marginBottom: 3,
-  },
-  
-  // Appointment Time - Inter regular, 15px
-  appointmentTime: {
-    fontFamily: 'Inter',
-    fontSize: 15,
-    fontWeight: '400',
-    color: colors.gray, // #7B857B
-  },
-  
-  // Star Rating Container - Horizontal row, centered beneath review card
-  starRatingContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 16, // 16px margin-top
-    paddingHorizontal: 20,
-  },
-  
-  starContainer: {
-    alignItems: 'center',
-    marginHorizontal: 7, // 14px apart (7px each side)
-    minWidth: 48, // Minimum touch target
-    minHeight: 48,
-  },
-  
-  // Star Icon - Flat gold, size 32px
-  starIcon: {
-    marginBottom: 4,
-  },
-  
-  // Star Label - Inter regular, 13px, centered under icon
-  starLabel: {
-    fontFamily: 'Inter',
-    fontSize: 13,
-    fontWeight: '400',
-    color: colors.gray, // #78857B
+    textTransform: 'uppercase',
     textAlign: 'center',
   },
   
-  // Additional Feedback Section
-  feedbackSection: {
-    marginTop: 38, // 38px margin-top after stars
-  },
-  
-  // Feedback Prompt - Inter medium, 16px, flush left
-  feedbackPrompt: {
-    fontFamily: 'Inter',
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.darkGreen,
-    marginBottom: 12,
-  },
-  
-  // Feedback Input - Single line, placeholder "Valgfrit"
-  feedbackInput: {
+  // Main Card - Very light cream (#FAF6EC)
+  mainCard: {
+    backgroundColor: '#FAF6EC', // Very light cream
+    borderTopLeftRadius: 28, // Top corners only, same as other screens
+    borderTopRightRadius: 28,
     width: '100%',
-    height: 38,
-    backgroundColor: colors.searchBarBg, // #FBF9F1
-    borderRadius: 12,
-    paddingHorizontal: 18, // 18px left padding
-    fontFamily: 'Inter',
-    fontSize: 16,
-    color: colors.darkGreen,
-    textAlignVertical: 'top',
+    flex: 1,
+    paddingHorizontal: 26, // 26px from left/right
+    paddingTop: 40, // 40px margin-top
   },
   
-  // Photo Upload Section - White block, radius 14px, dashed outline
-  photoUploadSection: {
-    backgroundColor: colors.white,
-    borderRadius: 14,
+  // Content Section
+  contentSection: {
+    flex: 1,
+  },
+  
+  // Appointment Card - 375px width, 96px height, white background, 18px radius
+  appointmentCard: {
+    width: 375, // 375px width
+    height: 96, // 96px height
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 18, // 18px radius
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 19, // 19px internal horizontal padding
+    alignSelf: 'center',
+    elevation: 3,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.09,
+    shadowRadius: 11,
+    marginBottom: 34, // 34px below appointment card
+  },
+  
+  // Profile circle - left side, 44px diameter, #2C5A3E background
+  profileCircle: {
+    width: 44, // 44px diameter
+    height: 44,
+    borderRadius: 22, // Half of diameter for perfect circle
+    backgroundColor: '#2C5A3E', // #2C5A3E background
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15, // 15px right margin from circle
+  },
+  
+  // Profile initial - White "G", 19px, weight bold
+  profileInitial: {
+    fontSize: 19, // 19px
+    fontWeight: 'bold',
+    color: '#FFFFFF', // White
+  },
+  
+  // Appointment info - right side of circle
+  appointmentInfo: {
+    flex: 1,
+  },
+  
+  // Service name - "Classic Manicure", 18px, weight 700, #232323
+  serviceName: {
+    fontSize: 18, // 18px
+    fontWeight: '700', // Weight 700
+    color: '#232323', // #232323
+    marginBottom: 8, // 8px below service name
+  },
+  
+  // Salon name - "Gustav Salon", 15px, #484848
+  salonName: {
+    fontSize: 15, // 15px
+    color: '#484848', // #484848
+    marginBottom: 8, // 8px below salon name
+  },
+  
+  // Date time - "24. april 2024 kl. 11.00", 15px, #747474
+  dateTime: {
+    fontSize: 15, // 15px
+    color: '#747474', // #747474
+  },
+  
+  // 5-Star Rating System - Centered, 34px below appointment card
+  ratingSection: {
+    alignItems: 'center',
+    marginBottom: 26, // 26px below rating labels
+  },
+  
+  // Stars container - Horizontal row of 5 stars
+  starsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8, // 8px below stars
+  },
+  
+  // Star button - Individual star touch target
+  starButton: {
+    padding: 4, // Touch target padding
+    marginHorizontal: 6, // 12px between stars (6px each side)
+  },
+  
+  // Star icon - 38px star size, #FEBC45 gold color
+  starIcon: {
+    // No additional styling needed
+  },
+  
+  // Labels container - Danish labels under stars
+  labelsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 8, // Align with stars
+  },
+  
+  // Rating label - "Dårlig", "Okay", "God", "Meget god", "Fantastisk", 13px, #626463
+  ratingLabel: {
+    fontSize: 13, // 13px
+    color: '#626463', // #626463
+    textAlign: 'center',
+    flex: 1, // Equal spacing
+  },
+  
+  // Comment Input Section - 26px below rating labels
+  commentSection: {
+    marginBottom: 18, // 18px below comment input
+  },
+  
+  // Comment prompt - "Har du lyst til at uddybe?", 18px, #626463
+  commentPrompt: {
+    fontSize: 18, // 18px
+    color: '#626463', // #626463
+    marginBottom: 16, // 16px below prompt
+  },
+  
+  // Comment input - Multi-line text input, white background, 15px radius
+  commentInput: {
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 15, // 15px radius
+    paddingHorizontal: 18, // 18px horizontal padding
+    paddingVertical: 16, // 16px vertical padding
+    fontSize: 16, // 16px text
+    color: '#232323', // Text color
+    textAlignVertical: 'top', // Align text to top for multiline
+    minHeight: 80, // Minimum height for multiline
+    elevation: 1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  
+  // Photo Upload Section - 18px below comment input
+  photoSection: {
+    backgroundColor: '#FFFFFF', // White background
+    borderRadius: 15, // 15px radius
     borderWidth: 2,
-    borderColor: colors.lightGray, // #A0AEA8
+    borderColor: '#E5E5E5', // Light border
     borderStyle: 'dashed',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14, // 14px horizontal padding
-    paddingVertical: 16,
-    marginTop: 20,
-    minHeight: 48, // Minimum touch target
+    paddingHorizontal: 18, // 18px horizontal padding
+    paddingVertical: 20, // 20px vertical padding
+    elevation: 1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
   
-  // Camera Icon - Flat camera, 25px, medium green
+  // Camera icon - 24px camera icon, #626463 color
   cameraIcon: {
-    marginRight: 8, // 8px margin-left from icon
+    marginRight: 12, // 12px right margin from icon
   },
   
-  // Photo Upload Label - Inter medium, 15px
-  photoUploadLabel: {
-    fontFamily: 'Inter',
-    fontSize: 15,
-    fontWeight: '500',
-    color: colors.darkGreen,
+  // Photo label - "Del et billede af resultatet", 16px, #626463
+  photoLabel: {
+    fontSize: 16, // 16px
+    color: '#626463', // #626463
   },
   
-  // Submit Button - Deep forest green, full card width minus 18px margins
+  // Bottom Action Buttons
+  buttonsContainer: {
+    alignItems: 'center',
+    paddingBottom: 40, // 40px margin-bottom from safe area
+    marginTop: 'auto', // Push to bottom
+  },
+  
+  // Submit Button - 344px width, 51px height, #163A24 background
   submitButton: {
-    width: width - 36, // Full width minus 18px left/right margin
-    height: 50,
-    backgroundColor: colors.deepForestGreen,
-    borderRadius: 24, // Fully rounded radius
+    width: 344, // 344px width
+    height: 51, // 51px height
+    backgroundColor: '#163A24', // #163A24 background
+    borderRadius: 25, // Pill-shaped radius 25px
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 27, // 27px margin-top below photo upload section
-    alignSelf: 'center',
-    shadowColor: colors.deepForestGreen,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
+    marginBottom: 18, // 18px below submit button
   },
   
-  // Submit Button Text - Inter bold, 18px, pure white
+  // Submit button text - "Send anmeldelse", #FFF, 20px, weight 600
   submitButtonText: {
-    fontFamily: 'Inter',
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.white,
+    fontSize: 20, // 20px
+    color: '#FFFFFF', // #FFF
+    fontWeight: '600', // Weight 600
   },
   
-  // Skip Button - Flush center, Inter regular, 16px
+  // Skip Button - "Spring over", 18px below submit button
   skipButton: {
-    alignItems: 'center',
-    marginTop: 22, // 22px below primary button
     paddingVertical: 12,
-    minHeight: 48, // Minimum touch target
+    paddingHorizontal: 24,
   },
   
+  // Skip button text - "Spring over", #626463, 18px
   skipButtonText: {
-    fontFamily: 'Inter',
-    fontSize: 16,
-    fontWeight: '400',
-    color: colors.darkGreen,
+    fontSize: 18, // 18px
+    color: '#626463', // #626463
+    textAlign: 'center',
   },
 });

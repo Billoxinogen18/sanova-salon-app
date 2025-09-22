@@ -349,6 +349,19 @@ export const firestoreService = {
       } catch (error) {
         return { success: false, error: error.message };
       }
+    },
+
+    getById: async (userId) => {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+          return { id: userDoc.id, ...userDoc.data() };
+        }
+        return null;
+      } catch (error) {
+        console.error('Error getting user by ID:', error);
+        throw error;
+      }
     }
   },
 
@@ -405,6 +418,19 @@ export const firestoreService = {
       } catch (error) {
         return { success: false, error: error.message };
       }
+    },
+
+    getById: async (salonId) => {
+      try {
+        const salonDoc = await getDoc(doc(db, 'salons', salonId));
+        if (salonDoc.exists()) {
+          return { id: salonDoc.id, ...salonDoc.data() };
+        }
+        return null;
+      } catch (error) {
+        console.error('Error getting salon by ID:', error);
+        throw error;
+      }
     }
   },
 
@@ -425,6 +451,24 @@ export const firestoreService = {
     },
 
     getByUser: async (userId) => {
+      try {
+        const q = query(
+          collection(db, 'bookings'),
+          where('userId', '==', userId),
+          orderBy('createdAt', 'desc')
+        );
+        const querySnapshot = await getDocs(q);
+        const bookings = [];
+        querySnapshot.forEach((doc) => {
+          bookings.push({ id: doc.id, ...doc.data() });
+        });
+        return { success: true, data: bookings };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    },
+
+    getByUserId: async (userId) => {
       try {
         const q = query(
           collection(db, 'bookings'),
